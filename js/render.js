@@ -31,8 +31,10 @@
 
   function maybeFlushOnScroll() {
     if (renderQueue.length === 0) return;
-    const list = document.getElementById("results-list");
-    const remaining = list.scrollHeight - list.scrollTop - list.clientHeight;
+    // Скроллится обёртка #results-scroll, а не #results-list (контейнер только
+    // карточек) — см. map-sheet.js, где resultsList указывает на неё же.
+    const scroller = document.getElementById("results-scroll");
+    const remaining = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
     if (remaining < RENDER_BATCH_TRIGGER_PX) flushRenderBatch();
   }
 

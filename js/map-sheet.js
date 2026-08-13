@@ -6,7 +6,10 @@ function setupMapSheet() {
   const mapArea = document.getElementById("map-area");
   const sheetList = document.getElementById("sheet-list");
   const handle = document.getElementById("sheet-handle");
-  const resultsList = document.getElementById("results-list");
+  // Скроллится .list-scroll (id="results-scroll") — обёртка над «Найдено N»/
+  // сортировкой и самим списком карточек (#results-list), поэтому и то, и то
+  // уезжает при скролле, а не остаётся прилипшим сверху.
+  const resultsList = document.getElementById("results-scroll");
 
   const PEEK_PX = 64;
   let sheetState = "half"; // 'peek' | 'half' | 'full'

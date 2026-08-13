@@ -145,16 +145,18 @@
                 <button class="sheet-list__handle-wrap" id="sheet-handle" type="button" aria-label="Развернуть список">
                   <span class="sheet-list__handle"></span>
                 </button>
-                <div class="results-bar">
-                  <span class="results-bar__count" id="results-count"></span>
-                  <div style="position:relative">
-                    <button class="sort-btn" id="sort-btn" type="button" aria-label="Сортировка">
-                      <svg viewBox="0 0 16 16" fill="none"><path d="M4.50008 0.585815L0.292969 4.79292L1.70718 6.20714L3.50008 4.41424V15H5.50008V4.41424L7.29297 6.20714L8.70718 4.79292L4.50008 0.585815Z" fill="currentColor"/><path d="M11.4998 15.4142L7.29272 11.2071L8.70694 9.79292L10.4998 11.5858V1.00003H12.4998V11.5858L14.2927 9.79292L15.7069 11.2071L11.4998 15.4142Z" fill="currentColor"/></svg>
-                    </button>
-                    <div id="sort-menu" hidden style="position:absolute; right:0; top:34px; background:var(--bg-surface); border:1px solid var(--border-divider); border-radius:var(--radius-m); box-shadow:var(--shadow-card); padding:8px; width:200px; z-index:40;"></div>
+                <div class="list-scroll" id="results-scroll">
+                  <div class="results-bar">
+                    <span class="results-bar__count" id="results-count"></span>
+                    <div style="position:relative">
+                      <button class="sort-btn" id="sort-btn" type="button" aria-label="Сортировка">
+                        <svg viewBox="0 0 16 16" fill="none"><path d="M4.50008 0.585815L0.292969 4.79292L1.70718 6.20714L3.50008 4.41424V15H5.50008V4.41424L7.29297 6.20714L8.70718 4.79292L4.50008 0.585815Z" fill="currentColor"/><path d="M11.4998 15.4142L7.29272 11.2071L8.70694 9.79292L10.4998 11.5858V1.00003H12.4998V11.5858L14.2927 9.79292L15.7069 11.2071L11.4998 15.4142Z" fill="currentColor"/></svg>
+                      </button>
+                      <div id="sort-menu" hidden style="position:absolute; right:0; top:34px; background:var(--bg-surface); border:1px solid var(--border-divider); border-radius:var(--radius-m); box-shadow:var(--shadow-card); padding:8px; width:200px; z-index:40;"></div>
+                    </div>
                   </div>
+                  <div id="results-list"></div>
                 </div>
-                <div class="list-scroll" id="results-list"></div>
               </div>
             </div>
           </div>
