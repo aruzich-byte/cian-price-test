@@ -1,0 +1,210 @@
+/* ---------- Панель «Настройка прототипа» (только десктоп, вне телефона) ---------- */
+/* Сама логика переключения (priceSheet.setVariant, ui.histogramShape, ui.mixMode)
+   не завязана на видимость панели — просто нет смысла показывать её на мобильных,
+   где сравнивать варианты негде (телефон занимает весь экран). */
+.prototype-panel {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  bottom: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 440px;
+  flex-shrink: 0;
+  padding: 32px;
+  background: var(--bg-surface);
+  border-radius: 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow-y: auto;
+}
+
+@media (max-width: 480px) {
+  .prototype-panel {
+    display: none;
+  }
+}
+
+.prototype-panel__title {
+  margin: 0;
+  font-family: "SF Pro Display", var(--font-family);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 30px;
+  letter-spacing: 0.32px;
+  color: var(--text-primary);
+}
+
+.prototype-panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prototype-panel__section[hidden] {
+  display: none;
+}
+
+.prototype-panel__section-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: -0.32px;
+  color: var(--text-primary);
+}
+
+.prototype-panel__section-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Второй заголовок внутри секции «Подмешивание вариантов» — отступ до него
+   такой же, как между секциями (32px = section gap 12px + доп. 20px). */
+.prototype-panel__section-head--spaced {
+  margin-top: 20px;
+}
+
+/* Иконка «i» рядом с заголовком настройки прототипа — подсказка на ховере
+   объясняет, что меняет настройка и зачем она нужна в прототипе (не видна
+   в самом продукте, только в панели слева). */
+.proto-info {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.proto-info__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--border-chip);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: italic;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1;
+}
+
+.proto-info:hover .proto-info__icon,
+.proto-info:focus-visible .proto-info__icon {
+  background: var(--accent);
+  color: var(--color-white);
+}
+
+.proto-info__tooltip {
+  /* position: fixed — тултип не обрезается контейнером с overflow-y: auto
+     (панель прототипа скроллится), а координаты left/top под него
+     вычисляет и подставляет js/proto-info.js с учётом границ вьюпорта. */
+  position: fixed;
+  z-index: 20;
+  width: 280px;
+  padding: 10px 12px;
+  border-radius: var(--radius-m);
+  background: var(--text-primary);
+  color: var(--color-white);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 17px;
+  letter-spacing: -0.16px;
+  text-align: left;
+  white-space: normal;
+  box-shadow: var(--shadow-card);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+  pointer-events: none;
+}
+
+.proto-info:hover .proto-info__tooltip,
+.proto-info:focus-visible .proto-info__tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.prototype-panel__chips {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.prototype-panel__chips--wrap {
+  flex-wrap: wrap;
+}
+
+/* Числовые поля «Порог»/«Расширение» (см. .field в filters-modal.css) —
+   в панели прототипа они мельче остальных полей приложения, поэтому текст
+   в них тоже уменьшаем до размера .proto-chip (13px), не трогая общий
+   стиль .field input. */
+#mix-threshold-input,
+#mix-expand-input {
+  font-size: 13px;
+  -moz-appearance: textfield;
+}
+
+#mix-threshold-input::-webkit-outer-spin-button,
+#mix-threshold-input::-webkit-inner-spin-button,
+#mix-expand-input::-webkit-outer-spin-button,
+#mix-expand-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* .field__label/.field__suffix по умолчанию 16px (см. filters-modal.css) —
+   вместе с плейсхолдером/значением поля тоже уменьшаем до 13px, иначе
+   подпись и суффикс визуально крупнее, чем сам ввод. */
+.prototype-panel__mix-fields .field__label,
+.prototype-panel__mix-fields .field__suffix,
+.prototype-panel__mix-fields input::placeholder {
+  font-size: 13px;
+}
+
+.prototype-panel__generate-btn {
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* .toggle-row по умолчанию (см. filters-modal.css) — space-between: текст
+   слева, свитч справа. Здесь порядок в разметке обратный (свитч перед
+   текстом), поэтому вместо растягивания на всю ширину строки прижимаем
+   оба элемента друг к другу слева. Двойной селектор — иначе одинаковая
+   специфичность с .toggle-row проигрывает: filters-modal.css подключается
+   после dev-switchers.css, и его space-between побеждал бы по порядку каскада. */
+.toggle-row.toggle-row--switch-first {
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.proto-chip {
+  height: 32px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-chip);
+  border-radius: var(--radius-m);
+  background: var(--bg-surface);
+  font-size: 13px;
+  line-height: 16px;
+  letter-spacing: -0.24px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.proto-chip.is-active {
+  border-color: var(--border-focus-strong);
+  background: var(--accent-secondary-bg);
+}
+
