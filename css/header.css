@@ -13,6 +13,14 @@
   border-bottom: 1px solid var(--border-divider);
 }
 
+/* Статус-бар над шапкой скрыт на мобильном (см. .statusbar в device-frame.css) —
+   поднимаем шапку на освободившееся место. */
+@media (max-width: 480px) {
+  .header {
+    top: 0;
+  }
+}
+
 .search-row {
   display: flex;
   align-items: center;

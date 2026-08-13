@@ -192,6 +192,30 @@
       generateNarrowBtn.addEventListener("click", generateNarrowResults);
     }
 
+    // Тройной тап по экрану телефона открывает панель «Настройка прототипа»
+    // (на мобильном она по умолчанию скрыта за пределами экрана — см.
+    // .prototype-panel в dev-switchers.css). На десктопе панель видна всегда
+    // как сайдбар, тап на класс is-open там не влияет.
+    const prototypePanel = document.getElementById("prototype-panel");
+    const prototypePanelClose = document.getElementById("prototype-panel-close");
+    const phoneScreen = document.querySelector(".phone-frame__screen");
+    if (prototypePanel && phoneScreen) {
+      const TRIPLE_TAP_WINDOW_MS = 600;
+      let tapTimestamps = [];
+      phoneScreen.addEventListener("click", () => {
+        const now = Date.now();
+        tapTimestamps = tapTimestamps.filter((t) => now - t < TRIPLE_TAP_WINDOW_MS);
+        tapTimestamps.push(now);
+        if (tapTimestamps.length >= 3) {
+          tapTimestamps = [];
+          prototypePanel.classList.add("is-open");
+        }
+      });
+    }
+    if (prototypePanelClose && prototypePanel) {
+      prototypePanelClose.addEventListener("click", () => prototypePanel.classList.remove("is-open"));
+    }
+
     renderResults();
   });
 })();

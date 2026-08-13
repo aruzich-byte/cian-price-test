@@ -11,13 +11,14 @@ function setupMapSheet() {
   const PEEK_PX = 64;
   let sheetState = "half"; // 'peek' | 'half' | 'full'
 
-  const STATUSBAR_PX = 44;
-
   function targetHeight(s) {
     const containerH = mapArea.clientHeight;
     const header = document.getElementById("header");
+    // Реальная высота статус-бара, а не константа — на мобильном он скрыт
+    // (см. .statusbar в device-frame.css) и его offsetHeight равен 0.
+    const statusbar = document.getElementById("statusbar");
     if (s === "peek") return PEEK_PX;
-    if (s === "full") return containerH - STATUSBAR_PX - header.offsetHeight;
+    if (s === "full") return containerH - statusbar.offsetHeight - header.offsetHeight;
     return Math.round(containerH * 0.55);
   }
 

@@ -20,10 +20,32 @@
   overflow-y: auto;
 }
 
+/* На мобильном (реальный телефон или узкое окно) панель по умолчанию скрыта
+   за пределами экрана — открывается тройным тапом по экрану, см. main.js.
+   На десктопе .is-open ни на что не влияет: там она видна всегда как сайдбар
+   (базовое правило .prototype-panel выше). */
 @media (max-width: 480px) {
   .prototype-panel {
-    display: none;
+    inset: 0;
+    width: auto;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
+    z-index: 250;
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
   }
+
+  .prototype-panel.is-open {
+    transform: translateY(0);
+  }
+}
+
+.prototype-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .prototype-panel__title {
@@ -34,6 +56,32 @@
   line-height: 30px;
   letter-spacing: 0.32px;
   color: var(--text-primary);
+}
+
+/* Крестик закрытия нужен только в мобильной полноэкранной шторке — на
+   десктопе панель открыта всегда, закрывать нечего. */
+.prototype-panel__close {
+  display: none;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--bg-page);
+  border-radius: 50%;
+  color: var(--text-primary);
+}
+
+.prototype-panel__close svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 480px) {
+  .prototype-panel__close {
+    display: flex;
+  }
 }
 
 .prototype-panel__section {

@@ -26,6 +26,14 @@
   color: var(--text-primary);
 }
 
+/* На реальном телефоне это дублирует системный статус-бар — см. .statusbar
+   в device-frame.css, тот же приём для главного экрана. */
+@media (max-width: 480px) {
+  .filters-modal__statusbar {
+    display: none;
+  }
+}
+
 .filters-modal__header {
   position: relative;
   flex-shrink: 0;
