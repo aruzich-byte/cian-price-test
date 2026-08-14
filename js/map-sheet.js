@@ -95,24 +95,40 @@ function setupMapSheet() {
   resultsList.addEventListener("scroll", maybeFlushOnScroll, { passive: true });
 
   // В full-состоянии хэндл скрыт: сворачиваем шторку свайпом вниз от самого
-  // верха списка (когда дальше скроллить некуда — тянем шторку, а не контент)
-  let pullStartY = null;
-  resultsList.addEventListener("pointerdown", (e) => {
-    pullStartY = sheetState === "full" && resultsList.scrollTop <= 0 ? e.clientY : null;
-  });
-  resultsList.addEventListener("pointermove", (e) => {
-    if (pullStartY == null) return;
-    if (resultsList.scrollTop > 0) {
-      pullStartY = null;
-      return;
-    }
-    if (e.clientY - pullStartY > 50) {
-      setState("half");
-      pullStartY = null;
-    }
-  });
-  resultsList.addEventListener("pointerup", () => (pullStartY = null));
-  resultsList.addEventListener("pointercancel", () => (pullStartY = null));
+  // верха списка (когда дальше скроллить некуда — тянем шторку, а не контент).
+  // Именно touch-события, а не Pointer Events: на реальных мобильных браузерах
+  // после начала нативного скролла/резинового bounce в этой точке pointermove
+  // перестаёт надёжно приходить, и жест просто не срабатывает. preventDefault
+  // вызываем только когда точно видим оттягивание вниз — обычный скролл вверх
+  // по контенту (тянут вверх) при этом не ломаем.
+  let touchStartY = null;
+  resultsList.addEventListener(
+    "touchstart",
+    (e) => {
+      touchStartY = sheetState === "full" && resultsList.scrollTop <= 0 ? e.touches[0].clientY : null;
+    },
+    { passive: true }
+  );
+  resultsList.addEventListener(
+    "touchmove",
+    (e) => {
+      if (touchStartY == null) return;
+      if (resultsList.scrollTop > 0) {
+        touchStartY = null;
+        return;
+      }
+      const dy = e.touches[0].clientY - touchStartY;
+      if (dy <= 0) return;
+      e.preventDefault();
+      if (dy > 50) {
+        setState("half");
+        touchStartY = null;
+      }
+    },
+    { passive: false }
+  );
+  resultsList.addEventListener("touchend", () => (touchStartY = null));
+  resultsList.addEventListener("touchcancel", () => (touchStartY = null));
 
   // Колесо мыши/трекпад: скролл вверх, когда список уже наверху — сворачивает шторку
   let wheelUpAccum = 0;

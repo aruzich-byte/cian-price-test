@@ -41,7 +41,7 @@
     // которые проходят остальные применённые фильтры (площадь, этаж, класс) —
     // см. getBaseFiltered()/getAdaptiveBase в price-widget.js. Плейсхолдеры
     // цены при этом всегда показывают полный диапазон рынка.
-    histogramAdaptive: false,
+    histogramAdaptive: true,
     // Порог подмешивания и ширина расширения диапазона цены — см.
     // computeMixSuggestion в filtering.js. mixThreshold: если строгих
     // результатов меньше этого числа — подмешиваем соседние по цене.

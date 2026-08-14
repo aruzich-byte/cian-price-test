@@ -44,7 +44,7 @@
             <button class="proto-chip is-active" data-histogram-shape="curve" type="button">Кривая</button>
           </div>
           <div class="toggle-row toggle-row--switch-first">
-            <button class="switch" type="button" id="histogram-adaptive-switch"><span class="switch__knob"></span></button>
+            <button class="switch is-on" type="button" id="histogram-adaptive-switch"><span class="switch__knob"></span></button>
             <span class="toggle-row__label">Подстраивать под фильтры</span>
           </div>
         </div>
@@ -58,10 +58,10 @@
             </button>
           </div>
           <div class="prototype-panel__chips prototype-panel__chips--wrap" id="mix-mode-switcher">
-            <button class="proto-chip is-active" data-mix-mode="inline" type="button">Общий список</button>
-            <button class="proto-chip" data-mix-mode="separate" type="button">Отдельный список</button>
+            <button class="proto-chip is-active" data-mix-mode="separate" type="button">Отдельный список</button>
             <button class="proto-chip" data-mix-mode="carousel" type="button">Баннер с каруселью</button>
             <button class="proto-chip" data-mix-mode="filter-warning" type="button">Предупреждение в фильтрах</button>
+            <button class="proto-chip" data-mix-mode="inline" type="button">Общий список</button>
           </div>
           <div class="prototype-panel__section-head prototype-panel__section-head--spaced">
             <div class="prototype-panel__section-title">Параметры подмешивания</div>
@@ -82,7 +82,11 @@
               <span class="field__suffix">%</span>
             </div>
           </div>
-          <button class="btn-outline prototype-panel__generate-btn" type="button" id="generate-narrow-btn">Сгенерировать узкую выдачу</button>
+          <button class="btn-outline prototype-panel__generate-btn" type="button" id="generate-narrow-btn">
+            <span class="prototype-panel__generate-btn-spinner" aria-hidden="true"></span>
+            <span class="prototype-panel__generate-btn-icon" aria-hidden="true">✓</span>
+            <span class="prototype-panel__generate-btn-label">Сгенерировать узкую выдачу</span>
+          </button>
         </div>
       </aside>
       <div class="phone-frame">
@@ -440,7 +444,7 @@
       </div>
     </div>
 
-    <script>const MIX_MODE = 'inline';</script>
+    <script>const MIX_MODE = 'separate';</script>
     <!--
       Классические <script>-теги (не type="module") — принципиально: прототип
       должен открываться и напрямую двойным кликом по этому файлу (file://),

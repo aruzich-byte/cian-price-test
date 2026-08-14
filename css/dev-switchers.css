@@ -225,6 +225,53 @@
 .prototype-panel__generate-btn {
   width: 100%;
   margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.prototype-panel__generate-btn-spinner {
+  display: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid rgba(13, 22, 46, 0.15);
+  border-top-color: var(--text-primary);
+  animation: prototype-panel-spin 0.7s linear infinite;
+}
+
+.prototype-panel__generate-btn-icon {
+  display: none;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--positive-text);
+}
+
+.prototype-panel__generate-btn.is-loading {
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+.prototype-panel__generate-btn.is-loading .prototype-panel__generate-btn-spinner {
+  display: inline-block;
+}
+
+.prototype-panel__generate-btn.is-success {
+  border-color: var(--positive-text);
+  background: var(--positive-bg);
+  color: var(--positive-text);
+}
+
+.prototype-panel__generate-btn.is-success .prototype-panel__generate-btn-icon {
+  display: inline-block;
+}
+
+@keyframes prototype-panel-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* .toggle-row по умолчанию (см. filters-modal.css) — space-between: текст

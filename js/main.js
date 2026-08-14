@@ -189,7 +189,31 @@
 
     const generateNarrowBtn = document.getElementById("generate-narrow-btn");
     if (generateNarrowBtn) {
-      generateNarrowBtn.addEventListener("click", generateNarrowResults);
+      const generateNarrowBtnLabel = generateNarrowBtn.querySelector(".prototype-panel__generate-btn-label");
+      const GENERATE_BTN_DEFAULT_LABEL = generateNarrowBtnLabel ? generateNarrowBtnLabel.textContent : "";
+      let generateNarrowBtnTimer = null;
+
+      generateNarrowBtn.addEventListener("click", () => {
+        if (generateNarrowBtn.classList.contains("is-loading")) return;
+        window.clearTimeout(generateNarrowBtnTimer);
+
+        generateNarrowBtn.classList.remove("is-success");
+        generateNarrowBtn.classList.add("is-loading");
+        if (generateNarrowBtnLabel) generateNarrowBtnLabel.textContent = "Генерируем…";
+
+        generateNarrowBtnTimer = window.setTimeout(() => {
+          generateNarrowResults();
+
+          generateNarrowBtn.classList.remove("is-loading");
+          generateNarrowBtn.classList.add("is-success");
+          if (generateNarrowBtnLabel) generateNarrowBtnLabel.textContent = "Готово";
+
+          generateNarrowBtnTimer = window.setTimeout(() => {
+            generateNarrowBtn.classList.remove("is-success");
+            if (generateNarrowBtnLabel) generateNarrowBtnLabel.textContent = GENERATE_BTN_DEFAULT_LABEL;
+          }, 1400);
+        }, 500);
+      });
     }
 
     // Тройной тап по экрану телефона открывает панель «Настройка прототипа»
