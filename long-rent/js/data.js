@@ -4,7 +4,8 @@
  * через API поисковой выдачи (07.10.2026), остальные пока убраны.
  * Все поля — как на сайте: комнатность, площадь, этаж, цена, залог, комиссия
  * (clientFee, % от месячной цены), ЖК, адрес, ближайшее метро, координаты,
- * продавец, «Суперагент», есть ли у него фото, «Проверено в Росреестре», «Ранний доступ».
+ * продавец, «Суперагент», есть ли у него фото, «Проверено в Росреестре», «Ранний доступ»,
+ * ЖКУ (utilitiesIncluded — включены в цену, utilitiesPrice — сумма, metersExtra — счётчики отдельно).
  * isGoodPrice — посчитано по тем 1324 объявлениям: цена ≤ 85% медианы среди
  * квартир той же комнатности (сейчас сравнивать не с чем, поэтому зафиксировано).
  */
@@ -14,22 +15,25 @@
   // metroTransport 'walk' | 'transport' (минуты пешком или на транспорте);
   // metroColor — цвет линии метро (hex без #); agency — null, если имя продавца скрыто
   const RAW_OFFERS = [
-  {"id":"317754009","flatType":"studio","rooms":null,"isApartments":true,"area":29.0,"floor":14,"floorsTotal":23,"price":48000,"deposit":40000,"clientFee":0,"jk":null,"street":"проспект Просвещения","house":"83","metro":"Гражданский проспект","metroMin":10,"metroTransport":"walk","metroColor":"D70834","lat":60.036793,"lon":30.407317,"agency":"SVET hotel","isByHomeowner":false,"isSuperAgent":false,"addedDaysAgo":0,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":true,"isGoodPrice":false},
-  {"id":"334543276","flatType":"rooms","rooms":1,"isApartments":false,"area":30.7,"floor":3,"floorsTotal":5,"price":26000,"deposit":15000,"clientFee":100,"jk":null,"street":"улица Карпинского","house":"24","metro":"Академическая","metroMin":5,"metroTransport":"transport","metroColor":"D70834","lat":60.008968,"lon":30.423244,"agency":"Иван Тарасов","isByHomeowner":false,"isSuperAgent":true,"addedDaysAgo":0,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":false,"isGoodPrice":true},
-  {"id":"229135673","flatType":"rooms","rooms":2,"isApartments":false,"area":45.0,"floor":5,"floorsTotal":5,"price":64000,"deposit":60000,"clientFee":0,"jk":null,"street":"3-я Советская улица","house":"10","metro":"Площадь Восстания","metroMin":8,"metroTransport":"walk","metroColor":"D70834","lat":59.933609,"lon":30.367369,"agency":"BRIDGE APARTS","isByHomeowner":false,"isSuperAgent":false,"addedDaysAgo":0,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":true,"isGoodPrice":false},
-  {"id":"324112325","flatType":"studio","rooms":null,"isApartments":true,"area":22.4,"floor":10,"floorsTotal":12,"price":35000,"deposit":35000,"clientFee":0,"jk":"ЖК «Апарт-отель Kirovsky AVENIR»","street":"дорога На Турухтанные острова","house":"5к1","metro":"Автово","metroMin":10,"metroTransport":"walk","metroColor":"D70834","lat":59.870041,"lon":30.253552,"agency":"Магнит","isByHomeowner":false,"isSuperAgent":true,"addedDaysAgo":0,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":true,"isGoodPrice":false},
-  {"id":"333074730","flatType":"studio","rooms":null,"isApartments":true,"area":27.0,"floor":11,"floorsTotal":18,"price":58000,"deposit":29000,"clientFee":0,"jk":null,"street":"улица Салова","house":"61","metro":"Бухарестская","metroMin":3,"metroTransport":"walk","metroColor":"700579","lat":59.885503,"lon":30.367597,"agency":"Алексей «Вало-сервис»","isByHomeowner":false,"isSuperAgent":false,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":false,"isGoodPrice":false},
-  {"id":"306612788","flatType":"studio","rooms":null,"isApartments":false,"area":35.0,"floor":6,"floorsTotal":11,"price":50000,"deposit":30000,"clientFee":0,"jk":null,"street":"Кременчугская улица","house":"13к1","metro":"Площадь Александра Невского","metroMin":15,"metroTransport":"walk","metroColor":"069857","lat":59.922201,"lon":30.371456,"agency":"SERGEEW APARTAMENTS","isByHomeowner":false,"isSuperAgent":false,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":true,"isGoodPrice":false},
-  {"id":"333208528","flatType":"rooms","rooms":2,"isApartments":false,"area":45.9,"floor":8,"floorsTotal":9,"price":38500,"deposit":0,"clientFee":50,"jk":null,"street":"Купчинская улица","house":"4К1","metro":"Купчино","metroMin":25,"metroTransport":"walk","metroColor":"087DCD","lat":59.844628,"lon":30.381876,"agency":"Степан Краснов","isByHomeowner":false,"isSuperAgent":false,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":false,"isGoodPrice":true,"company":"Циан х ПИК-Аренда"}
+  {"id":"317754009","flatType":"studio","rooms":null,"isApartments":true,"area":29.0,"floor":14,"floorsTotal":23,"price":48000,"deposit":40000,"clientFee":0,"jk":null,"street":"проспект Просвещения","house":"83","metro":"Гражданский проспект","metroMin":10,"metroTransport":"walk","metroColor":"D70834","lat":60.036793,"lon":30.407317,"agency":"SVET hotel","isByHomeowner":false,"isSuperAgent":false,"addedDaysAgo":0,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":true,"isGoodPrice":false,"utilitiesIncluded":true,"utilitiesPrice":0,"metersExtra":false},
+  {"id":"334543276","flatType":"rooms","rooms":1,"isApartments":false,"area":30.7,"floor":3,"floorsTotal":5,"price":26000,"deposit":15000,"clientFee":100,"jk":null,"street":"улица Карпинского","house":"24","metro":"Академическая","metroMin":5,"metroTransport":"transport","metroColor":"D70834","lat":60.008968,"lon":30.423244,"agency":"Иван Тарасов","isByHomeowner":false,"isSuperAgent":true,"addedDaysAgo":0,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":false,"isGoodPrice":true,"utilitiesIncluded":false,"utilitiesPrice":3000,"metersExtra":true},
+  {"id":"229135673","flatType":"rooms","rooms":2,"isApartments":false,"area":45.0,"floor":5,"floorsTotal":5,"price":64000,"deposit":60000,"clientFee":0,"jk":null,"street":"3-я Советская улица","house":"10","metro":"Площадь Восстания","metroMin":8,"metroTransport":"walk","metroColor":"D70834","lat":59.933609,"lon":30.367369,"agency":"BRIDGE APARTS","isByHomeowner":false,"isSuperAgent":false,"addedDaysAgo":0,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":true,"isGoodPrice":false,"utilitiesIncluded":false,"utilitiesPrice":7000,"metersExtra":true},
+  {"id":"324112325","flatType":"studio","rooms":null,"isApartments":true,"area":22.4,"floor":10,"floorsTotal":12,"price":35000,"deposit":35000,"clientFee":0,"jk":"ЖК «Апарт-отель Kirovsky AVENIR»","street":"дорога На Турухтанные острова","house":"5к1","metro":"Автово","metroMin":10,"metroTransport":"walk","metroColor":"D70834","lat":59.870041,"lon":30.253552,"agency":"Магнит","isByHomeowner":false,"isSuperAgent":true,"addedDaysAgo":0,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":true,"isGoodPrice":false,"utilitiesIncluded":false,"utilitiesPrice":9000,"metersExtra":true},
+  {"id":"333074730","flatType":"studio","rooms":null,"isApartments":true,"area":27.0,"floor":11,"floorsTotal":18,"price":58000,"deposit":29000,"clientFee":0,"jk":null,"street":"улица Салова","house":"61","metro":"Бухарестская","metroMin":3,"metroTransport":"walk","metroColor":"700579","lat":59.885503,"lon":30.367597,"agency":"Алексей «Вало-сервис»","isByHomeowner":false,"isSuperAgent":false,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":false,"isGoodPrice":false,"utilitiesIncluded":true,"utilitiesPrice":0,"metersExtra":false},
+  {"id":"306612788","flatType":"studio","rooms":null,"isApartments":false,"area":35.0,"floor":6,"floorsTotal":11,"price":50000,"deposit":30000,"clientFee":0,"jk":null,"street":"Кременчугская улица","house":"13к1","metro":"Площадь Александра Невского","metroMin":15,"metroTransport":"walk","metroColor":"069857","lat":59.922201,"lon":30.371456,"agency":"SERGEEW APARTAMENTS","isByHomeowner":false,"isSuperAgent":false,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":true,"isGoodPrice":false,"utilitiesIncluded":false,"utilitiesPrice":7000,"metersExtra":false},
+  {"id":"333208528","flatType":"rooms","rooms":2,"isApartments":false,"area":45.9,"floor":8,"floorsTotal":9,"price":38500,"deposit":0,"clientFee":50,"jk":null,"street":"Купчинская улица","house":"4К1","metro":"Купчино","metroMin":25,"metroTransport":"walk","metroColor":"087DCD","lat":59.844628,"lon":30.381876,"agency":"Степан Краснов","isByHomeowner":false,"isSuperAgent":false,"isRosreestrChecked":false,"isEarlyAccess":false,"hasAvatar":false,"isGoodPrice":true,"company":"Циан х ПИК-Аренда","utilitiesIncluded":false,"utilitiesPrice":8000,"metersExtra":true}
 ];
 
-  // ---------- Фото, подписи и условия проживания (photos/1…7) ----------
+  // ---------- Фото, подписи, промо и условия проживания (photos/1…7) ----------
+  // promo — промо-лейбл: заголовок объявления с Циана, если он полезен поискуну,
+  // иначе короткое УТП, найденное в характеристиках/описании объявления.
   // order — порядок в выдаче. Порядок фото: интерьер → планировка (если есть)
   // → кухня → санузлы → комнаты (балкон, коридор) → дом. caption — подпись на фото со 2-го:
   // только факты с Циана (характеристики, описание, планировка). kidsAllowed/petsAllowed — из
   // «Условий проживания» на странице объявления; промо-лейбл таким не придумываем.
   const CURATED = {
     "317754009": {
+      promo: "Уборка каждую неделю", // УТП из карточки
       order: 1,
       hasLayout: false,
       kidsAllowed: false,
@@ -45,6 +49,7 @@
       ],
     },
     "334543276": {
+      promo: "Балкон и евроремонт", // УТП из карточки
       order: 2,
       hasLayout: true,
       kidsAllowed: true,
@@ -74,6 +79,7 @@
       ],
     },
     "229135673": {
+      promo: "Тихий центр у пл. Восстания", // заголовок объявления
       order: 3,
       hasLayout: false,
       kidsAllowed: true,
@@ -110,6 +116,7 @@
       ],
     },
     "324112325": {
+      promo: "Ресепшн и охрана 24/7", // УТП из карточки
       order: 4,
       hasLayout: true,
       kidsAllowed: false,
@@ -137,6 +144,7 @@
       ],
     },
     "333074730": {
+      promo: "3 минуты до метро", // УТП из карточки
       order: 5,
       hasLayout: false,
       kidsAllowed: true,
@@ -154,6 +162,7 @@
       ],
     },
     "306612788": {
+      promo: "Квартира в ЖК «Царская столица»", // заголовок объявления
       order: 6,
       hasLayout: false,
       kidsAllowed: true,
@@ -188,6 +197,7 @@
       ],
     },
     "333208528": {
+      promo: "Без депозита, рядом ТЦ", // заголовок объявления
       order: 7,
       hasLayout: false,
       kidsAllowed: true,
@@ -309,7 +319,7 @@
 
   // Роль продавца для строки контактов: агентство / собственник / агент
   function sellerRole(raw) {
-    if (raw.agency && !isPersonName(raw.agency)) return "Агентство недвижимости";
+    if (raw.agency && !isPersonName(raw.agency)) return "Агентство";
     return raw.isByHomeowner ? "Собственник" : "Агент";
   }
 
@@ -322,6 +332,7 @@
       address: [raw.street, raw.house].filter(Boolean).join(", "),
       avatar: buildAvatar(raw),
       sellerRole: sellerRole(raw),
+      promoLabel: CURATED[raw.id].promo || null,
       labels: buildLabels(raw),
       // Поля, на которых пока держатся старые офисные фильтры (цена за м², класс) —
       // уберём, когда переделаем фильтры под квартиры

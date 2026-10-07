@@ -16,11 +16,21 @@
     return [flatTypeLabel(item), formatAreaRu(item.area), `${item.floor}/${item.floorsTotal} этаж`].join(" · ");
   }
 
-  // Условия сделки: комиссия (clientFee — % от месячной цены) и залог
+  // ЖКУ: включены в цену / сумма сверху. Если счётчики оплачиваются отдельно —
+  // «от N ₽» (короче, чем «+ счётчики», и строка влезает в одну линию)
+  function utilitiesText(item) {
+    if (item.utilitiesIncluded) return "ЖКУ включены";
+    if (item.utilitiesPrice) return `ЖКУ ${item.metersExtra ? "от " : ""}${formatPrice(item.utilitiesPrice)}`;
+    return null;
+  }
+
+  // Условия сделки: комиссия (clientFee — % от месячной цены), залог и ЖКУ
   function termsLine(item) {
     const parts = [item.clientFee ? `Комиссия ${item.clientFee}%` : "Без комиссии"];
     if (item.deposit) parts.push(`Залог ${formatPrice(item.deposit)}`);
     else if (item.deposit === 0) parts.push("Без залога");
+    const utilities = utilitiesText(item);
+    if (utilities) parts.push(utilities);
     return parts.join(" · ");
   }
 
