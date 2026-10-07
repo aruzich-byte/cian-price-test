@@ -1,7 +1,8 @@
 /* ---------- Сниппет квартиры (долгосрочная аренда) ---------- */
 .card {
   background: var(--bg-surface);
-  padding: 16px 16px 20px;
+  /* Между объявлениями 44px: 28 снизу + 16 сверху у следующей */
+  padding: 16px 16px 28px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -344,6 +345,11 @@
   font-weight: 600;
   flex-shrink: 0;
   overflow: hidden;
+}
+
+/* С картинкой — без тёмной подложки: иначе она просвечивает по сглаженному краю круга */
+.card__avatar--image {
+  background: none;
 }
 
 .card__avatar img {

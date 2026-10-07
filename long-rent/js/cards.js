@@ -289,7 +289,11 @@
       </div>
       <div class="card__footer">
         <div class="card__seller">
-          <div class="card__avatar">${item.avatar ? `<img src="${encodeURI(item.avatar)}" alt="" loading="lazy" />` : sellerInitials(seller)}</div>
+          ${
+            item.avatar
+              ? `<div class="card__avatar card__avatar--image"><img src="${encodeURI(item.avatar)}" alt="" loading="lazy" /></div>`
+              : `<div class="card__avatar">${sellerInitials(seller)}</div>`
+          }
           ${sellerHtml(item)}
         </div>
         <button class="card__btn card__btn--call" type="button" aria-label="Позвонить">${ICONS.phone}</button>
