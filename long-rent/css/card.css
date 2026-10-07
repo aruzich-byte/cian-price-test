@@ -270,12 +270,12 @@
   color: var(--text-primary);
 }
 
-/* Body2: 14/17, 500, −0.4 — условия, адрес, метро */
+/* Body2: 14/17, −0.4 — условия, адрес, метро (начертание Regular 400) */
 .card__terms {
   margin-top: 2px;
   font-size: 14px;
   line-height: 17px;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: -0.4px;
   color: var(--text-primary);
 }
@@ -283,7 +283,7 @@
 .card__address {
   font-size: 14px;
   line-height: 17px;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: -0.4px;
   color: var(--text-secondary);
 }
@@ -301,7 +301,7 @@
   gap: 6px;
   font-size: 14px;
   line-height: 17px;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: -0.4px;
   color: var(--text-secondary);
 }
@@ -368,9 +368,12 @@
   text-overflow: ellipsis;
 }
 
+/* Caption 12/15, 0, начертание Regular 400 — подзаголовок контактов (роль / «Суперагент») */
 .card__seller-role {
-  font-size: 14px;
-  line-height: 18px;
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -381,8 +384,10 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 14px;
-  line-height: 18px;
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
   color: var(--positive-text);
 }
 
