@@ -68,8 +68,8 @@
   height: 32px;
   border-radius: var(--radius-pill);
   background: var(--overlay-dark);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
 }
 
 /* Подпись-фактоид на фото (со 2-го) — слева сверху, в стиле кнопок справа */
@@ -82,8 +82,8 @@
   padding: 0 12px;
   border-radius: var(--radius-pill);
   background: var(--overlay-dark);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
   color: var(--color-white);
   font-size: 14px;
   line-height: 32px;
@@ -125,6 +125,8 @@
   height: 20px;
   border-radius: 6px;
   background: var(--overlay-dark);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
   color: var(--color-white);
   display: flex;
   align-items: center;
@@ -234,6 +236,11 @@
 }
 
 /* ---------- Текст ---------- */
+/* От лейблов до цены — 8px (общий gap карточки 12px минус 4) */
+.card__labels + .card__info {
+  margin-top: -4px;
+}
+
 .card__info {
   display: flex;
   flex-direction: column;
@@ -263,16 +270,21 @@
   color: var(--text-primary);
 }
 
+/* Body2: 14/17, 500, −0.4 — условия, адрес, метро */
 .card__terms {
   margin-top: 2px;
-  font-size: 15px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 17px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
   color: var(--text-primary);
 }
 
 .card__address {
-  font-size: 15px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 17px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
   color: var(--text-secondary);
 }
 
@@ -287,8 +299,10 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 15px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 17px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
   color: var(--text-secondary);
 }
 
@@ -307,7 +321,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
 }
 
 .card__seller {
@@ -330,6 +343,15 @@
   font-size: 14px;
   font-weight: 600;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.card__avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
 }
 
 .card__seller-text {
@@ -341,6 +363,15 @@
   line-height: 20px;
   font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card__seller-role {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

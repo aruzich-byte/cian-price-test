@@ -28,9 +28,19 @@
     return [item.jk, item.address].filter(Boolean).join(", ");
   }
 
-  function sellerName(item) {
-    if (item.agency) return item.agency;
-    return item.isByHomeowner ? "Собственник" : "Агент";
+  // Строка контактов: есть имя — оно заголовок, роль подзаголовком; имени нет —
+  // заголовком роль, без подзаголовка. У суперагента подзаголовок — «Суперагент».
+  function sellerHtml(item) {
+    const title = item.agency || item.sellerRole;
+    let subtitle = "";
+    if (item.isSuperAgent) subtitle = `<div class="card__seller-level">${ICONS.superAgent}Суперагент</div>`;
+    else if (item.agency) subtitle = `<div class="card__seller-role">${item.sellerRole}</div>`;
+    return `
+      <div class="card__seller-text">
+        <div class="card__seller-name">${title}</div>
+        ${subtitle}
+      </div>
+    `;
   }
 
   function sellerInitials(name) {
@@ -264,7 +274,7 @@
   function createCardEl(item, mixed, showDelta = mixed) {
     const card = document.createElement("article");
     card.className = "card" + (mixed ? " card--mixed" : "");
-    const seller = sellerName(item);
+    const seller = item.agency || item.sellerRole;
 
     card.innerHTML = `
       ${galleryHtml(item)}
@@ -279,11 +289,8 @@
       </div>
       <div class="card__footer">
         <div class="card__seller">
-          <div class="card__avatar">${sellerInitials(seller)}</div>
-          <div class="card__seller-text">
-            <div class="card__seller-name">${seller}</div>
-            ${item.isSuperAgent ? `<div class="card__seller-level">${ICONS.superAgent}Суперагент</div>` : ""}
-          </div>
+          <div class="card__avatar">${item.avatar ? `<img src="${encodeURI(item.avatar)}" alt="" loading="lazy" />` : sellerInitials(seller)}</div>
+          ${sellerHtml(item)}
         </div>
         <button class="card__btn card__btn--call" type="button" aria-label="Позвонить">${ICONS.phone}</button>
         <button class="card__btn card__btn--message" type="button">Написать</button>

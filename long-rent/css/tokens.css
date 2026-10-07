@@ -41,8 +41,10 @@
   --label-text: #152242;
 
   --color-white: #ffffff;
-  /* Полупрозрачная подложка кнопок поверх фото */
-  --overlay-dark: rgba(13, 22, 46, 0.5);
+  /* Подложка плашек поверх фото в галерее: Fill #000000 40% + Background blur 50 из Figma
+     (Figma-блюр 50 ≈ CSS blur(25px) — у Figma радиус вдвое больше CSS) */
+  --overlay-dark: rgba(0, 0, 0, 0.4);
+  --overlay-blur: blur(25px);
   /* Цвет корпуса телефона-мокапа (не связан с текстовыми токенами, хоть и совпадает с --text-primary) */
   --device-chrome: #0d162e;
 
