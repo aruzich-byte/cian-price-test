@@ -349,7 +349,18 @@
 
 /* С картинкой — без тёмной подложки: иначе она просвечивает по сглаженному краю круга */
 .card__avatar--image {
+  position: relative;
   background: none;
+}
+
+/* Лёгкий чёрный оверлей 3% поверх картинки — чтобы светлые логотипы не сливались с фоном */
+.card__avatar--image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.03);
+  pointer-events: none;
 }
 
 .card__avatar img {
