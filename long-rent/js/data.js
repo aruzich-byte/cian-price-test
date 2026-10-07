@@ -1369,7 +1369,11 @@
 
   function medianPriceByRooms(rawOffers) {
     const groups = {};
-    rawOffers.forEach((raw) => (groups[roomsKey(raw)] ||= []).push(raw.price));
+    rawOffers.forEach((raw) => {
+      const key = roomsKey(raw);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(raw.price);
+    });
     const medians = {};
     Object.entries(groups).forEach(([key, prices]) => {
       prices.sort((x, y) => x - y);

@@ -12,7 +12,12 @@
   const MAP_CENTER = [59.9386, 30.3141];
 
   function initYandexMap() {
-    if (typeof ymaps === "undefined") return;
+    // Скрипт карты подключён с async — может догрузиться уже после старта приложения
+    if (typeof ymaps === "undefined") {
+      const script = document.getElementById("ymaps-script");
+      if (script) script.addEventListener("load", initYandexMap, { once: true });
+      return;
+    }
     ymaps.ready(() => {
       yandexMap = new ymaps.Map(
         "yandex-map",
