@@ -430,7 +430,7 @@
 
 .filters-modal__footer {
   flex-shrink: 0;
-  padding: 12px 16px 20px;
+  padding: 12px 16px calc(20px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--border-divider);
   display: flex;
   flex-direction: column;
