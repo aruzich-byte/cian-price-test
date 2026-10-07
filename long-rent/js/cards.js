@@ -140,11 +140,12 @@
         ${
           item.photos.length
             ? `<div class="card__gallery-track" data-role="track">${item.photos
-                .map((src, i) => {
+                .map((photo, i) => {
                   const isLayout = item.hasLayout && i === 1;
-                  return `<img src="${encodeURI(src)}" alt="${isLayout ? "Планировка" : ""}"${isLayout ? ' class="is-layout"' : ""}${i > 0 ? ' loading="lazy"' : ""} />`;
+                  return `<img src="${encodeURI(photo.src)}" alt="${photo.caption || ""}"${isLayout ? ' class="is-layout"' : ""}${i > 0 ? ' loading="lazy"' : ""} />`;
                 })
-                .join("")}</div>`
+                .join("")}</div>
+              <span class="card__gallery-caption" data-role="caption"></span>`
             : ""
         }
         <div class="card__gallery-actions">
@@ -173,28 +174,36 @@
     if (!track) return;
     const gallery = card.querySelector(".card__gallery");
     const dots = card.querySelectorAll(".card__gallery-dot");
-    let frame = 0;
+    const caption = card.querySelector('[data-role="caption"]');
 
+    // Подпись фото (со 2-го): текст берём у ближайшего фото, а прозрачность —
+    // от того, насколько фото «доехало»: на середине свайпа подпись гаснет,
+    // у нового фото проявляется уже с его текстом. Тоже идёт со скоростью пальца.
+    function updateCaption(position) {
+      const index = Math.max(0, Math.min(Math.round(position), item.photos.length - 1));
+      const text = item.photos[index].caption;
+      if (caption.textContent !== (text || "")) caption.textContent = text || "";
+      const distance = Math.abs(position - index);
+      caption.style.opacity = text ? String(Math.max(0, 1 - distance * 2.5)) : "0";
+    }
+
+    // Пересчитываем прямо в scroll-событии (оно и так приходит раз в кадр),
+    // без лишнего requestAnimationFrame — иначе высота отстаёт от пальца на кадр.
+    // Высоту округляем вниз до целых px (не выше ленты — без полоски фона), чтобы текст под галереей не дрожал на субпикселях.
     function update() {
-      frame = 0;
       const width = track.clientWidth;
       if (!width) return;
       const position = track.scrollLeft / width;
       const progress = Math.min(Math.max(position, 0), 1);
       const ratio = GALLERY_RATIO_START + (GALLERY_RATIO_EXPANDED - GALLERY_RATIO_START) * progress;
-      gallery.style.aspectRatio = String(1 / ratio);
+      gallery.style.height = `${Math.floor(width * ratio)}px`;
 
       const active = activeDotIndex(Math.round(position), item.photos.length);
       dots.forEach((d, i) => d.classList.toggle("is-active", i === active));
+      updateCaption(position);
     }
 
-    track.addEventListener(
-      "scroll",
-      () => {
-        if (!frame) frame = requestAnimationFrame(update);
-      },
-      { passive: true }
-    );
+    track.addEventListener("scroll", update, { passive: true });
 
     setupMouseDrag(track);
   }

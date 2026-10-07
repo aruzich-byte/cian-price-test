@@ -117,6 +117,8 @@
 .list-scroll {
   flex: 1;
   overflow-y: auto;
+  /* Галерея в карточке растёт при свайпе — не даём браузеру подкручивать список под неё */
+  overflow-anchor: none;
   -webkit-overflow-scrolling: touch;
   padding: 8px 0 calc(32px + env(safe-area-inset-bottom));
   display: flex;

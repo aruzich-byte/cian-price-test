@@ -16,11 +16,19 @@
   overflow: hidden;
 }
 
+/* Лента всегда 4:3 и стоит по центру галереи — меняется только видимое окно
+   (.card__gallery), а сама лента размер не меняет. Иначе на каждом кадре свайпа
+   браузер пересчитывал scroll-snap под новый размер и галерея дёргалась/отскакивала. */
 .card__gallery-track {
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: 50%;
+  aspect-ratio: 4 / 3;
+  transform: translateY(-50%);
   display: flex;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -62,6 +70,33 @@
   background: var(--overlay-dark);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+/* Подпись-фактоид на фото (со 2-го) — слева сверху, в стиле кнопок справа */
+.card__gallery-caption {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  max-width: calc(100% - 100px);
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  background: var(--overlay-dark);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--color-white);
+  font-size: 14px;
+  line-height: 32px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card__gallery-caption:empty {
+  display: none;
 }
 
 .card__gallery-btn {
@@ -219,10 +254,12 @@
   color: var(--warning-text);
 }
 
+/* Heading5: 14/17, 600, −0.4 */
 .card__params {
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 17px;
   font-weight: 600;
+  letter-spacing: -0.4px;
   color: var(--text-primary);
 }
 
