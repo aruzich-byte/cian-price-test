@@ -1,0 +1,299 @@
+(function () {
+  const { ICONS, formatPrice, priceMetric, computeResults, pinSheetRef } = window.App;
+
+  // ---------- Тексты сниппета квартиры ----------
+  function formatAreaRu(n) {
+    return `${String(n).replace(".", ",")} м²`;
+  }
+
+  function flatTypeLabel(item) {
+    if (item.flatType === "studio") return item.isApartments ? "Апарт-студия" : "Студия";
+    if (item.flatType === "openPlan") return "Своб. планировка";
+    return `${item.rooms}-комн. ${item.isApartments ? "апарт." : "кв."}`;
+  }
+
+  function paramsLine(item) {
+    return [flatTypeLabel(item), formatAreaRu(item.area), `${item.floor}/${item.floorsTotal} этаж`].join(" · ");
+  }
+
+  // Условия сделки: комиссия (clientFee — % от месячной цены) и залог
+  function termsLine(item) {
+    const parts = [item.clientFee ? `Комиссия ${item.clientFee}%` : "Без комиссии"];
+    if (item.deposit) parts.push(`Залог ${formatPrice(item.deposit)}`);
+    else if (item.deposit === 0) parts.push("Без залога");
+    return parts.join(" · ");
+  }
+
+  function addressLine(item) {
+    return [item.jk, item.address].filter(Boolean).join(", ");
+  }
+
+  function sellerName(item) {
+    if (item.agency) return item.agency;
+    return item.isByHomeowner ? "Собственник" : "Агент";
+  }
+
+  function sellerInitials(name) {
+    return name
+      .replace(/[«»"]/g, "")
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }
+
+  function transportHtml(item) {
+    if (!item.metro) return "";
+    const color = item.metroColor ? `#${item.metroColor}` : "var(--text-secondary)";
+    const timeIcon = item.metroTransport === "transport" ? ICONS.bus : ICONS.walk;
+    return `
+      <div class="card__transport">
+        <span class="card__transport-item"><span class="card__metro-icon" style="color:${color}">${ICONS.pin}</span>${item.metro}</span>
+        <span class="card__transport-item">${timeIcon}${item.metroMin} мин.</span>
+      </div>
+    `;
+  }
+
+  // Лейблы под фото: промо (с иконкой, капсула) + составной блок из сегментов.
+  // Скругления сегментов (крайние 99px, внутренние 2px) задаются в CSS через :first/:last-child.
+  function labelsHtml(item) {
+    if (!item.promoLabel && item.labels.length === 0) return "";
+    const promo = item.promoLabel
+      ? `<span class="card__promo-label">${ICONS.crown}<span class="card__promo-label-text">${item.promoLabel}</span></span>`
+      : "";
+    const group = item.labels.length
+      ? `<span class="card__label-group">${item.labels.map((l) => `<span class="card__label">${l}</span>`).join("")}</span>`
+      : "";
+    return `<div class="card__labels">${promo}${group}</div>`;
+  }
+
+  function priceRowHtml(item) {
+    return `<div class="card__price">${formatPrice(item.price)}/мес.</div>`;
+  }
+
+  function priceDeltaInfo(item) {
+    const { mode, min, max } = computeResults();
+    const v = priceMetric(item, mode);
+    const isAbove = max != null && v > max;
+    const bound = isAbove ? max : min;
+    const pct = bound ? Math.round((Math.abs(v - bound) / bound) * 100) : 0;
+    return { isAbove, pct: Math.max(pct, 1) };
+  }
+
+  function mixedDeltaHtml(item) {
+    const { isAbove, pct } = priceDeltaInfo(item);
+    return `<div class="card__delta">${isAbove ? "Дороже" : "Дешевле"} на ${pct}% чем вы искали</div>`;
+  }
+
+  function createCarouselCardEl(item) {
+    const card = document.createElement("article");
+    card.className = "mix-carousel__card";
+    card.innerHTML = `
+      <div class="mix-carousel__photo">
+      </div>
+      <div class="mix-carousel__body">
+        <div class="mix-carousel__price">${formatPrice(item.price)}/мес.</div>
+        <div class="mix-carousel__type">${flatTypeLabel(item)} · ${formatAreaRu(item.area)}</div>
+        <div class="mix-carousel__meta">${item.metro || ""}</div>
+      </div>
+    `;
+    card.addEventListener("click", () => {
+      if (pinSheetRef.current) pinSheetRef.current.open(item);
+    });
+    return card;
+  }
+
+  function createMixCarouselEl(extras) {
+    const wrap = document.createElement("div");
+    wrap.className = "mix-carousel";
+    wrap.innerHTML = `
+      <div class="mix-carousel__header">
+        <div class="mix-carousel__title">Доступно по схожей цене</div>
+      </div>
+      <div class="mix-carousel__track" data-role="track"></div>
+    `;
+    const track = wrap.querySelector('[data-role="track"]');
+    extras.forEach((item) => track.appendChild(createCarouselCardEl(item)));
+    return wrap;
+  }
+
+  // ---------- Галерея ----------
+  // Фото листаются нативным горизонтальным скроллом со snap; без фото — серая плашка.
+  // Иконка планировки слева внизу — только если в объявлении есть планировка
+  // (она всегда вторым фото). Точек максимум 5, активная «едет» по центру, как на Циане.
+  const MAX_DOTS = 5;
+
+  function activeDotIndex(photoIndex, total) {
+    const dots = Math.min(total, MAX_DOTS);
+    if (total <= MAX_DOTS || photoIndex < 2) return photoIndex;
+    if (photoIndex >= total - 2) return dots - (total - photoIndex);
+    return 2;
+  }
+
+  function galleryHtml(item) {
+    const total = Math.max(item.photos.length, 1);
+    const dots = Math.min(total, MAX_DOTS);
+    return `
+      <div class="card__gallery">
+        ${
+          item.photos.length
+            ? `<div class="card__gallery-track" data-role="track">${item.photos
+                .map((src, i) => {
+                  const isLayout = item.hasLayout && i === 1;
+                  return `<img src="${encodeURI(src)}" alt="${isLayout ? "Планировка" : ""}"${isLayout ? ' class="is-layout"' : ""}${i > 0 ? ' loading="lazy"' : ""} />`;
+                })
+                .join("")}</div>`
+            : ""
+        }
+        <div class="card__gallery-actions">
+          <button class="card__gallery-btn" type="button" aria-label="В избранное">${ICONS.heart}</button>
+          <button class="card__gallery-btn" type="button" aria-label="Ещё">${ICONS.more}</button>
+        </div>
+        ${item.hasLayout ? `<span class="card__gallery-badge" aria-label="Есть планировка">${ICONS.layout}</span>` : ""}
+        ${
+          dots > 1 || !item.photos.length
+            ? `<div class="card__gallery-dots">${Array.from({ length: item.photos.length ? dots : MAX_DOTS }, (_, i) => `<span class="card__gallery-dot${i === 0 ? " is-active" : ""}"></span>`).join("")}</div>`
+            : ""
+        }
+      </div>
+    `;
+  }
+
+  // Галерея стартует в 16:9 и по ходу свайпа к второму фото плавно вырастает до 4:3.
+  // Высота считается прямо из scrollLeft (доля пути между 1-м и 2-м фото), поэтому
+  // движение идёт ровно со скоростью пальца, а доводку делает нативный scroll-snap.
+  // Дальше 2-го фото галерея остаётся 4:3, при возврате к 1-му — так же сжимается.
+  const GALLERY_RATIO_START = 9 / 16;
+  const GALLERY_RATIO_EXPANDED = 3 / 4;
+
+  function setupGallery(card, item) {
+    const track = card.querySelector('[data-role="track"]');
+    if (!track) return;
+    const gallery = card.querySelector(".card__gallery");
+    const dots = card.querySelectorAll(".card__gallery-dot");
+    let frame = 0;
+
+    function update() {
+      frame = 0;
+      const width = track.clientWidth;
+      if (!width) return;
+      const position = track.scrollLeft / width;
+      const progress = Math.min(Math.max(position, 0), 1);
+      const ratio = GALLERY_RATIO_START + (GALLERY_RATIO_EXPANDED - GALLERY_RATIO_START) * progress;
+      gallery.style.aspectRatio = String(1 / ratio);
+
+      const active = activeDotIndex(Math.round(position), item.photos.length);
+      dots.forEach((d, i) => d.classList.toggle("is-active", i === active));
+    }
+
+    track.addEventListener(
+      "scroll",
+      () => {
+        if (!frame) frame = requestAnimationFrame(update);
+      },
+      { passive: true }
+    );
+
+    setupMouseDrag(track);
+  }
+
+  // ---------- Перетаскивание галереи мышью ----------
+  // Пальцем и трекпадом лента листается нативным скроллом, а мышью браузер
+  // overflow-контейнеры не тащит — эмулируем: ведём scrollLeft за курсором,
+  // на отпускании доводим до ближайшего фото, а при быстром броске — до следующего.
+  const FLICK_VELOCITY = 0.4; // px/мс
+
+  function setupMouseDrag(track) {
+    let drag = null;
+
+    track.addEventListener("pointerdown", (e) => {
+      if (e.pointerType !== "mouse" || e.button !== 0) return;
+      drag = { startX: e.clientX, startLeft: track.scrollLeft, lastX: e.clientX, lastT: e.timeStamp, velocity: 0, moved: false };
+      track.style.scrollSnapType = "none";
+      track.style.scrollBehavior = "auto";
+      track.setPointerCapture(e.pointerId);
+      track.classList.add("is-dragging");
+    });
+
+    track.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      const dt = e.timeStamp - drag.lastT;
+      if (dt > 0) drag.velocity = (e.clientX - drag.lastX) / dt;
+      drag.lastX = e.clientX;
+      drag.lastT = e.timeStamp;
+      if (Math.abs(e.clientX - drag.startX) > 3) drag.moved = true;
+      track.scrollLeft = drag.startLeft - (e.clientX - drag.startX);
+    });
+
+    function finish() {
+      if (!drag) return;
+      const width = track.clientWidth;
+      const position = track.scrollLeft / width;
+      let index = Math.round(position);
+      if (Math.abs(drag.velocity) > FLICK_VELOCITY) {
+        index = drag.velocity < 0 ? Math.ceil(position) : Math.floor(position);
+      }
+      index = Math.max(0, Math.min(index, track.children.length - 1));
+      drag = null;
+      track.classList.remove("is-dragging");
+      track.scrollTo({ left: index * width, behavior: "smooth" });
+      // Возвращаем нативный snap после доводки — иначе он оборвёт плавную анимацию
+      window.setTimeout(() => {
+        track.style.scrollSnapType = "";
+        track.style.scrollBehavior = "";
+      }, 450);
+    }
+
+    track.addEventListener("pointerup", finish);
+    track.addEventListener("pointercancel", finish);
+    // Картинки не должны уезжать как файлы при перетаскивании
+    track.addEventListener("dragstart", (e) => e.preventDefault());
+  }
+
+  function createCardEl(item, mixed, showDelta = mixed) {
+    const card = document.createElement("article");
+    card.className = "card" + (mixed ? " card--mixed" : "");
+    const seller = sellerName(item);
+
+    card.innerHTML = `
+      ${galleryHtml(item)}
+      ${labelsHtml(item)}
+      <div class="card__info">
+        ${priceRowHtml(item)}
+        ${showDelta ? mixedDeltaHtml(item) : ""}
+        <div class="card__params">${paramsLine(item)}</div>
+        <div class="card__terms">${termsLine(item)}</div>
+        <div class="card__address">${addressLine(item)}</div>
+        ${transportHtml(item)}
+      </div>
+      <div class="card__footer">
+        <div class="card__seller">
+          <div class="card__avatar">${sellerInitials(seller)}</div>
+          <div class="card__seller-text">
+            <div class="card__seller-name">${seller}</div>
+            ${item.isSuperAgent ? `<div class="card__seller-level">${ICONS.superAgent}Суперагент</div>` : ""}
+          </div>
+        </div>
+        <button class="card__btn card__btn--call" type="button" aria-label="Позвонить">${ICONS.phone}</button>
+        <button class="card__btn card__btn--message" type="button">Написать</button>
+      </div>
+    `;
+    setupGallery(card, item);
+    return card;
+  }
+
+  function renderEmptyState(container, message) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.innerHTML = `
+      <div class="empty-state__title">${message}</div>
+      <p class="empty-state__hint">Попробуйте расширить параметры поиска или сбросить фильтры.</p>
+    `;
+    container.appendChild(empty);
+  }
+
+  window.App = window.App || {};
+  Object.assign(window.App, { createCarouselCardEl, createMixCarouselEl, createCardEl, renderEmptyState });
+})();

@@ -1,0 +1,50 @@
+(function () {
+  const { renderResults, setupPriceSheet, setupAreaSheet, setupFiltersModal, setupSort, setupMapSheet, initYandexMap, setupPinSheet, pinSheetRef } = window.App;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const priceSheet = setupPriceSheet();
+    const areaSheet = setupAreaSheet();
+    const filtersModal = setupFiltersModal();
+    setupSort();
+    setupMapSheet();
+    initYandexMap();
+    pinSheetRef.current = setupPinSheet();
+
+    document.getElementById("qf-rent").addEventListener("click", () => filtersModal.open(false));
+    document.getElementById("qf-office").addEventListener("click", () => filtersModal.open(false));
+    document.getElementById("qf-city").addEventListener("click", () => filtersModal.open(false));
+    document.getElementById("qf-price").addEventListener("click", () => priceSheet.open());
+    document.getElementById("qf-area").addEventListener("click", () => areaSheet.open());
+    document.getElementById("filter-icon-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      filtersModal.open(false);
+    });
+    document.getElementById("search-bar-btn").addEventListener("click", () => filtersModal.open(false));
+
+    // Тройной тап по экрану телефона открывает панель «Настройка прототипа»
+    // (на мобильном она по умолчанию скрыта за пределами экрана — см.
+    // .prototype-panel в dev-switchers.css). На десктопе панель видна всегда
+    // как сайдбар, тап на класс is-open там не влияет.
+    const prototypePanel = document.getElementById("prototype-panel");
+    const prototypePanelClose = document.getElementById("prototype-panel-close");
+    const phoneScreen = document.querySelector(".phone-frame__screen");
+    if (prototypePanel && phoneScreen) {
+      const TRIPLE_TAP_WINDOW_MS = 600;
+      let tapTimestamps = [];
+      phoneScreen.addEventListener("click", () => {
+        const now = Date.now();
+        tapTimestamps = tapTimestamps.filter((t) => now - t < TRIPLE_TAP_WINDOW_MS);
+        tapTimestamps.push(now);
+        if (tapTimestamps.length >= 3) {
+          tapTimestamps = [];
+          prototypePanel.classList.add("is-open");
+        }
+      });
+    }
+    if (prototypePanelClose && prototypePanel) {
+      prototypePanelClose.addEventListener("click", () => prototypePanel.classList.remove("is-open"));
+    }
+
+    renderResults();
+  });
+})();
