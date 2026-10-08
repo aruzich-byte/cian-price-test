@@ -464,6 +464,31 @@
   color: var(--accent);
 }
 
+/* Текст «Позвонить» — только на экранах шире 390px, на узких кнопка остаётся иконкой */
+.card__btn-text {
+  display: none;
+}
+
+@container (min-width: 391px) {
+  .card__btn--call {
+    width: auto;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 17px;
+    font-weight: 600;
+    letter-spacing: -0.24px;
+  }
+
+  .card__btn--call svg {
+    display: none;
+  }
+
+  .card__btn-text {
+    display: inline;
+  }
+}
+
 .card__btn--message {
   padding: 8px 12px;
   background: var(--accent);

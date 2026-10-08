@@ -21,6 +21,8 @@
 
 .phone-frame__screen {
   position: relative;
+  /* Контейнер для @container-правил сниппета (кнопка «Позвонить» на широких экранах) */
+  container-type: inline-size;
   width: 100%;
   height: 100%;
   background: var(--bg-page);
