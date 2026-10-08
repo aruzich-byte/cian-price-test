@@ -345,7 +345,7 @@
           }
           ${sellerHtml(item)}
         </div>
-        <button class="card__btn card__btn--call" type="button" aria-label="Позвонить">${ICONS.phone}<span class="card__btn-text">Позвонить</span></button>
+        <button class="card__btn card__btn--call" type="button" aria-label="Позвонить">${ICONS.phone}</button>
         <button class="card__btn card__btn--message" type="button">Написать</button>
       </div>
     `;
