@@ -16,6 +16,7 @@ const ICONS = {
   bus: '<svg viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 3a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10a1 1 0 0 1-1 1v1h-2v-1H5v1H3v-1a1 1 0 0 1-1-1V3Zm2 0h8v5H4V3Zm.5 7.5a1 1 0 1 0 2 0 1 1 0 0 0-2 0Zm7 1a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" fill="currentColor"/></svg>',
   layout: '<svg viewBox="0 0 16 16" fill="none"><path d="M2 2h12v12H2V2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M2 8h5V5M9 14v-4h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
   crown: '<svg viewBox="0 0 16 16" fill="none"><path d="M1 4.5 4.5 8 8 2.5 11.5 8 15 4.5 13.5 12.5h-11L1 4.5Z" fill="currentColor"/><path d="M2.5 14h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  car: '<svg viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.6 3.2A1.5 1.5 0 0 1 5 2h6a1.5 1.5 0 0 1 1.4 1.2l.8 3.3A1.5 1.5 0 0 1 14 8v4a1 1 0 0 1-1 1v1h-2v-1H5v1H3v-1a1 1 0 0 1-1-1V8a1.5 1.5 0 0 1 .8-1.5l.8-3.3ZM4.9 6.5h6.2l-.6-2.5h-5l-.6 2.5Zm-.4 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm7 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="currentColor"/></svg>',
 };
 
 window.App = window.App || {};

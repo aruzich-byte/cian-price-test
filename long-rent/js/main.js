@@ -1,17 +1,19 @@
 (function () {
-  const { renderResults, setupPriceSheet, setupAreaSheet, setupFiltersModal, setupSort, setupMapSheet, initYandexMap, setupPinSheet, pinSheetRef } = window.App;
+  const { renderResults, setupPriceSheet, setupAreaSheet, setupDealSheet, setupPropertyTypeSheet, setupFiltersModal, setupSort, setupMapSheet, initYandexMap, setupPinSheet, pinSheetRef } = window.App;
 
   document.addEventListener("DOMContentLoaded", () => {
     const priceSheet = setupPriceSheet();
     const areaSheet = setupAreaSheet();
+    const dealSheet = setupDealSheet();
+    const propertyTypeSheet = setupPropertyTypeSheet();
     const filtersModal = setupFiltersModal();
     setupSort();
     setupMapSheet();
     initYandexMap();
     pinSheetRef.current = setupPinSheet();
 
-    document.getElementById("qf-rent").addEventListener("click", () => filtersModal.open(false));
-    document.getElementById("qf-office").addEventListener("click", () => filtersModal.open(false));
+    document.getElementById("qf-rent").addEventListener("click", () => dealSheet.open());
+    document.getElementById("qf-office").addEventListener("click", () => propertyTypeSheet.open());
     document.getElementById("qf-city").addEventListener("click", () => filtersModal.open(false));
     document.getElementById("qf-price").addEventListener("click", () => priceSheet.open());
     document.getElementById("qf-area").addEventListener("click", () => areaSheet.open());

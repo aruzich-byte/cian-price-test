@@ -1,5 +1,5 @@
 (function () {
-  const { LISTINGS, state, priceMetric, ui, formatInt, formatPriceShort } = window.App;
+  const { state, priceMetric, ui, formatInt, formatPriceShort, scopeListings } = window.App;
 
   // Если карточек по точной цене мало (< ui.mixThreshold), подмешиваем соседние
   // по цене варианты — расширяем диапазон на ±ui.mixExpandPercent% и добираем
@@ -7,15 +7,15 @@
   // из панели «Настройка прототипа» (см. state.js ui.mixThreshold/mixExpandPercent,
   // main.js — их wiring).
 
-  // Датасет содержит только объявления «Снять» + «Офис» — при любом другом сочетании
-  // сделки/типа недвижимости показываем пустую выдачу, как будто по остальным категориям данных нет.
-  function isCanonicalScope() {
-    return state.dealType === "rent" && state.propertyType === "commercial" && state.subtypes.size === 1 && state.subtypes.has("office");
+  // Категория выдачи — тип сделки (снять/купить) × тип недвижимости (квартира/дом).
+  // По остальным сочетаниям (комната, гараж, коммерческая, «построить дом») данных
+  // нет — scopeListings вернёт пустой список, и выдача будет пустой.
+  function currentScope() {
+    return scopeListings(state.dealType, state.propertyType);
   }
 
   function getBaseFiltered() {
-    if (!isCanonicalScope()) return [];
-    return LISTINGS.filter((item) => {
+    return currentScope().filter((item) => {
       if (state.areaMin != null && item.area < state.areaMin) return false;
       if (state.areaMax != null && item.area > state.areaMax) return false;
       if (state.floorMin != null && item.floor < state.floorMin) return false;
@@ -29,8 +29,7 @@
   // чтобы считать live-счётчик по черновому диапазону площади поверх остальных
   // применённых фильтров (см. price-widget.js updateLiveCount с той же идеей для цены).
   function getBaseFilteredExcludingArea() {
-    if (!isCanonicalScope()) return [];
-    return LISTINGS.filter((item) => {
+    return currentScope().filter((item) => {
       if (state.floorMin != null && item.floor < state.floorMin) return false;
       if (state.floorMax != null && item.floor > state.floorMax) return false;
       if (state.classes.size > 0 && !state.classes.has(item.officeClass)) return false;
@@ -180,5 +179,5 @@
   }
 
   window.App = window.App || {};
-  Object.assign(window.App, { isCanonicalScope, getBaseFiltered, getBaseFilteredExcludingArea, applyPriceRange, computeMixSuggestion, computeResults, sortItems, getActiveFilters });
+  Object.assign(window.App, { currentScope, getBaseFiltered, getBaseFilteredExcludingArea, applyPriceRange, computeMixSuggestion, computeResults, sortItems, getActiveFilters });
 })();

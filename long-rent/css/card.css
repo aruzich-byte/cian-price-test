@@ -203,8 +203,8 @@
 }
 
 .card__promo-label svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   color: var(--label-promo-icon);
 }
@@ -256,6 +256,16 @@
   color: var(--text-primary);
 }
 
+/* Цена за м² у продажи — серым рядом с ценой */
+.card__price-sqm {
+  margin-left: 8px;
+  font-size: 14px;
+  line-height: 17px;
+  font-weight: 400;
+  letter-spacing: -0.4px;
+  color: var(--text-secondary);
+}
+
 .card__delta {
   font-size: 13px;
   font-weight: 600;
@@ -273,7 +283,7 @@
 
 /* Body2: 14/17, −0.4 — условия, адрес, метро (начертание Regular 400) */
 .card__terms {
-  margin-top: 2px;
+  margin: 3px 0 2px;
   font-size: 14px;
   line-height: 17px;
   font-weight: 400;
@@ -318,10 +328,12 @@
 }
 
 /* ---------- Продавец и кнопки ---------- */
+/* От строки гео до контактов — 10px (общий gap карточки 12px минус 2) */
 .card__footer {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-top: -2px;
 }
 
 .card__seller {
@@ -332,10 +344,17 @@
   gap: 10px;
 }
 
+/* Эксперимент: аватарки скрыты классом hide-avatars на <body> (см. index.html) */
+.hide-avatars .card__avatar {
+  display: none;
+}
+
+/* Аватарка — квадрат 36×36 со скруглением 12 */
 .card__avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-avatar);
   background: var(--text-primary);
   color: var(--color-white);
   display: flex;
@@ -347,9 +366,8 @@
   overflow: hidden;
 }
 
-/* С картинкой — без тёмной подложки: иначе она просвечивает по сглаженному краю круга */
+/* С картинкой — без тёмной подложки: иначе она просвечивает по сглаженному краю */
 .card__avatar--image {
-  position: relative;
   background: none;
 }
 
@@ -358,7 +376,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 50%;
+  border-radius: inherit;
   background: rgba(0, 0, 0, 0.03);
   pointer-events: none;
 }
@@ -366,7 +384,7 @@
 .card__avatar img {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: inherit;
   object-fit: cover;
   display: block;
 }
@@ -375,14 +393,21 @@
   min-width: 0;
 }
 
+/* Heading5, как строка «комнаты · площадь · этаж»: 14/17, 600, −0.4 */
 .card__seller-name {
-  font-size: 15px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 17px;
   font-weight: 600;
+  letter-spacing: -0.4px;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Отступ от имени до роли / «Суперагент» */
+.card__seller-name + * {
+  margin-top: 2px;
 }
 
 /* Caption 12/15, 0, начертание Regular 400 — подзаголовок контактов (роль / «Суперагент») */

@@ -17,7 +17,8 @@
          тормозит или недоступен (бывает на телефоне), список всё равно показывается -->
     <script id="ymaps-script" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" async></script>
   </head>
-  <body>
+  <!-- Класс hide-avatars скрывает аватарки продавцов в сниппетах — уберите его, чтобы вернуть -->
+  <body class="hide-avatars">
     <div class="viewport-stage">
       <!-- Панель «Настройка прототипа» пока скрыта (атрибут hidden) — уберите его, чтобы вернуть -->
       <aside class="prototype-panel" id="prototype-panel" hidden>
@@ -54,7 +55,7 @@
                     <span class="search-bar__icon">
                       <svg viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.14648 0.646484C3.55663 0.646484 0.646484 3.55663 0.646484 7.14648C0.646484 10.7363 3.55663 13.6465 7.14648 13.6465C8.58059 13.6465 9.90622 13.1821 10.9812 12.3954L13.9394 15.3536L15.3536 13.9394L12.3954 10.9812C13.1821 9.90622 13.6465 8.58059 13.6465 7.14648C13.6465 3.55663 10.7363 0.646484 7.14648 0.646484ZM2.64648 7.14648C2.64648 4.6612 4.6612 2.64648 7.14648 2.64648C9.63177 2.64648 11.6465 4.6612 11.6465 7.14648C11.6465 9.63177 9.63177 11.6465 7.14648 11.6465C4.6612 11.6465 2.64648 9.63177 2.64648 7.14648Z" fill="currentColor"/></svg>
                     </span>
-                    <span class="search-bar__text">Снять офис, Санкт-Петербург</span>
+                    <span class="search-bar__text" id="search-bar-text">Снять квартиру, Санкт-Петербург</span>
                     <span class="search-bar__filter" id="filter-icon-btn" role="button" aria-label="Фильтры">
                       <svg viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M10 8C11.8638 8 13.4299 6.72523 13.874 5H16V3H13.874C13.4299 1.27477 11.8638 0 10 0C8.13616 0 6.57006 1.27477 6.12602 3H0V5H6.12602C6.57006 6.72523 8.13616 8 10 8ZM10 6C11.1046 6 12 5.10457 12 4C12 2.89543 11.1046 2 10 2C8.89543 2 8 2.89543 8 4C8 5.10457 8.89543 6 10 6Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M9.87398 11H16V13H9.87398C9.42994 14.7252 7.86384 16 6 16C4.13616 16 2.57006 14.7252 2.12602 13H0V11H2.12602C2.57006 9.27477 4.13616 8 6 8C7.86384 8 9.42994 9.27477 9.87398 11ZM8 12C8 13.1046 7.10457 14 6 14C4.89543 14 4 13.1046 4 12C4 10.8954 4.89543 10 6 10C7.10457 10 8 10.8954 8 12Z" fill="currentColor"/></svg>
                       <span class="search-bar__filter-dot"></span>
@@ -64,15 +65,15 @@
 
                 <div class="quickfilters">
                   <button class="qf-chip is-set" id="qf-rent" type="button">
-                    <span class="qf-chip__label">Снять</span>
+                    <span class="qf-chip__label" id="qf-deal-label">Снять</span>
                     <svg viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.707 6.35354L11.2928 4.93933L7.99992 8.23222L4.70703 4.93933L3.29282 6.35354L7.99992 11.0607L12.707 6.35354Z" fill="currentColor"/></svg>
                   </button>
                   <button class="qf-chip is-set" id="qf-office" type="button">
-                    <span class="qf-chip__label">Офис</span>
+                    <span class="qf-chip__label" id="qf-type-label">Квартира</span>
                     <svg viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.707 6.35354L11.2928 4.93933L7.99992 8.23222L4.70703 4.93933L3.29282 6.35354L7.99992 11.0607L12.707 6.35354Z" fill="currentColor"/></svg>
                   </button>
                   <button class="qf-chip is-set" id="qf-city" type="button">
-                    <span class="qf-chip__label">СПб</span>
+                    <span class="qf-chip__label" id="qf-city-label">СПб</span>
                     <svg viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.707 6.35354L11.2928 4.93933L7.99992 8.23222L4.70703 4.93933L3.29282 6.35354L7.99992 11.0607L12.707 6.35354Z" fill="currentColor"/></svg>
                   </button>
                   <button class="qf-chip" id="qf-price" type="button">
@@ -124,6 +125,54 @@
               </div>
               <button class="btn-primary" id="price-sheet-apply" type="button" style="width:100%">
                 Смотреть <span id="price-sheet-count">0</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom sheet: быстрый фильтр «Тип сделки» -->
+          <div class="overlay-backdrop" id="deal-sheet-backdrop"></div>
+          <div class="sheet" id="deal-sheet">
+            <button class="sheet__close" id="deal-sheet-close" type="button" aria-label="Закрыть">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M14.207 3.20703L9.41406 8L14.207 12.793L12.793 14.207L8 9.41406L3.20703 14.207L1.79297 12.793L6.58594 8L1.79297 3.20703L3.20703 1.79297L8 6.58594L12.793 1.79297L14.207 3.20703Z" fill="currentColor"/></svg>
+            </button>
+            <div class="sheet__header">
+              <span class="sheet__title">Тип сделки</span>
+            </div>
+            <div class="sheet__body">
+              <div class="chipset" id="deal-sheet-chips">
+                <button type="button" class="pick-chip" data-value="buy">Купить</button>
+                <button type="button" class="pick-chip" data-value="rent">Снять</button>
+                <button type="button" class="pick-chip" data-value="build">Построить дом</button>
+              </div>
+            </div>
+            <div class="sheet__footer">
+              <button class="btn-primary" id="deal-sheet-apply" type="button" style="width:100%">
+                Смотреть <span id="deal-sheet-count">0</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom sheet: быстрый фильтр «Тип недвижимости» -->
+          <div class="overlay-backdrop" id="ptype-sheet-backdrop"></div>
+          <div class="sheet" id="ptype-sheet">
+            <button class="sheet__close" id="ptype-sheet-close" type="button" aria-label="Закрыть">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M14.207 3.20703L9.41406 8L14.207 12.793L12.793 14.207L8 9.41406L3.20703 14.207L1.79297 12.793L6.58594 8L1.79297 3.20703L3.20703 1.79297L8 6.58594L12.793 1.79297L14.207 3.20703Z" fill="currentColor"/></svg>
+            </button>
+            <div class="sheet__header">
+              <span class="sheet__title">Тип недвижимости</span>
+            </div>
+            <div class="sheet__body">
+              <div class="chipset" id="ptype-sheet-chips">
+                <button type="button" class="pick-chip" data-value="flat">Квартира</button>
+                <button type="button" class="pick-chip" data-value="room">Комната</button>
+                <button type="button" class="pick-chip" data-value="house">Дом, участок, таунхаус</button>
+                <button type="button" class="pick-chip" data-value="garage">Гараж</button>
+                <button type="button" class="pick-chip" data-value="commercial">Коммерческая</button>
+              </div>
+            </div>
+            <div class="sheet__footer">
+              <button class="btn-primary" id="ptype-sheet-apply" type="button" style="width:100%">
+                Смотреть <span id="ptype-sheet-count">0</span>
               </button>
             </div>
           </div>
@@ -281,94 +330,6 @@
                 <div id="f-price-widget"></div>
               </div>
 
-              <div class="filter-section">
-                <div class="filter-section__title">Площадь</div>
-                <div class="segmented" id="f-area-mode-toggle">
-                  <button type="button" class="segmented__opt is-active" data-area-mode="people">Кол-во чел.</button>
-                  <button type="button" class="segmented__opt" data-area-mode="sqm">м²</button>
-                </div>
-
-                <div class="area-panel" data-area-panel="sqm" hidden>
-                  <div class="field-pair">
-                    <div class="field">
-                      <span class="field__label">от</span>
-                      <input type="number" min="0" id="f-area-min" autocomplete="off" />
-                    </div>
-                    <div class="field">
-                      <span class="field__label">до</span>
-                      <input type="number" min="0" id="f-area-max" autocomplete="off" />
-                    </div>
-                  </div>
-                </div>
-
-                <div class="area-panel" data-area-panel="people">
-                  <div class="area-panel__hint">Укажите сколько сотрудников и тип рассадки, а мы рассчитаем оптимальную площадь</div>
-                  <div class="field-pair">
-                    <div class="field">
-                      <span class="field__label">от</span>
-                      <input type="number" min="0" id="f-people-min" autocomplete="off" />
-                      <span class="field__suffix">чел.</span>
-                    </div>
-                    <div class="field">
-                      <span class="field__label">до</span>
-                      <input type="number" min="0" id="f-people-max" autocomplete="off" />
-                      <span class="field__suffix">чел.</span>
-                    </div>
-                  </div>
-                  <select class="field-select" id="f-seating-select">
-                    <option value="any">Любая</option>
-                    <option value="dense">Плотная рассадка</option>
-                    <option value="standard">Стандартная рассадка</option>
-                    <option value="comfort">Комфортная рассадка</option>
-                    <option value="cabinet">Кабинетная рассадка</option>
-                  </select>
-                  <div class="area-panel__optimal">
-                    <svg viewBox="0 0 16 16" fill="none"><path d="M1 15V9H3V13H7V15H1Z" fill="currentColor"/><path d="M15 1V7H13V3H9V1H15Z" fill="currentColor"/><path d="M1 1H7V3H3V7H1V1Z" fill="currentColor"/><path d="M15 15H9V13H13V9H15V15Z" fill="currentColor"/></svg>
-                    <span>Оптимальная площадь: <b id="f-optimal-area">0</b> м²</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="filter-section">
-                <div class="filter-section__title">Условия сделки</div>
-                <div class="toggle-row">
-                  <span class="toggle-row__label">Только от собственника</span>
-                  <button class="switch" type="button" id="f-owner-switch"><span class="switch__knob"></span></button>
-                </div>
-              </div>
-
-              <div class="filter-section">
-                <div class="filter-section__title">Этаж</div>
-                <div class="field-pair">
-                  <div class="field">
-                    <span class="field__label">от</span>
-                    <input type="number" min="0" id="f-floor-min" autocomplete="off" />
-                  </div>
-                  <div class="field">
-                    <span class="field__label">до</span>
-                    <input type="number" min="0" id="f-floor-max" autocomplete="off" />
-                  </div>
-                </div>
-                <div class="chipset">
-                  <button type="button" class="pick-chip">Цоколь</button>
-                  <button type="button" class="pick-chip">Подвал</button>
-                </div>
-                <div style="font-size:13px; color:var(--text-muted); margin-top:14px;">Сколько этажей в здании</div>
-                <div class="field-pair">
-                  <div class="field"><span class="field__label">от</span><input type="number" /></div>
-                  <div class="field"><span class="field__label">до</span><input type="number" /></div>
-                </div>
-              </div>
-
-              <div class="filter-section">
-                <div class="filter-section__title">Класс</div>
-                <div class="chipset">
-                  <button type="button" class="pick-chip f-class-chip" data-class="A">A</button>
-                  <button type="button" class="pick-chip f-class-chip" data-class="B">B</button>
-                  <button type="button" class="pick-chip f-class-chip" data-class="C">C</button>
-                </div>
-              </div>
-
             </div>
 
             <div class="filters-modal__footer">
@@ -410,6 +371,7 @@
     <script src="js/price-widget.js"></script>
     <script src="js/price-sheet.js"></script>
     <script src="js/area-sheet.js"></script>
+    <script src="js/category-sheets.js"></script>
     <script src="js/filters-modal.js"></script>
     <script src="js/sort.js"></script>
     <script src="js/pin-sheet.js"></script>

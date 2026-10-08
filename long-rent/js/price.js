@@ -1,9 +1,21 @@
 (function () {
   const { LISTINGS } = window.App;
 
+  // perSqm: у продажи — цена за м², у аренды — годовая ставка за м² (см. buildListings)
   function priceMetric(item, mode) {
-    return mode === "perSqm" ? item.pricePerSqmYear : item.price;
+    return mode === "perSqm" ? item.pricePerSqm : item.price;
   }
+
+  // ---------- Категория выдачи (снять/купить × квартира/дом) ----------
+  // Шкала цены у каждой категории своя: аренда квартиры за 30 тыс и дом за 45 млн
+  // на одной оси не уживаются. PRICE_BOUNDS / PRICE_BOUNDS_RAW — общие объекты,
+  // которые читают виджеты цены, поэтому при смене категории мутируем их на месте.
+  function scopeListings(dealType, propertyType) {
+    const deal = dealType === "buy" ? "sale" : dealType;
+    return LISTINGS.filter((item) => item.dealType === deal && item.propertyType === propertyType);
+  }
+
+  let PRICE_SCOPE = [];
 
   // Обе границы шкалы берём по перцентилям, а не по абсолютным min/max (как у Airbnb):
   // у аренды офиса распределение цены сильно правостороннее, и пара-тройка совсем
@@ -28,15 +40,30 @@
     };
   };
 
-  const PRICE_BOUNDS_RAW = {
-    total: priceBoundsFromData(LISTINGS.map((l) => l.price)),
-    perSqm: priceBoundsFromData(LISTINGS.map((l) => l.pricePerSqmYear)),
-  };
+  const PRICE_BOUNDS_RAW = { total: { min: 0, max: 0 }, perSqm: { min: 0, max: 0 } };
+  const PRICE_BOUNDS = { total: { min: 0, max: 0 }, perSqm: { min: 0, max: 0 } };
 
-  const PRICE_BOUNDS = {
-    total: { min: Math.floor(PRICE_BOUNDS_RAW.total.min / 5000) * 5000, max: Math.ceil(PRICE_BOUNDS_RAW.total.max / 5000) * 5000 },
-    perSqm: { min: Math.floor(PRICE_BOUNDS_RAW.perSqm.min / 50) * 50, max: Math.ceil(PRICE_BOUNDS_RAW.perSqm.max / 50) * 50 },
-  };
+  // Шаг округления границ — от порядка цены (тысячи для аренды, сотни тысяч для продажи)
+  function roundStep(v) {
+    return Math.pow(10, Math.max(1, Math.floor(Math.log10(Math.max(v, 1))) - 1));
+  }
+
+  function setPriceScope(dealType, propertyType) {
+    PRICE_SCOPE = scopeListings(dealType, propertyType);
+    const source = PRICE_SCOPE.length ? PRICE_SCOPE : LISTINGS;
+    ["total", "perSqm"].forEach((mode) => {
+      const raw = priceBoundsFromData(source.map((l) => priceMetric(l, mode)));
+      Object.assign(PRICE_BOUNDS_RAW[mode], raw);
+      const step = roundStep(raw.max);
+      Object.assign(PRICE_BOUNDS[mode], { min: Math.floor(raw.min / step) * step, max: Math.ceil(raw.max / step) * step });
+    });
+  }
+
+  // Объявления текущей категории — по ним строится неадаптивная гистограмма цены
+  const getPriceScope = () => PRICE_SCOPE;
+
+  // По умолчанию прототип открывается на «Снять квартиру» (см. state.js)
+  setPriceScope("rent", "flat");
 
   // Цены на офисы — сильно правосторонне распределены (разброс в тысячи раз между
   // самым дешёвым и самым дорогим лотом), поэтому шкала гистограммы и слайдера — логарифмическая:
@@ -47,5 +74,5 @@
   const priceLogFloor = (mode) => Math.max(PRICE_BOUNDS_RAW[mode].min, 1);
 
   window.App = window.App || {};
-  Object.assign(window.App, { priceMetric, PRICE_BOUNDS_RAW, PRICE_BOUNDS, priceLogFloor });
+  Object.assign(window.App, { priceMetric, PRICE_BOUNDS_RAW, PRICE_BOUNDS, priceLogFloor, scopeListings, setPriceScope, getPriceScope });
 })();

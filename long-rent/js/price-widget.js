@@ -1,5 +1,5 @@
 (function () {
-  const { LISTINGS, clamp, formatInt, pluralize, PRICE_BOUNDS, priceLogFloor, priceMetric, smoothAreaPath, getBaseFiltered, applyPriceRange, ui } = window.App;
+  const { getPriceScope, clamp, formatInt, pluralize, PRICE_BOUNDS, priceLogFloor, priceMetric, smoothAreaPath, getBaseFiltered, applyPriceRange, ui } = window.App;
 
 const PRICE_STEP_TOTAL = 5000;
 const PRICE_STEP_SQM = 500;
@@ -83,7 +83,10 @@ function buildPriceWidget(container, opts) {
     // молча оставалась «старой», хотя плейсхолдеры (см. ниже) уже обновлялись.
     // Пересчёт дешёвый (один проход по <=LISTINGS.length объектам), так что
     // кэшируем только статическую ветку — по всем LISTINGS, которая не меняется.
-    if (!ui.histogramAdaptive && histogramCache[mode]) return histogramCache[mode];
+    // Кэш статической ветки сбрасывается при смене категории (снять/купить ×
+    // квартира/дом) — у каждой своя шкала и свои объявления, см. setPriceScope.
+    const scope = getPriceScope();
+    if (!ui.histogramAdaptive && histogramCache[mode] && histogramCache[mode].scope === scope) return histogramCache[mode];
     const bounds = PRICE_BOUNDS[mode];
     const floor = priceLogFloor(mode);
     const logMin = Math.log10(floor);
@@ -99,7 +102,7 @@ function buildPriceWidget(container, opts) {
     // уже не учитывает саму цену, поэтому не зацикливается на черновом диапазоне
     // этого же виджета. Ось бакетов (floor/bounds.max) остаётся глобальной —
     // подстраивается только заполненность гистограммы, а не сама шкала.
-    const source = ui.histogramAdaptive ? getAdaptiveBase() : LISTINGS;
+    const source = ui.histogramAdaptive ? getAdaptiveBase() : scope;
     // Выбросы за пределами [floor; bounds.max] просто не считаем — раньше они
     // clamp'ились в крайний бар и раздували его (например, бар «до 11 тыс» показывал
     // 32 объявления, хотя реально в этом ценовом диапазоне их всего 2, а остальные 30 —
@@ -112,7 +115,10 @@ function buildPriceWidget(container, opts) {
       idx = clamp(idx, 0, HISTOGRAM_BUCKETS - 1);
       buckets[idx].count++;
     });
-    if (!ui.histogramAdaptive) histogramCache[mode] = buckets;
+    if (!ui.histogramAdaptive) {
+      buckets.scope = scope;
+      histogramCache[mode] = buckets;
+    }
     return buckets;
   }
 

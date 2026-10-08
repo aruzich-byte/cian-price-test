@@ -79,6 +79,20 @@
       return placemark;
     });
     clusterer.add(placemarks);
+    fitToCategory(items);
+  }
+
+  // При первом показе и при смене категории подгоняем карту под пины — дома
+  // в области иначе оказываются далеко за краем карты с центром на Дворцовой.
+  let fittedScope = null;
+  function fitToCategory(items) {
+    const scope = `${state.dealType}/${state.propertyType}`;
+    if (scope === fittedScope || items.length === 0) return;
+    fittedScope = scope;
+    const bounds = clusterer.getBounds();
+    if (bounds) yandexMap.setBounds(bounds, { checkZoomRange: true, zoomMargin: [140, 40, 360, 40] }).then(() => {
+      if (yandexMap.getZoom() > 13) yandexMap.setZoom(13);
+    });
   }
 
   window.App = window.App || {};

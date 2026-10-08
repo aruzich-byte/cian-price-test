@@ -5,9 +5,9 @@
 // обычными <script> тегами в порядке зависимостей (см. index.html).
 (function () {
   const state = {
-    dealType: "rent", // 'buy' | 'rent' | 'build'
-    propertyType: "commercial", // 'flat' | 'room' | 'house' | 'garage' | 'commercial'
-    subtypes: new Set(["office"]),
+    dealType: "rent", // 'buy' | 'rent' | 'build' — данные есть для buy/rent
+    propertyType: "flat", // 'flat' | 'room' | 'house' | 'garage' | 'commercial' — данные есть для flat/house
+    subtypes: new Set(),
     priceMode: "total", // 'total' | 'perSqm'
     price: {
       total: { min: null, max: null },

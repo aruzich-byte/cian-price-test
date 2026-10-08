@@ -1,12 +1,11 @@
 (function () {
   const {
-    LISTINGS,
+    scopeListings,
+    setPriceScope,
     state,
     ui,
-    formatInt,
     pluralize,
     computeMixSuggestion,
-    getSeatingType,
     buildPriceWidget,
     createOverlayController,
     wireSingleSelectChips,
@@ -23,11 +22,6 @@ function setupFiltersModal() {
   let priceWidget;
   let variant = "histogram";
 
-  const areaMinEl = document.getElementById("f-area-min");
-  const areaMaxEl = document.getElementById("f-area-max");
-  const floorMinEl = document.getElementById("f-floor-min");
-  const floorMaxEl = document.getElementById("f-floor-max");
-  const classChips = Array.from(document.querySelectorAll(".f-class-chip"));
   const footerCountEl = document.getElementById("f-footer-count");
   const expandSnackEl = document.getElementById("f-expand-snack");
   const expandSnackTextEl = document.getElementById("f-expand-snack-text");
@@ -50,126 +44,34 @@ function setupFiltersModal() {
     priceWidget.setRange(pendingExpand.mode, pendingExpand.min, pendingExpand.max);
   });
 
-  const areaModeToggle = document.getElementById("f-area-mode-toggle");
-  const areaModeButtons = Array.from(areaModeToggle.querySelectorAll("[data-area-mode]"));
-  const areaPanels = Array.from(document.querySelectorAll("[data-area-panel]"));
-  const peopleMinEl = document.getElementById("f-people-min");
-  const peopleMaxEl = document.getElementById("f-people-max");
-  const seatingSelectEl = document.getElementById("f-seating-select");
-  const optimalAreaEl = document.getElementById("f-optimal-area");
-
-  // Флаг предотвращает обратный пересчёт при программной записи значения в
-  // «противоположные» поля (кол-во чел. <-> м²) — синхронизация идёт в одну
-  // сторону за раз, от того поля, которое реально редактирует пользователь.
-  let areaSyncing = false;
-
-  function currentSeatingType() {
-    return getSeatingType(seatingSelectEl.value);
-  }
-
-  function setAreaMode(mode) {
-    areaModeButtons.forEach((btn) => btn.classList.toggle("is-active", btn.dataset.areaMode === mode));
-    areaPanels.forEach((panel) => {
-      panel.hidden = panel.dataset.areaPanel !== mode;
-    });
-  }
-
-  function updateOptimalArea() {
-    const pMin = peopleMinEl.value ? Number(peopleMinEl.value) : null;
-    const pMax = peopleMaxEl.value ? Number(peopleMaxEl.value) : null;
-    if (pMin == null && pMax == null) {
-      optimalAreaEl.textContent = "0";
-      return;
-    }
-    const type = currentSeatingType();
-    const count = pMax ?? pMin;
-    const perPerson = (type.perPersonMin + type.perPersonMax) / 2;
-    optimalAreaEl.textContent = formatInt(Math.round(count * perPerson));
-  }
-
-  // Кол-во чел. -> м²: диапазон расширяется на весь разброс площади на человека
-  // у выбранного типа рассадки (напр. «Плотная 6» -> от 4×чел. до 6×чел., а не чел.×6).
-  function syncAreaFromPeople() {
-    if (areaSyncing) return;
-    areaSyncing = true;
-    const type = currentSeatingType();
-    const pMin = peopleMinEl.value ? Number(peopleMinEl.value) : null;
-    const pMax = peopleMaxEl.value ? Number(peopleMaxEl.value) : null;
-    areaMinEl.value = pMin != null ? Math.round(pMin * type.perPersonMin) : "";
-    areaMaxEl.value = pMax != null ? Math.round(pMax * type.perPersonMax) : "";
-    areaSyncing = false;
-  }
-
-  // м² -> Кол-во чел.: обратный пересчёт тем же диапазоном разброса.
-  function syncPeopleFromArea() {
-    if (areaSyncing) return;
-    areaSyncing = true;
-    const type = currentSeatingType();
-    const aMin = areaMinEl.value ? Number(areaMinEl.value) : null;
-    const aMax = areaMaxEl.value ? Number(areaMaxEl.value) : null;
-    peopleMinEl.value = aMin != null ? Math.ceil(aMin / type.perPersonMax) : "";
-    peopleMaxEl.value = aMax != null ? Math.floor(aMax / type.perPersonMin) : "";
-    areaSyncing = false;
-  }
-
-  areaModeButtons.forEach((btn) => {
-    btn.addEventListener("click", () => setAreaMode(btn.dataset.areaMode));
-  });
-
-  peopleMinEl.addEventListener("input", () => {
-    syncAreaFromPeople();
-    updateOptimalArea();
-    computeDraftCount();
-  });
-  peopleMaxEl.addEventListener("input", () => {
-    syncAreaFromPeople();
-    updateOptimalArea();
-    computeDraftCount();
-  });
-  seatingSelectEl.addEventListener("change", () => {
-    syncAreaFromPeople();
-    updateOptimalArea();
-    computeDraftCount();
-  });
-
   const dealChips = Array.from(document.querySelectorAll(".f-deal-chip"));
   const propertyTypeChips = Array.from(document.querySelectorAll(".f-ptype-chip"));
   const subtypeChips = Array.from(document.querySelectorAll(".f-subtype-chip"));
   const commercialBlock = document.getElementById("f-commercial-block");
 
-  function draftIsCanonicalScope() {
-    const deal = activeChip(dealChips)?.dataset.deal;
-    const ptype = activeChip(propertyTypeChips)?.dataset.ptype;
-    const subtypes = activeChips(subtypeChips).map((c) => c.dataset.subtype);
-    return deal === "rent" && ptype === "commercial" && subtypes.length === 1 && subtypes[0] === "office";
+  // Категория, выбранная в чипсах модалки (ещё не применённая)
+  function draftDeal() {
+    return activeChip(dealChips)?.dataset.deal ?? null;
+  }
+
+  function draftPropertyType() {
+    return activeChip(propertyTypeChips)?.dataset.ptype ?? null;
   }
 
   // Черновая выборка без учёта цены — на неё накладывается диапазон цены
   // отдельно через computeMixSuggestion, чтобы посчитать заодно и «подмешивание»
   // (сколько объектов добавит расширение диапазона) для снека «Расширить».
+  // Площадь в модалке больше не редактируется — учитываем ту, что выбрана
+  // в быстром фильтре «Площадь» (state.areaMin/areaMax).
   function computeDraftBase() {
-    if (!draftIsCanonicalScope()) return [];
-    return LISTINGS.filter((item) => {
-      const areaMin = areaMinEl.value ? Number(areaMinEl.value) : null;
-      const areaMax = areaMaxEl.value ? Number(areaMaxEl.value) : null;
-      const floorMin = floorMinEl.value ? Number(floorMinEl.value) : null;
-      const floorMax = floorMaxEl.value ? Number(floorMaxEl.value) : null;
-      if (areaMin != null && item.area < areaMin) return false;
-      if (areaMax != null && item.area > areaMax) return false;
-      if (floorMin != null && item.floor < floorMin) return false;
-      if (floorMax != null && item.floor > floorMax) return false;
-      const activeClasses = activeChips(classChips).map((c) => c.dataset.class);
-      if (activeClasses.length > 0 && !activeClasses.includes(item.officeClass)) return false;
+    return scopeListings(draftDeal(), draftPropertyType()).filter((item) => {
+      if (state.areaMin != null && item.area < state.areaMin) return false;
+      if (state.areaMax != null && item.area > state.areaMax) return false;
       return true;
     });
   }
 
   function computeDraftCount() {
-    if (!draftIsCanonicalScope()) {
-      footerCountEl.textContent = "0 объявлений";
-      hideExpandSnack();
-      return;
-    }
     const base = computeDraftBase();
     const mode = draft.priceMode;
     const { min, max } = draft.price[mode];
@@ -183,67 +85,41 @@ function setupFiltersModal() {
     }
   }
 
-  // Площадь/этаж/класс редактируются здесь как черновик (см. computeDraftBase) —
-  // при включённой ui.histogramAdaptive гистограмма и плейсхолдеры цены должны
-  // реагировать на них сразу, а не только после «Применить», поэтому наряду с
-  // computeDraftCount() дёргаем и сам виджет цены.
-  function refreshAdaptiveHistogram() {
-    if (ui.histogramAdaptive && priceWidget) priceWidget.updateUI();
+  // Смена категории (снять/купить × квартира/дом) меняет шкалу цены — у аренды
+  // и продажи разные порядки цен. Черновой диапазон цены сбрасываем, виджет
+  // пересобираем под новую шкалу. Если модалку закроют без «Показать», шкала
+  // вернётся к применённой категории (см. close).
+  function onCategoryChange() {
+    setPriceScope(draftDeal(), draftPropertyType());
+    draft.price = { total: { min: null, max: null }, perSqm: { min: null, max: null } };
+    mountPriceWidget();
+    computeDraftCount();
   }
 
-  areaMinEl.addEventListener("input", () => {
-    syncPeopleFromArea();
-    updateOptimalArea();
-    computeDraftCount();
-    refreshAdaptiveHistogram();
-  });
-  areaMaxEl.addEventListener("input", () => {
-    syncPeopleFromArea();
-    updateOptimalArea();
-    computeDraftCount();
-    refreshAdaptiveHistogram();
-  });
-  floorMinEl.addEventListener("input", () => {
-    computeDraftCount();
-    refreshAdaptiveHistogram();
-  });
-  floorMaxEl.addEventListener("input", () => {
-    computeDraftCount();
-    refreshAdaptiveHistogram();
-  });
-  wireMultiToggleChips(classChips, () => {
-    computeDraftCount();
-    refreshAdaptiveHistogram();
-  });
-  wireSingleSelectChips(dealChips, computeDraftCount);
+  wireSingleSelectChips(dealChips, onCategoryChange);
   wireMultiToggleChips(subtypeChips, computeDraftCount);
   wireSingleSelectChips(propertyTypeChips, () => {
-    commercialBlock.style.display = activeChip(propertyTypeChips)?.dataset.ptype === "commercial" ? "" : "none";
-    computeDraftCount();
+    commercialBlock.style.display = draftPropertyType() === "commercial" ? "" : "none";
+    onCategoryChange();
   });
 
-  function open(scrollToPrice) {
-    draft = { priceMode: state.priceMode, price: { total: { ...state.price.total }, perSqm: { ...state.price.perSqm } } };
-    areaMinEl.value = state.areaMin ?? "";
-    areaMaxEl.value = state.areaMax ?? "";
-    floorMinEl.value = state.floorMin ?? "";
-    floorMaxEl.value = state.floorMax ?? "";
-    seatingSelectEl.value = "any";
-    setAreaMode("people");
-    syncPeopleFromArea();
-    updateOptimalArea();
-    classChips.forEach((chip) => chip.classList.toggle("is-active", state.classes.has(chip.dataset.class)));
-    dealChips.forEach((chip) => chip.classList.toggle("is-active", chip.dataset.deal === state.dealType));
-    propertyTypeChips.forEach((chip) => chip.classList.toggle("is-active", chip.dataset.ptype === state.propertyType));
-    subtypeChips.forEach((chip) => chip.classList.toggle("is-active", state.subtypes.has(chip.dataset.subtype)));
-    commercialBlock.style.display = state.propertyType === "commercial" ? "" : "none";
-
+  function mountPriceWidget() {
     priceWidget = buildPriceWidget(document.getElementById("f-price-widget"), {
       draft,
       onChange: computeDraftCount,
       priceVariant: variant,
       getAdaptiveBase: computeDraftBase,
     });
+  }
+
+  function open(scrollToPrice) {
+    draft = { priceMode: state.priceMode, price: { total: { ...state.price.total }, perSqm: { ...state.price.perSqm } } };
+    dealChips.forEach((chip) => chip.classList.toggle("is-active", chip.dataset.deal === state.dealType));
+    propertyTypeChips.forEach((chip) => chip.classList.toggle("is-active", chip.dataset.ptype === state.propertyType));
+    subtypeChips.forEach((chip) => chip.classList.toggle("is-active", state.subtypes.has(chip.dataset.subtype)));
+    commercialBlock.style.display = state.propertyType === "commercial" ? "" : "none";
+
+    mountPriceWidget();
     computeDraftCount();
 
     overlay.open();
@@ -259,17 +135,13 @@ function setupFiltersModal() {
   function close() {
     overlay.close();
     hideExpandSnack();
+    setPriceScope(state.dealType, state.propertyType);
   }
 
   function apply() {
     state.priceMode = draft.priceMode;
     state.price.total = { ...draft.price.total };
     state.price.perSqm = { ...draft.price.perSqm };
-    state.areaMin = areaMinEl.value ? Number(areaMinEl.value) : null;
-    state.areaMax = areaMaxEl.value ? Number(areaMaxEl.value) : null;
-    state.floorMin = floorMinEl.value ? Number(floorMinEl.value) : null;
-    state.floorMax = floorMaxEl.value ? Number(floorMaxEl.value) : null;
-    state.classes = new Set(activeChips(classChips).map((c) => c.dataset.class));
     state.dealType = activeChip(dealChips)?.dataset.deal ?? null;
     state.propertyType = activeChip(propertyTypeChips)?.dataset.ptype ?? null;
     state.subtypes = new Set(activeChips(subtypeChips).map((c) => c.dataset.subtype));
@@ -279,15 +151,6 @@ function setupFiltersModal() {
 
   function resetDraft() {
     priceWidget.reset();
-    areaMinEl.value = "";
-    areaMaxEl.value = "";
-    floorMinEl.value = "";
-    floorMaxEl.value = "";
-    seatingSelectEl.value = "any";
-    peopleMinEl.value = "";
-    peopleMaxEl.value = "";
-    updateOptimalArea();
-    classChips.forEach((chip) => chip.classList.remove("is-active"));
     computeDraftCount();
   }
 
