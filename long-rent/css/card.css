@@ -11,13 +11,13 @@
 /* ---------- Галерея ---------- */
 .card__gallery {
   position: relative;
-  aspect-ratio: 16 / 9; /* при свайпе к 2-му фото JS плавно доводит до 4:3 — см. setupGallery */
+  aspect-ratio: 16 / 9; /* при свайпе к 2-му фото JS плавно доводит до 4:3 или 1:1 — см. setupGallery */
   border-radius: var(--radius-card);
   background: var(--bg-page);
   overflow: hidden;
 }
 
-/* Лента всегда 4:3 и стоит по центру галереи — меняется только видимое окно
+/* Лента всегда в раскрытой пропорции (4:3, а с ?gallery=1x1 — 1:1) и стоит по центру галереи — меняется только видимое окно
    (.card__gallery), а сама лента размер не меняет. Иначе на каждом кадре свайпа
    браузер пересчитывал scroll-snap под новый размер и галерея дёргалась/отскакивала. */
 .card__gallery-track {
@@ -25,7 +25,7 @@
   left: 0;
   right: 0;
   top: 50%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 4 / 3; /* должно совпадать с GALLERY_RATIO_EXPANDED в cards.js */
   transform: translateY(-50%);
   display: flex;
   overflow-x: auto;
@@ -36,6 +36,10 @@
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.gallery-square .card__gallery-track {
+  aspect-ratio: 1 / 1;
 }
 
 .card__gallery-track.is-dragging {

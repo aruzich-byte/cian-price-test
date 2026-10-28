@@ -12,7 +12,7 @@
   }
 
   // Категорию можно сменить и внутри телефона (шторки, фильтры) — поэтому читаем state каждый раз
-  const current = () => ({ variant: session.variant, deal: state.dealType, type: state.propertyType });
+  const current = () => ({ variant: session.variant, gallery: session.gallery, deal: state.dealType, type: state.propertyType });
   const chips = panel.querySelectorAll("[data-proto-param] .proto-chip");
 
   function sync() {
@@ -31,6 +31,7 @@
       url.searchParams.set("deal", values.deal);
       url.searchParams.set("type", values.type);
       url.searchParams.set(param, chip.dataset.value);
+      if (url.searchParams.get("gallery") === "4x3") url.searchParams.delete("gallery"); // 4:3 — по умолчанию
       window.location.href = url.toString();
     });
   });
