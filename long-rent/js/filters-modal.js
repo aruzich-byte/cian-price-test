@@ -142,8 +142,12 @@ function setupFiltersModal() {
     state.priceMode = draft.priceMode;
     state.price.total = { ...draft.price.total };
     state.price.perSqm = { ...draft.price.perSqm };
+    const prevCategory = `${state.dealType}/${state.propertyType}`;
     state.dealType = activeChip(dealChips)?.dataset.deal ?? null;
     state.propertyType = activeChip(propertyTypeChips)?.dataset.ptype ?? null;
+    if (window.App.track && prevCategory !== `${state.dealType}/${state.propertyType}`) {
+      window.App.track("Сменил категорию", { value: "общие фильтры" });
+    }
     state.subtypes = new Set(activeChips(subtypeChips).map((c) => c.dataset.subtype));
     close();
     renderResults();

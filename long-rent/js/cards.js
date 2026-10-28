@@ -187,7 +187,7 @@
     return 2;
   }
 
-  function galleryHtml(item) {
+  function galleryHtml(item, { asis = false } = {}) {
     const total = Math.max(item.photos.length, 1);
     const dots = Math.min(total, MAX_DOTS);
     return `
@@ -201,14 +201,14 @@
                   return `<img src="${encodeURI(photo.src)}" alt="${photo.caption || ""}"${isLayout ? ' class="is-layout"' : ""}${i > 0 ? ' loading="lazy"' : ""} />`;
                 })
                 .join("")}</div>
-              <span class="card__gallery-caption" data-role="caption"></span>`
+              ${asis ? "" : '<span class="card__gallery-caption" data-role="caption"></span>'}`
             : ""
         }
         <div class="card__gallery-actions">
           <button class="card__gallery-btn" type="button" aria-label="В избранное">${ICONS.heart}</button>
           <button class="card__gallery-btn" type="button" aria-label="Ещё">${ICONS.more}</button>
         </div>
-        ${item.hasLayout ? `<span class="card__gallery-badge" aria-label="Есть планировка">${ICONS.layout}</span>` : ""}
+        ${item.hasLayout && !asis ? `<button class="card__gallery-badge" type="button" aria-label="Показать планировку">${ICONS.layout}</button>` : ""}
         ${
           dots > 1 || !item.photos.length
             ? `<div class="card__gallery-dots">${Array.from({ length: item.photos.length ? dots : MAX_DOTS }, (_, i) => `<span class="card__gallery-dot${i === 0 ? " is-active" : ""}"></span>`).join("")}</div>`
@@ -225,7 +225,7 @@
   const GALLERY_RATIO_START = 9 / 16;
   const GALLERY_RATIO_EXPANDED = 3 / 4;
 
-  function setupGallery(card, item) {
+  function setupGallery(card, item, { asis = false } = {}) {
     const track = card.querySelector('[data-role="track"]');
     if (!track) return;
     const gallery = card.querySelector(".card__gallery");
@@ -233,11 +233,21 @@
     const caption = card.querySelector('[data-role="caption"]');
     // Иконка планировки «приклеена» к первому фото — уезжает вместе с ним при листании
     const layoutBadge = card.querySelector(".card__gallery-badge");
+    // Тап по иконке — листаем галерею к первой планировке (плавно, со всеми эффектами свайпа)
+    if (layoutBadge) {
+      layoutBadge.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const images = Array.from(track.children);
+        const index = images.findIndex((img) => img.classList.contains("is-layout"));
+        if (index > 0) track.scrollTo({ left: index * track.clientWidth, behavior: "smooth" });
+      });
+    }
 
     // Подпись фото (со 2-го): текст берём у ближайшего фото, а прозрачность —
     // от того, насколько фото «доехало»: на середине свайпа подпись гаснет,
     // у нового фото проявляется уже с его текстом. Тоже идёт со скоростью пальца.
     function updateCaption(position) {
+      if (!caption) return;
       const index = Math.max(0, Math.min(Math.round(position), item.photos.length - 1));
       const text = item.photos[index].caption;
       if (caption.textContent !== (text || "")) caption.textContent = text || "";
@@ -252,9 +262,11 @@
       const width = track.clientWidth;
       if (!width) return;
       const position = track.scrollLeft / width;
-      const progress = Math.min(Math.max(position, 0), 1);
-      const ratio = GALLERY_RATIO_START + (GALLERY_RATIO_EXPANDED - GALLERY_RATIO_START) * progress;
-      gallery.style.height = `${Math.floor(width * ratio)}px`;
+      if (!asis) {
+        const progress = Math.min(Math.max(position, 0), 1);
+        const ratio = GALLERY_RATIO_START + (GALLERY_RATIO_EXPANDED - GALLERY_RATIO_START) * progress;
+        gallery.style.height = `${Math.floor(width * ratio)}px`;
+      }
 
       const active = activeDotIndex(Math.round(position), item.photos.length);
       dots.forEach((d, i) => d.classList.toggle("is-active", i === active));
@@ -263,6 +275,28 @@
     }
 
     track.addEventListener("scroll", update, { passive: true });
+
+    // Лог: кадр, на котором человек остановился (после 0,5 с без движения)
+    let loggedIndex = 0;
+    let settleTimer = 0;
+    track.addEventListener(
+      "scroll",
+      () => {
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(() => {
+          const index = Math.round(track.scrollLeft / track.clientWidth);
+          if (index === loggedIndex || !window.App.track) return;
+          loggedIndex = index;
+          const photo = item.photos[index] || {};
+          const isLayout = track.children[index] && track.children[index].classList.contains("is-layout");
+          window.App.track(isLayout ? "Фото: планировка" : "Фото", {
+            item,
+            value: `${index + 1}/${item.photos.length}${photo.caption ? ` · ${photo.caption}` : ""}`,
+          });
+        }, 500);
+      },
+      { passive: true }
+    );
 
     setupMouseDrag(track);
   }
@@ -304,6 +338,10 @@
         index = drag.velocity < 0 ? Math.ceil(position) : Math.floor(position);
       }
       index = Math.max(0, Math.min(index, track.children.length - 1));
+      if (drag.moved) {
+        track.dataset.justDragged = "1";
+        setTimeout(() => delete track.dataset.justDragged, 0);
+      }
       drag = null;
       track.classList.remove("is-dragging");
       track.scrollTo({ left: index * width, behavior: "smooth" });
@@ -321,8 +359,10 @@
   }
 
   function createCardEl(item, mixed, showDelta = mixed) {
+    if (window.App.session && window.App.session.variant === "asis") return createAsisCardEl(item);
     const card = document.createElement("article");
     card.className = "card" + (mixed ? " card--mixed" : "");
+    card.dataset.listingId = item.id;
     const seller = item.agency || item.sellerRole;
 
     card.innerHTML = `
@@ -350,7 +390,123 @@
       </div>
     `;
     setupGallery(card, item);
+    setupCardTracking(card, item);
     return card;
+  }
+
+
+  // ---------- Вариант «как сейчас» (?variant=asis) — текущий сниппет Циана для сравнения ----------
+  // Продавец сверху, галерея статичная 16:9 без подписей и иконки планировки, цветные лейблы,
+  // заголовок, цена, параметры, ЖК, адрес, транспорт и две большие кнопки. Условий сделки,
+  // ремонта, цены за м², инженерки и типа дома здесь нет — именно это и сравниваем с новым.
+  function asisRole(item) {
+    if (item.sellerRole === "Агентство") return "Агентство недвижимости";
+    return item.sellerRole;
+  }
+
+  function asisParamsLine(item) {
+    if (item.propertyType === "house") {
+      const parts = ["Дом", formatAreaRu(item.area)];
+      if (item.landArea) parts.push(`${String(item.landArea).replace(".", ",")} сот.`);
+      return parts.join(" · ");
+    }
+    return paramsLine(item);
+  }
+
+  function asisAddress(item) {
+    if (item.propertyType === "house") return `${item.locality}, Ленинградская область`;
+    return `${[item.street, item.house].filter(Boolean).join(", ")}, Санкт-Петербург`;
+  }
+
+  function asisTransportHtml(item) {
+    if (item.propertyType === "house" && item.highway) {
+      return `
+      <div class="card__transport">
+        <span class="card__transport-item">${ICONS.car}${item.highway}</span>
+        <span class="card__transport-item">${item.highwayKm} км от КАД</span>
+      </div>
+    `;
+    }
+    return transportHtml(item);
+  }
+
+  // Лейблы как сейчас: цветные капсулы (суперагент/собственник — зелёные, мебель — оранжевая)
+  function asisLabelsHtml(item) {
+    const chips = [];
+    if (item.isSuperAgent) chips.push(`<span class="asis__chip asis__chip--green">${ICONS.superAgent}Суперагент</span>`);
+    if (item.isByHomeowner) chips.push('<span class="asis__chip asis__chip--green">Собственник</span>');
+    if (item.hasFurniture) chips.push('<span class="asis__chip asis__chip--orange">С мебелью</span>');
+    item.labels.forEach((l) => chips.push(`<span class="asis__chip">${l}</span>`));
+    return chips.length ? `<div class="card__labels asis__labels">${chips.join("")}</div>` : "";
+  }
+
+  function createAsisCardEl(item) {
+    const card = document.createElement("article");
+    card.className = "card card--asis";
+    card.dataset.listingId = item.id;
+    const seller = item.agency || item.sellerRole;
+    const price = `${formatPrice(item.price)}${item.dealType === "rent" ? "/мес." : ""}`;
+
+    card.innerHTML = `
+      <div class="asis__seller">
+        ${
+          item.avatar
+            ? `<div class="asis__avatar"><img src="${encodeURI(item.avatar)}" alt="" loading="lazy" /></div>`
+            : `<div class="asis__avatar">${sellerInitials(seller)}</div>`
+        }
+        <div class="asis__seller-text">
+          <div class="asis__seller-name">${seller}${item.sellerRole === "Агентство" ? `<span class="asis__verified">${ICONS.check}</span>` : ""}</div>
+          ${item.agency ? `<div class="asis__seller-role">${asisRole(item)}</div>` : ""}
+        </div>
+      </div>
+      ${galleryHtml(item, { asis: true })}
+      ${asisLabelsHtml(item)}
+      <div class="card__info">
+        ${item.promoLabel ? `<div class="card__params asis__title">${item.promoLabel}</div>` : ""}
+        <div class="card__price">${price}</div>
+        <div class="card__params">${asisParamsLine(item)}</div>
+        ${item.jk ? `<div class="card__terms">${item.jk}</div>` : ""}
+        <div class="card__address">${asisAddress(item)}</div>
+        ${asisTransportHtml(item)}
+      </div>
+      <div class="asis__buttons">
+        <button class="card__btn card__btn--call asis__btn asis__btn--call" type="button">${ICONS.phone}Позвонить</button>
+        <button class="card__btn card__btn--message asis__btn asis__btn--message" type="button">${ICONS.message}Написать</button>
+      </div>
+    `;
+    setupGallery(card, item, { asis: true });
+    setupCardTracking(card, item);
+    return card;
+  }
+
+  // ---------- Логи UX-теста: открытие карточки, прокрутка лейблов, показ сниппета ----------
+  // Тап по сниппету (кроме кнопок и контролов галереи) = «открыл карточку». Карточки в
+  // прототипе нет — показываем заглушку, чтобы респондент вернулся к выдаче (см. card-stub).
+  const CARD_CONTROLS = ".card__btn, .card__gallery-btn, .card__gallery-badge, .card__labels";
+
+  function setupCardTracking(card, item) {
+    const { track, observeSnippet, openCardStub } = window.App;
+    if (observeSnippet) observeSnippet(card);
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(CARD_CONTROLS)) return;
+      const trackEl = card.querySelector('[data-role="track"]');
+      if (trackEl && trackEl.dataset.justDragged) return; // это был свайп мышью, а не тап
+      if (track) track("Открыл карточку", { item });
+      if (openCardStub) openCardStub(item);
+    });
+    const labels = card.querySelector(".card__labels");
+    if (labels && track) {
+      let logged = false;
+      labels.addEventListener(
+        "scroll",
+        () => {
+          if (logged) return;
+          logged = true;
+          track("Прокрутил лейблы", { item });
+        },
+        { passive: true }
+      );
+    }
   }
 
   function renderEmptyState(container, message) {

@@ -34,6 +34,7 @@
     function apply() {
       if (draft !== state[stateField]) {
         state[stateField] = draft;
+        if (window.App.track) window.App.track("Сменил категорию", { value: `шторка ${key === "deal" ? "«Тип сделки»" : "«Тип недвижимости»"}` });
         state.price.total = { min: null, max: null };
         state.price.perSqm = { min: null, max: null };
         setPriceScope(state.dealType, state.propertyType);

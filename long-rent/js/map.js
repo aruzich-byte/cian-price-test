@@ -74,6 +74,7 @@
         }
       );
       placemark.events.add("click", () => {
+        if (window.App.track) window.App.track("Пин на карте", { item });
         if (pinSheetRef.current) pinSheetRef.current.open(item);
       });
       return placemark;

@@ -1,7 +1,9 @@
 (function () {
-  const { renderResults, setupPriceSheet, setupAreaSheet, setupDealSheet, setupPropertyTypeSheet, setupFiltersModal, setupSort, setupMapSheet, initYandexMap, setupPinSheet, pinSheetRef } = window.App;
+  const { state, setPriceScope, renderResults, setupPriceSheet, setupAreaSheet, setupDealSheet, setupPropertyTypeSheet, setupFiltersModal, setupSort, setupMapSheet, initYandexMap, setupPinSheet, pinSheetRef } = window.App;
 
   document.addEventListener("DOMContentLoaded", () => {
+    // Категория могла прийти из ссылки (?deal=&type=) — шкала цены под неё
+    setPriceScope(state.dealType, state.propertyType);
     const priceSheet = setupPriceSheet();
     const areaSheet = setupAreaSheet();
     const dealSheet = setupDealSheet();
@@ -30,7 +32,7 @@
     const prototypePanel = document.getElementById("prototype-panel");
     const prototypePanelClose = document.getElementById("prototype-panel-close");
     const phoneScreen = document.querySelector(".phone-frame__screen");
-    if (prototypePanel && phoneScreen) {
+    if (prototypePanel && phoneScreen && !window.App.session.task) {
       const TRIPLE_TAP_WINDOW_MS = 600;
       let tapTimestamps = [];
       phoneScreen.addEventListener("click", () => {

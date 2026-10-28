@@ -128,3 +128,18 @@
   flex-direction: column;
   gap: 8px;
 }
+
+/* ---------- Заглушка карточки объявления (UX-тест) ---------- */
+.card-stub__text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+.card-stub__listing {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 17px;
+  color: var(--text-secondary);
+}

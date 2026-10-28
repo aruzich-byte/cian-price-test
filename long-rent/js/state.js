@@ -53,5 +53,20 @@
   };
 
   window.App = window.App || {};
-  Object.assign(window.App, { state, ui });
+  // ---------- Параметры ссылки (для UX-тестов) ----------
+  // ?deal=rent|buy & type=flat|house — с какой выдачи стартует прототип;
+  // ?task=… — номер задания, ?pid=… — id респондента от платформы тестирования
+  // (оба уходят в логи, см. tracking.js), ?variant=… — вариант дизайна сниппета.
+  const params = new URLSearchParams(window.location.search);
+  const DEALS = ["rent", "buy", "build"];
+  const TYPES = ["flat", "room", "house", "garage", "commercial"];
+  if (DEALS.includes(params.get("deal"))) state.dealType = params.get("deal");
+  if (TYPES.includes(params.get("type"))) state.propertyType = params.get("type");
+  const session = {
+    task: params.get("task") || "",
+    pid: params.get("pid") || "",
+    variant: params.get("variant") || "new",
+  };
+
+  Object.assign(window.App, { state, ui, session });
 })();
