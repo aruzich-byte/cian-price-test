@@ -31,7 +31,7 @@
       url.searchParams.set("deal", values.deal);
       url.searchParams.set("type", values.type);
       url.searchParams.set(param, chip.dataset.value);
-      if (url.searchParams.get("gallery") === "4x3") url.searchParams.delete("gallery"); // 4:3 — по умолчанию
+      if (url.searchParams.get("gallery") === "1x1") url.searchParams.delete("gallery"); // 1:1 — по умолчанию
       window.location.href = url.toString();
     });
   });

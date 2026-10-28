@@ -218,13 +218,13 @@
     `;
   }
 
-  // Галерея стартует в 16:9 и по ходу свайпа к второму фото плавно вырастает до 4:3
-  // (или до 1:1 — настройка «Галерея при свайпе» в панели прототипа, ?gallery=1x1).
+  // Галерея стартует в 16:9 и по ходу свайпа к второму фото плавно вырастает до 1:1
+  // (или до 4:3 — настройка «Галерея при свайпе» в панели прототипа, ?gallery=4x3).
   // Высота считается прямо из scrollLeft (доля пути между 1-м и 2-м фото), поэтому
   // движение идёт ровно со скоростью пальца, а доводку делает нативный scroll-snap.
   // Дальше 2-го фото галерея остаётся раскрытой, при возврате к 1-му — так же сжимается.
   const GALLERY_RATIO_START = 9 / 16;
-  const GALLERY_RATIO_EXPANDED = window.App.session && window.App.session.gallery === "1x1" ? 1 : 3 / 4;
+  const GALLERY_RATIO_EXPANDED = window.App.session && window.App.session.gallery === "4x3" ? 3 / 4 : 1;
 
   function setupGallery(card, item, { asis = false } = {}) {
     const track = card.querySelector('[data-role="track"]');
