@@ -124,3 +124,13 @@
   display: flex;
   flex-direction: column;
 }
+
+/* ---------- Без карты (класс no-map на <body>) ---------- */
+/* Список на весь экран: карту и хэндл шторки прячем. Убрать класс — карта вернётся. */
+body.no-map .map-bg {
+  display: none;
+}
+
+body.no-map .map-area {
+  background: var(--bg-surface);
+}

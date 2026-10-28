@@ -2,7 +2,7 @@
   const { clamp, maybeFlushOnScroll } = window.App;
 
 // ---------- Карта + draggable-шторка со списком ----------
-function setupMapSheet() {
+function setupMapSheet(mapEnabled = true) {
   const mapArea = document.getElementById("map-area");
   const sheetList = document.getElementById("sheet-list");
   const handle = document.getElementById("sheet-handle");
@@ -42,6 +42,14 @@ function setupMapSheet() {
       ["full", targetHeight("full")],
     ];
     return options.reduce((best, cur) => (Math.abs(cur[1] - px) < Math.abs(best[1] - px) ? cur : best))[0];
+  }
+
+  // Без карты шторка всегда развёрнута, жесты сворачивания не подключаем
+  if (!mapEnabled) {
+    resultsList.addEventListener("scroll", maybeFlushOnScroll, { passive: true });
+    window.addEventListener("resize", () => setState("full", false));
+    setState("full", false);
+    return;
   }
 
   let dragStartY = 0;

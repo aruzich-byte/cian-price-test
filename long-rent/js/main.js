@@ -10,8 +10,10 @@
     const propertyTypeSheet = setupPropertyTypeSheet();
     const filtersModal = setupFiltersModal();
     setupSort();
-    setupMapSheet();
-    initYandexMap();
+    // Без карты (класс no-map на <body>) — список сразу на весь экран, Яндекс.Карты не грузим
+    const mapEnabled = !document.body.classList.contains("no-map");
+    setupMapSheet(mapEnabled);
+    if (mapEnabled) initYandexMap();
     pinSheetRef.current = setupPinSheet();
 
     document.getElementById("qf-rent").addEventListener("click", () => dealSheet.open());
