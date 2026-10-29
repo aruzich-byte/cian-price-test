@@ -124,5 +124,5 @@
   );
   window.App.observeSnippet = (card) => observer.observe(card);
 
-  track("Старт сессии", { value: `${window.innerWidth}×${window.innerHeight} · галерея ${session.gallery === "1x1" ? "1:1" : "4:3"}` });
+  track("Старт сессии", { value: `${window.innerWidth}×${window.innerHeight} · галерея ${session.gallery === "1x1" ? "1:1" : "4:3"}${session.cards === "split" && session.variant !== "asis" ? " · плашки" : ""}` });
 })();

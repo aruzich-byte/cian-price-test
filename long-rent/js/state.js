@@ -68,9 +68,12 @@
     pid: params.get("pid") || "",
     variant: params.get("variant") || "new",
     gallery: params.get("gallery") === "4x3" ? "4x3" : "1x1",
+    cards: params.get("cards") === "split" ? "split" : "list", // split — карточки плашками на сером фоне
   };
   // Лента галереи в CSS должна совпадать с раскрытой пропорцией (см. .card__gallery-track)
   if (session.gallery === "4x3") document.documentElement.classList.add("gallery-4x3");
+  // Плашки — только для новых сниппетов, в «как сейчас» список остаётся сплошным
+  if (session.cards === "split" && session.variant !== "asis") document.documentElement.classList.add("cards-split");
 
   Object.assign(window.App, { state, ui, session });
 })();

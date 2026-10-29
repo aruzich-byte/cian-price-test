@@ -868,3 +868,23 @@
   background: var(--accent-secondary-bg);
   color: var(--accent);
 }
+
+/* ---------- Карточки отдельными плашками (?cards=split, только новые сниппеты) ---------- */
+/* Серый фон выдачи, белые карточки со скруглением и зазором 8px.
+   Без параметра — сплошной белый список с отступом 44px между объявлениями. */
+.cards-split .sheet-list,
+.cards-split .list-scroll,
+.cards-split .results-bar {
+  background: #F3F5F8;
+}
+
+.cards-split #results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cards-split .card {
+  border-radius: 24px;
+  padding: 16px 16px 20px;
+}
