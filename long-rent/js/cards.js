@@ -434,10 +434,12 @@
   // Лейблы как сейчас: цветные капсулы (суперагент/собственник — зелёные, мебель — оранжевая)
   function asisLabelsHtml(item) {
     const chips = [];
+    const GOOD_PRICE = "Хорошая цена";
+    if (item.labels.includes(GOOD_PRICE)) chips.push(`<span class="asis__chip">${GOOD_PRICE}</span>`);
     if (item.isSuperAgent) chips.push(`<span class="asis__chip asis__chip--green">${ICONS.superAgent}Суперагент</span>`);
     if (item.isByHomeowner) chips.push('<span class="asis__chip asis__chip--green">Собственник</span>');
     if (item.hasFurniture) chips.push('<span class="asis__chip asis__chip--orange">С мебелью</span>');
-    item.labels.forEach((l) => chips.push(`<span class="asis__chip">${l}</span>`));
+    item.labels.filter((l) => l !== GOOD_PRICE).forEach((l) => chips.push(`<span class="asis__chip">${l}</span>`));
     return chips.length ? `<div class="card__labels asis__labels">${chips.join("")}</div>` : "";
   }
 

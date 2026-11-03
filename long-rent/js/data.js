@@ -884,8 +884,9 @@
   function buildLabels(raw) {
     const labels = [];
     const curated = CURATED[raw.id];
-    if (raw.isEarlyAccess) labels.push("Ранний доступ");
+    // «Хорошая цена» — всегда первой: в новых сниппетах сразу после промо-лейбла, в «как сейчас» — первой капсулой
     if (raw.isGoodPrice) labels.push("Хорошая цена");
+    if (raw.isEarlyAccess) labels.push("Ранний доступ");
     if (curated && curated.kidsAllowed) labels.push("Можно с детьми");
     if (curated && curated.petsAllowed) labels.push("Можно с животными");
     if (raw.isRosreestrChecked) labels.push("Проверено в Росреестре");
