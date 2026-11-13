@@ -706,6 +706,38 @@
     });
   }
 
+  // Подсветка комнаты на планировке: если планировку открыли с фото комнаты (например, санузла),
+  // поверх плана — полупрозрачная фигура на месте этой комнаты (planRoomsNew2 в data.js)
+  function planRoomsSvg(item, photoIndex) {
+    const plan = item.planRoomsNew2;
+    const keys = plan && plan.photos[photoIndex + 1];
+    if (!keys) return "";
+    const rects = keys
+      .map((key) => {
+        const [x1, y1, x2, y2] = plan.rooms[key];
+        return `<rect x="${x1}" y="${y1}" width="${x2 - x1}" height="${y2 - y1}" />`;
+      })
+      .join("");
+    return `<svg class="n2__plan-rooms" viewBox="0 0 100 100" preserveAspectRatio="none">${rects}</svg>`;
+  }
+
+  // Планировка вписана целиком (как object-fit: contain) — подгоняем под неё блок,
+  // чтобы фигуры комнат в процентах легли ровно на картинку, а не на всю область галереи
+  function fitPlan(box) {
+    const stage = box.querySelector(".n2__plan-fit");
+    const img = stage.querySelector("img");
+    const place = () => {
+      const bw = box.clientWidth;
+      const bh = box.clientHeight;
+      const k = Math.min(bw / img.naturalWidth, bh / img.naturalHeight);
+      const w = img.naturalWidth * k;
+      const h = img.naturalHeight * k;
+      Object.assign(stage.style, { left: `${(bw - w) / 2}px`, top: `${(bh - h) / 2}px`, width: `${w}px`, height: `${h}px` });
+    };
+    if (img.complete && img.naturalWidth) place();
+    else img.addEventListener("load", place, { once: true });
+  }
+
   function setupNew2Gallery(card, item) {
     const gallery = card.querySelector(".n2__gallery");
     const overlay = card.querySelector('[data-role="overlay"]');
@@ -737,13 +769,19 @@
         liveMap.geoObjects.add(
           new ymaps.Placemark([item.lat, item.lon], {}, {
             iconLayout: "default#image",
-            iconImageHref: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(ICONS.mapPin)}`,
+            // Как отдельная картинка SVG без xmlns не рисуется — добавляем
+            iconImageHref: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(ICONS.mapPin.replace("<svg ", '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" '))}`,
             iconImageSize: [40, 40],
             iconImageOffset: [-20, -38],
           })
         );
       });
     }
+
+    const photoIndex = () => {
+      const trackEl = card.querySelector('[data-role="track"]');
+      return Math.round(trackEl.scrollLeft / trackEl.clientWidth);
+    };
 
     function show(next) {
       if (liveMap) {
@@ -757,7 +795,11 @@
       overlay.classList.toggle("is-interactive", Boolean(mode));
       overlay.hidden = !mode;
       if (mode === "layout") {
-        overlay.innerHTML = `<img class="n2__overlay-layout" src="${encodeURI(layout.src)}" alt="Планировка" />`;
+        // .n2__plan — на всю область, его зумим; внутри .n2__plan-fit ровно по картинке плана
+        overlay.innerHTML = `<div class="n2__plan"><div class="n2__plan-fit"><img class="n2__overlay-layout" src="${encodeURI(
+          layout.src
+        )}" alt="Планировка" />${planRoomsSvg(item, photoIndex())}</div></div>`;
+        fitPlan(overlay);
         setupPlanZoom(overlay, overlay.firstElementChild, {
           // Свайп без увеличения — закрываем планировку и листаем к соседнему фото
           onSwipe: (dir) => {

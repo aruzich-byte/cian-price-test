@@ -314,8 +314,8 @@
 
 /* Избранное и подпись на фото как в «Новом» (?photoui=dark): тёмные полупрозрачные капсулы */
 .n2-photo-dark .n2__caption {
-  top: 8px;
-  left: 8px;
+  top: 12px; /* те же 12px от края, что у миниатюр снизу */
+  left: 12px;
   height: 32px;
   padding: 0 12px;
   background: var(--overlay-dark);
@@ -328,8 +328,8 @@
 }
 
 .n2-photo-dark .n2__actions {
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   gap: 0;
   height: 32px;
   border-radius: var(--radius-pill);
@@ -354,4 +354,35 @@
 
 .n2-photo-dark .n2__round.is-active {
   color: #e8253b;
+}
+
+/* ---------- Подсветка комнаты на планировке ---------- */
+/* Блок ровно по картинке плана (размер ставит fitPlan в cards.js) — зумится целиком вместе с фигурами */
+.n2__plan {
+  position: absolute;
+  inset: 0;
+}
+
+.n2__plan-fit {
+  position: absolute;
+}
+
+.n2__plan .n2__overlay-layout {
+  width: 100%;
+  height: 100%;
+}
+
+.n2__plan-rooms {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.n2__plan-rooms rect {
+  fill: rgba(4, 104, 255, 0.25);
+  stroke: var(--accent);
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
 }
