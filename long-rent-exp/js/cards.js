@@ -548,7 +548,8 @@
 
   function new2RoleHtml(item) {
     if (item.isSuperAgent) return `<div class="n2__role n2__role--super">${ICONS.superAgent}Суперагент</div>`;
-    return `<div class="n2__role">${item.sellerRole}</div>`;
+    const ROLE_LABELS = { Агент: "Риелтор" };
+    return `<div class="n2__role">${ROLE_LABELS[item.sellerRole] || item.sellerRole}</div>`;
   }
 
   // ---------- Зум пальцами («Новый 2») ----------
