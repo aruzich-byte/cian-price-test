@@ -1,0 +1,82 @@
+// Классический скрипт (не ES-модуль) — специально, чтобы прототип открывался
+// и напрямую двойным кликом по index.html (file://), а не только
+// через локальный сервер: ES-модули блокируются CORS на file://.
+// Все файлы в js/ делят один глобальный неймспейс window.App и подключаются
+// обычными <script> тегами в порядке зависимостей (см. index.html).
+(function () {
+  const state = {
+    dealType: "rent", // 'buy' | 'rent' | 'build' — данные есть для buy/rent
+    propertyType: "flat", // 'flat' | 'room' | 'house' | 'garage' | 'commercial' — данные есть для flat/house
+    subtypes: new Set(),
+    priceMode: "total", // 'total' | 'perSqm'
+    price: {
+      total: { min: null, max: null },
+      perSqm: { min: null, max: null },
+    },
+    areaMin: null,
+    areaMax: null,
+    floorMin: null,
+    floorMax: null,
+    classes: new Set(),
+    sort: "default",
+  };
+
+  // ---------- Dev-переключатели вариантов прототипа (панель «Настройка прототипа») ----------
+  // MIX_MODE задаётся в HTML перед подключением модулей:
+  //   'inline'         — подмешанные варианты вливаются в общий список без разделителя
+  //   'separate'       — подмешанные варианты выносятся отдельным блоком после основного списка
+  //   'carousel'       — подмешанные варианты выносятся в горизонтальную карусель
+  //   'filter-warning' — в список/карту ничего не подмешивается; вместо этого в фильтре
+  //                      цены (полноэкранная модалка «Фильтры» и bottom sheet «Цена»)
+  //                      показывается снек «Расширить» с числом дополнительных объектов
+  //
+  // mixMode/histogramShape живут как поля объекта (не отдельные примитивы),
+  // чтобы чтение через App.ui.mixMode всегда видело актуальное значение —
+  // простое присваивание примитива в App при подключении через <script> скопировало
+  // бы значение один раз и не отражало бы последующие изменения.
+  const ui = {
+    mixMode: typeof MIX_MODE !== "undefined" ? MIX_MODE : "inline",
+    priceVariant: "histogram", // 'histogram' | 'presets'
+    histogramShape: "curve", // 'bars' | 'curve'
+    // Если true — гистограмма строится не по всем LISTINGS, а по объектам,
+    // которые проходят остальные применённые фильтры (площадь, этаж, класс) —
+    // см. getBaseFiltered()/getAdaptiveBase в price-widget.js. Плейсхолдеры
+    // цены при этом всегда показывают полный диапазон рынка.
+    histogramAdaptive: true,
+    // Порог подмешивания и ширина расширения диапазона цены — см.
+    // computeMixSuggestion в filtering.js. mixThreshold: если строгих
+    // результатов меньше этого числа — подмешиваем соседние по цене.
+    // mixExpandPercent: на сколько % расширяется диапазон цены при подмешивании
+    // (в него попадают ВСЕ объекты без ограничения по количеству).
+    mixThreshold: 6,
+    mixExpandPercent: 5,
+  };
+
+  window.App = window.App || {};
+  // ---------- Параметры ссылки (для UX-тестов) ----------
+  // ?deal=rent|buy & type=flat|house — с какой выдачи стартует прототип;
+  // ?task=… — номер задания, ?pid=… — id респондента от платформы тестирования
+  // (оба уходят в логи, см. tracking.js), ?variant=… — вариант дизайна сниппета,
+  // ?gallery=4x3 — до какой пропорции растёт галерея нового сниппета при свайпе (по умолчанию 1:1).
+  const params = new URLSearchParams(window.location.search);
+  const DEALS = ["rent", "buy", "build"];
+  const TYPES = ["flat", "room", "house", "garage", "commercial"];
+  if (DEALS.includes(params.get("deal"))) state.dealType = params.get("deal");
+  if (TYPES.includes(params.get("type"))) state.propertyType = params.get("type");
+  const session = {
+    task: params.get("task") || "",
+    pid: params.get("pid") || "",
+    variant: params.get("variant") || "new",
+    gallery: params.get("gallery") === "4x3" ? "4x3" : "1x1",
+    // Кнопки и подпись поверх фото в «Новом 2»: light — белые (по макету), dark — как в «Новом»
+    photoUi: params.get("photoui") === "dark" ? "dark" : "light",
+  };
+  // Лента галереи в CSS должна совпадать с раскрытой пропорцией (см. .card__gallery-track)
+  if (session.gallery === "4x3") document.documentElement.classList.add("gallery-4x3");
+  // «Новый 2» (?variant=new2) — экспериментальная копия нового сниппета: та же разметка,
+  // отличия задаём CSS через .variant-new2 и проверками session.variant === "new2" в cards.js
+  if (session.variant === "new2") document.documentElement.classList.add("variant-new2");
+  if (session.variant === "new2" && session.photoUi === "dark") document.documentElement.classList.add("n2-photo-dark");
+
+  Object.assign(window.App, { state, ui, session });
+})();
