@@ -386,3 +386,24 @@
   stroke-width: 2px;
   vector-effect: non-scaling-stroke;
 }
+
+
+/* ---------- Лейблы внахлёст (?labels=stack, по умолчанию) ---------- */
+/* Каждая следующая капсула заходит на предыдущую и отбита от неё белым контуром */
+.n2-labels-stack .n2__labels {
+  gap: 0;
+}
+
+.n2-labels-stack .n2__chip {
+  box-shadow: 0 0 0 2px var(--color-white);
+}
+
+/* Капсуле, на которую заходит следующая, справа добавляем ширину нахлёста — текст не прячется под соседку */
+.n2-labels-stack .n2__chip:not(:last-child) {
+  padding-right: 18px;
+}
+
+.n2-labels-stack .n2__chip + .n2__chip {
+  margin-left: -6px;
+  padding-left: 14px; /* компенсируем нахлёст, чтобы текст не прилипал к краю предыдущей */
+}

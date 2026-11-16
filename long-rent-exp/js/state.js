@@ -70,6 +70,8 @@
     gallery: params.get("gallery") === "4x3" ? "4x3" : "1x1",
     // Кнопки и подпись поверх фото в «Новом 2»: light — белые (по макету), dark — как в «Новом»
     photoUi: params.get("photoui") === "dark" ? "dark" : "light",
+    // Лейблы под фото в «Новом 2»: stack — внахлёст, separate — отдельными капсулами
+    labels: params.get("labels") === "separate" ? "separate" : "stack",
   };
   // Лента галереи в CSS должна совпадать с раскрытой пропорцией (см. .card__gallery-track)
   if (session.gallery === "4x3") document.documentElement.classList.add("gallery-4x3");
@@ -77,6 +79,7 @@
   // отличия задаём CSS через .variant-new2 и проверками session.variant === "new2" в cards.js
   if (session.variant === "new2") document.documentElement.classList.add("variant-new2");
   if (session.variant === "new2" && session.photoUi === "dark") document.documentElement.classList.add("n2-photo-dark");
+  if (session.variant === "new2" && session.labels === "stack") document.documentElement.classList.add("n2-labels-stack");
 
   Object.assign(window.App, { state, ui, session });
 })();
