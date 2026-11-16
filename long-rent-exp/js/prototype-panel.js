@@ -34,7 +34,7 @@
       // Новостройки есть только в «Купить»: при смене сделки переключаемся на обычную квартиру
       if (param === "deal" && values.type === "newflat" && chip.dataset.value !== "buy") url.searchParams.set("type", "flat");
       if (url.searchParams.get("gallery") === "1x1") url.searchParams.delete("gallery"); // 1:1 — по умолчанию
-      if (url.searchParams.get("photoui") === "light") url.searchParams.delete("photoui"); // белые — по умолчанию
+      if (url.searchParams.get("photoui") === "dark") url.searchParams.delete("photoui"); // Overlay — по умолчанию
       window.location.href = url.toString();
     });
   });
