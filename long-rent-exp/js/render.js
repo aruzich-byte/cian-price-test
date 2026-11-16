@@ -40,9 +40,9 @@
 
   // ---------- Быстрые фильтры (шапка) ----------
   // Категория выдачи в шапке: строка поиска и первые три чипса
-  const DEAL_LABELS = { rent: "Снять", buy: "Купить", build: "Построить" };
-  const TYPE_LABELS = { flat: "Квартира", room: "Комната", house: "Дом", garage: "Гараж", commercial: "Коммерческая" };
-  const TYPE_ACCUSATIVE = { flat: "квартиру", room: "комнату", house: "дом", garage: "гараж", commercial: "коммерческую" };
+  const DEAL_LABELS = { rent: "Снять", buy: "Купить", daily: "Посуточно", build: "Построить" };
+  const TYPE_LABELS = { flat: "Квартира", newflat: "Новостройка", room: "Комната", house: "Дом", garage: "Гараж", commercial: "Коммерческая" };
+  const TYPE_ACCUSATIVE = { flat: "квартиру", newflat: "квартиру в новостройке", room: "комнату", house: "дом", garage: "гараж", commercial: "коммерческую" };
 
   function updateCategoryLabels() {
     const deal = DEAL_LABELS[state.dealType] || "Снять";

@@ -738,6 +738,92 @@
   transform: none;
 }
 
+/* ---------- Галерея с превью — у первых трёх сниппетов (макет «Анализ сниппетов», 435:27703) ---------- */
+/* Главное фото 16:9 + ряд из трёх превью высотой 60px, зазор 4px, общее скругление 12px.
+   На фото — затемнение снизу до 20%, кнопки — тёмные круги 32px, точки 8px. */
+.asis__extras {
+  display: none;
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .asis__media {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .card__gallery {
+  border-radius: 0;
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .card__gallery::after,
+.asis__extra::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 100%);
+  pointer-events: none;
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .card__gallery-actions,
+#results-list > .card--asis:nth-of-type(-n + 3) .card__gallery-dots {
+  z-index: 1;
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .card__gallery-actions {
+  gap: 8px;
+  height: 32px;
+  background: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .card__gallery-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .card__gallery-dots {
+  bottom: 16px;
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .card__gallery-dot {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: none;
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .card__gallery-dot.is-active {
+  background: var(--color-white);
+}
+
+#results-list > .card--asis:nth-of-type(-n + 3) .asis__extras {
+  display: flex;
+  gap: 4px;
+}
+
+.asis__extra {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 60px;
+  padding: 0;
+  border: none;
+  background: var(--bg-page);
+  cursor: pointer;
+}
+
+.asis__extra img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .asis__seller {
   display: flex;
   align-items: center;
@@ -867,4 +953,147 @@
   padding: 0 12px;
   background: var(--accent-secondary-bg);
   color: var(--accent);
+}
+
+/* ---------- Новостройка «как сейчас» (макет «Анализ сниппетов», 65:7893) ---------- */
+.asisnb__logo {
+  border: 1px solid #f1f2f4;
+  border-radius: 4px;
+  background: var(--color-white);
+}
+
+.asisnb__logo img {
+  object-fit: contain;
+}
+
+.asisnb__role {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+/* Заголовок объявления — зелёная плашка с короной */
+.asisnb__promo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #ebf9e6;
+  color: #227e01;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.32px;
+}
+
+.asisnb__promo svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.asisnb__promo span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asisnb__labels {
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.asisnb__chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: #e1e6f4;
+  color: #0d162e;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: -0.4px;
+  white-space: nowrap;
+}
+
+
+
+.asisnb__buttons {
+  padding-top: 4px;
+}
+
+.card__btn.asisnb__btn-icon {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--color-white);
+}
+
+.card--asis-nb .asis__btn {
+  border-radius: 8px;
+}
+
+/* ---------- Новостройка в v1–v3: строки «★ рейтинг · сдача · тип» и полный адрес (см. newbuildingInfoHtml) ---------- */
+.nb__rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #fe8512;
+  font-weight: 600;
+}
+
+.nb__rating svg {
+  width: 12px;
+  height: 12px;
+}
+
+.nb__address {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- Посуточно «как сейчас» (макет «Анализ сниппетов», 65:7931) ---------- */
+
+
+.asisd__labels {
+  gap: 8px;
+}
+
+.asisd__chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  background: #e4e9f6;
+  color: #152242;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.asisd__chip--blue {
+  background: #d9e8ff;
+  color: #0661ec;
+}
+
+/* Посуточно «как сейчас»: строка рейтинга стоит на месте строки условий, но серая, как на Циане */
+.asisd__rating-line {
+  color: var(--text-secondary);
+}
+
+.asisd__chip--green {
+  background: #d8f3cc;
+  color: #229a02;
 }

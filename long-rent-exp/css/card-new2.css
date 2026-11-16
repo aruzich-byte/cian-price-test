@@ -388,22 +388,39 @@
 }
 
 
-/* ---------- Лейблы внахлёст (?labels=stack, по умолчанию) ---------- */
+/* ---------- Лейблы внахлёст (v2 и v3) ---------- */
 /* Каждая следующая капсула заходит на предыдущую и отбита от неё белым контуром */
-.n2-labels-stack .n2__labels {
+.card--n2 .n2__labels,
+.card--n3 .n2__labels {
   gap: 0;
 }
 
-.n2-labels-stack .n2__chip {
+.card--n2 .n2__chip,
+.card--n3 .n2__chip {
   box-shadow: 0 0 0 2px var(--color-white);
 }
 
 /* Капсуле, на которую заходит следующая, справа добавляем ширину нахлёста — текст не прячется под соседку */
-.n2-labels-stack .n2__chip:not(:last-child) {
+.card--n2 .n2__chip:not(:last-child),
+.card--n3 .n2__chip:not(:last-child) {
   padding-right: 18px;
 }
 
-.n2-labels-stack .n2__chip + .n2__chip {
+.card--n2 .n2__chip + .n2__chip,
+.card--n3 .n2__chip + .n2__chip {
   margin-left: -6px;
   padding-left: 14px; /* компенсируем нахлёст, чтобы текст не прилипал к краю предыдущей */
+}
+
+/* ---------- Посуточно: рейтинг и отзывы справа в строке цены ---------- */
+.n2__price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.n2__price-rating {
+  flex-shrink: 0;
+  white-space: nowrap;
 }

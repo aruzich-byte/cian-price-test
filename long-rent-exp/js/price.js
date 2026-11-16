@@ -10,9 +10,13 @@
   // Шкала цены у каждой категории своя: аренда квартиры за 30 тыс и дом за 45 млн
   // на одной оси не уживаются. PRICE_BOUNDS / PRICE_BOUNDS_RAW — общие объекты,
   // которые читают виджеты цены, поэтому при смене категории мутируем их на месте.
+  // «Купить → Новостройка» — квартиры с isNewbuilding, «Купить → Квартира» (вторичка) — без него
   function scopeListings(dealType, propertyType) {
     const deal = dealType === "buy" ? "sale" : dealType;
-    return LISTINGS.filter((item) => item.dealType === deal && item.propertyType === propertyType);
+    const type = propertyType === "newflat" ? "flat" : propertyType;
+    return LISTINGS.filter(
+      (item) => item.dealType === deal && item.propertyType === type && (type !== "flat" || Boolean(item.isNewbuilding) === (propertyType === "newflat"))
+    );
   }
 
   let PRICE_SCOPE = [];

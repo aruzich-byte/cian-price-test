@@ -11,11 +11,19 @@
   const startedAt = Date.now();
   const sessionId = `${startedAt.toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
   const queue = [];
-  const CATEGORY_LABELS = { "rent/flat": "Снять квартиру", "buy/flat": "Купить квартиру", "rent/house": "Снять дом", "buy/house": "Купить дом" };
+  const CATEGORY_LABELS = {
+    "rent/flat": "Снять квартиру",
+    "buy/flat": "Купить квартиру",
+    "buy/newflat": "Купить в новостройке",
+    "rent/house": "Снять дом",
+    "buy/house": "Купить дом",
+    "daily/flat": "Посуточно квартиру",
+    "daily/house": "Посуточно дом",
+  };
 
   function listingLabel(item) {
     if (!item) return "";
-    const price = `${Math.round(item.price).toLocaleString("ru-RU")} ₽${item.dealType === "rent" ? "/мес" : ""}`;
+    const price = `${Math.round(item.price).toLocaleString("ru-RU")} ₽${item.dealType === "rent" ? "/мес" : item.dealType === "daily" ? "/сут" : ""}`;
     const what = item.propertyType === "house" ? item.houseKind : item.flatType === "studio" ? "студия" : item.rooms ? `${item.rooms}-комн.` : "";
     return `${price} · ${what} · ${item.address || ""}`;
   }

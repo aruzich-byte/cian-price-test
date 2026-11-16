@@ -59,10 +59,12 @@
   // (оба уходят в логи, см. tracking.js), ?variant=… — вариант дизайна сниппета,
   // ?gallery=4x3 — до какой пропорции растёт галерея нового сниппета при свайпе (по умолчанию 1:1).
   const params = new URLSearchParams(window.location.search);
-  const DEALS = ["rent", "buy", "build"];
-  const TYPES = ["flat", "room", "house", "garage", "commercial"];
+  const DEALS = ["rent", "buy", "daily", "build"];
+  const TYPES = ["flat", "newflat", "room", "house", "garage", "commercial"];
   if (DEALS.includes(params.get("deal"))) state.dealType = params.get("deal");
   if (TYPES.includes(params.get("type"))) state.propertyType = params.get("type");
+  // Новостройки есть только в «Купить»
+  if (state.propertyType === "newflat" && state.dealType !== "buy") state.propertyType = "flat";
   const session = {
     task: params.get("task") || "",
     pid: params.get("pid") || "",
@@ -70,16 +72,14 @@
     gallery: params.get("gallery") === "4x3" ? "4x3" : "1x1",
     // Кнопки и подпись поверх фото в «Новом 2»: light — белые (по макету), dark — как в «Новом»
     photoUi: params.get("photoui") === "dark" ? "dark" : "light",
-    // Лейблы под фото в «Новом 2»: stack — внахлёст, separate — отдельными капсулами
-    labels: params.get("labels") === "separate" ? "separate" : "stack",
   };
   // Лента галереи в CSS должна совпадать с раскрытой пропорцией (см. .card__gallery-track)
   if (session.gallery === "4x3") document.documentElement.classList.add("gallery-4x3");
   // «Новый 2» (?variant=new2) — экспериментальная копия нового сниппета: та же разметка,
   // отличия задаём CSS через .variant-new2 и проверками session.variant === "new2" в cards.js
   if (session.variant === "new2") document.documentElement.classList.add("variant-new2");
+  if (session.variant === "new3") document.documentElement.classList.add("variant-new3");
   if (session.variant === "new2" && session.photoUi === "dark") document.documentElement.classList.add("n2-photo-dark");
-  if (session.variant === "new2" && session.labels === "stack") document.documentElement.classList.add("n2-labels-stack");
 
   Object.assign(window.App, { state, ui, session });
 })();

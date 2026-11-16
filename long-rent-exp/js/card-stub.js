@@ -15,7 +15,8 @@
   function openCardStub(item) {
     titleEl.textContent = CARD_TITLE;
     textEl.textContent = CARD_TEXT;
-    listingEl.textContent = `${formatPrice(item.price)}${item.dealType === "rent" ? "/мес." : ""} · ${item.address || ""}`;
+    const suffix = { rent: "/мес.", daily: "/сут." }[item.dealType] || "";
+    listingEl.textContent = `${formatPrice(item.price)}${suffix} · ${item.address || ""}`;
     overlay.open();
   }
 

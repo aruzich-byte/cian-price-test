@@ -226,3 +226,8 @@
   border-color: var(--border-focus-strong);
   background: var(--accent-secondary-bg);
 }
+
+/* Чипсы, которых нет в текущей категории (например, «Новостройка» вне «Купить») */
+.proto-chip[hidden] {
+  display: none;
+}

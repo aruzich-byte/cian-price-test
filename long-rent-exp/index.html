@@ -35,30 +35,24 @@
         <div class="prototype-panel__section">
           <div class="prototype-panel__section-title">Вариант сниппета</div>
           <div class="prototype-panel__chips" data-proto-param="variant">
-            <button class="proto-chip" type="button" data-value="new">Новый</button>
-            <button class="proto-chip" type="button" data-value="new2">Новый 2</button>
-            <button class="proto-chip" type="button" data-value="asis">Как сейчас</button>
+            <button class="proto-chip" type="button" data-value="asis">as is</button>
+            <button class="proto-chip" type="button" data-value="new">v1</button>
+            <button class="proto-chip" type="button" data-value="new2">v2</button>
+            <button class="proto-chip" type="button" data-value="new3">v3</button>
           </div>
         </div>
-        <div class="prototype-panel__section">
-          <div class="prototype-panel__section-title">Галерея: в «Новом» — до какой пропорции растёт при свайпе, в «Новом 2» — пропорция</div>
+        <div class="prototype-panel__section" data-variants="new new2">
+          <div class="prototype-panel__section-title">Галерея</div>
           <div class="prototype-panel__chips" data-proto-param="gallery">
             <button class="proto-chip" type="button" data-value="1x1">1:1</button>
             <button class="proto-chip" type="button" data-value="4x3">4:3</button>
           </div>
         </div>
-        <div class="prototype-panel__section">
-          <div class="prototype-panel__section-title">Избранное и подписи на фото (Новый 2)</div>
+        <div class="prototype-panel__section" data-variants="new2">
+          <div class="prototype-panel__section-title">Элементы поверх фото</div>
           <div class="prototype-panel__chips" data-proto-param="photoui">
-            <button class="proto-chip" type="button" data-value="light">Белые, по макету</button>
-            <button class="proto-chip" type="button" data-value="dark">Как в «Новом»</button>
-          </div>
-        </div>
-        <div class="prototype-panel__section">
-          <div class="prototype-panel__section-title">Лейблы под фото (Новый 2)</div>
-          <div class="prototype-panel__chips" data-proto-param="labels">
-            <button class="proto-chip" type="button" data-value="stack">Внахлёст</button>
-            <button class="proto-chip" type="button" data-value="separate">Отдельно</button>
+            <button class="proto-chip" type="button" data-value="light">Белые</button>
+            <button class="proto-chip" type="button" data-value="dark">Overlay</button>
           </div>
         </div>
         <div class="prototype-panel__section">
@@ -66,12 +60,14 @@
           <div class="prototype-panel__chips" data-proto-param="deal">
             <button class="proto-chip" type="button" data-value="rent">Снять</button>
             <button class="proto-chip" type="button" data-value="buy">Купить</button>
+            <button class="proto-chip" type="button" data-value="daily">Посуточно</button>
           </div>
         </div>
         <div class="prototype-panel__section">
           <div class="prototype-panel__section-title">Тип недвижимости</div>
           <div class="prototype-panel__chips" data-proto-param="type">
-            <button class="proto-chip" type="button" data-value="flat">Квартира</button>
+            <button class="proto-chip" type="button" data-value="newflat" data-deals="buy">Новостройка</button>
+            <button class="proto-chip" type="button" data-value="flat" data-buy-label="Вторичка">Квартира</button>
             <button class="proto-chip" type="button" data-value="house">Дом</button>
           </div>
         </div>

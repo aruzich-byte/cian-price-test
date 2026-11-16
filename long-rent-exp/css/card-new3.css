@@ -1,0 +1,183 @@
+/* ---------- Вариант «Новый 3» (?variant=new3) — макет «Анализ сниппетов», узел 576:22786 ---------- */
+/* Сниппет: отступы 20px сверху/снизу и 8px по бокам, между блоками 8px. Текст и кнопки — с 12px внутри. */
+.card--n3 {
+  --text-primary: #14171d;
+  --text-secondary: #6f7888;
+  --n2-chip-bg: #f3f5f8; /* фон лейблов — общие стили с v2 */
+  padding: 20px 8px;
+  gap: 8px;
+}
+
+/* ---------- Галерея: лента фото 256×164, зазор 4px ---------- */
+/* Лента доходит до правого края экрана и обрезается им ровно; скругление 16px — только
+   слева у первого фото и справа у последнего (видно, когда долистали до конца) */
+.n3__gallery {
+  display: flex;
+  gap: 4px;
+  margin-right: -8px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.n3__gallery::-webkit-scrollbar {
+  display: none;
+}
+
+.n3__gallery.is-dragging {
+  cursor: grabbing;
+}
+
+.n3__photo {
+  position: relative;
+  flex: 0 0 256px;
+  height: 164px;
+  background: #d9d9d9;
+  scroll-snap-align: start;
+}
+
+.n3__photo:first-child {
+  border-radius: 16px 0 0 16px;
+  overflow: hidden;
+}
+
+.n3__photo:last-child {
+  border-radius: 0 16px 16px 0;
+  overflow: hidden;
+  margin-right: 8px; /* в конце ленты фото отступает от края экрана, как сниппет */
+}
+
+.n3__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+/* Планировка — целиком на белом, с лёгким затемнением 4% */
+.n3__photo--layout {
+  background: var(--color-white);
+}
+
+.n3__photo--layout img {
+  object-fit: contain;
+}
+
+.n3__photo--layout::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ---------- Лейблы — внахлёст, как в «Новом 2» (стили .n2__chip в card-new2.css) ---------- */
+/* Ряд от края экрана: у сниппета отступ 8px, у капсулы внутри 12px — иконка/текст первой капсулы
+   встают по левому краю текста (20px от края) */
+.card--n3 .n2__labels {
+  margin: 0 -8px;
+  padding: 4px 8px 0;
+}
+
+/* ---------- Текст ---------- */
+.card--n3 .n3__info {
+  gap: 4px;
+  padding: 0 12px;
+}
+
+.card--n3 .card__labels + .card__info {
+  margin-top: 0;
+}
+
+.n3__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.n3__price {
+  font-size: 22px;
+  line-height: 27px;
+  font-weight: 600;
+  letter-spacing: 0.07px;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.n3__sqm {
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: -0.4px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* Избранное — сердце справа в строке цены (кадр 28×18 из макета) */
+.card--n3 .n3__fav {
+  align-self: center;
+  margin-left: auto;
+  width: 28px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+}
+
+.card--n3 .n3__fav svg {
+  width: 20px;
+  height: 18px;
+}
+
+.card--n3 .n3__fav.is-active {
+  color: #c2122d;
+}
+
+.card--n3 .n3__fav.is-active path {
+  fill: currentColor;
+}
+
+.card--n3 .card__terms {
+  margin: 0;
+}
+
+/* Адрес — не больше двух строк */
+.n3__address {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card--n3 .card__transport {
+  margin-top: 0;
+  gap: 12px;
+}
+
+.card--n3 .card__transport-item {
+  gap: 4px;
+}
+
+/* ---------- Продавец и кнопки ---------- */
+.card--n3 .n3__footer {
+  margin-top: 0;
+  padding: 0 12px;
+}
+
+.card--n3 .n2__role svg {
+  width: 16px;
+  height: 16px;
+}
+
+.card__btn.n3__btn-text {
+  height: 36px;
+}

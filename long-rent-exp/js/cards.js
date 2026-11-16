@@ -27,6 +27,83 @@
     return [flatTypeLabel(item), formatAreaRu(item.area), `${item.floor}/${item.floorsTotal} этаж`].join(" · ");
   }
 
+  // Цена: аренда — в месяц, посуточно — за сутки, продажа — без приписки
+  // Посуточно цена «от» — как на Циане (за сутки бывает дороже в выходные)
+  function pricePrefix(item) {
+    return item.dealType === "daily" ? "от " : "";
+  }
+
+  function priceSuffix(item) {
+    if (item.dealType === "rent") return "/мес.";
+    if (item.dealType === "daily") return "/сут.";
+    return "";
+  }
+
+  // Посуточно: гости · спальни (дом) или спальные места (квартира) · залог
+  function dailyTermsLine(item) {
+    const { pluralize } = window.App;
+    const parts = [];
+    if (item.guests) parts.push(`до ${item.guests} гостей`);
+    if (item.propertyType === "house" && item.bedrooms) parts.push(`${item.bedrooms} ${pluralize(item.bedrooms, "спальня", "спальни", "спален")}`);
+    else if (item.beds) parts.push(`${item.beds} ${pluralize(item.beds, "спальное место", "спальных места", "спальных мест")}`);
+    if (item.deposit) parts.push(`Залог ${formatPrice(item.deposit)}`);
+    return parts.join(" · ");
+  }
+
+  // Новостройка: срок сдачи · отделка
+  function newbuildingTermsLine(item) {
+    return [item.deadline, item.decoration].filter(Boolean).join(" · ");
+  }
+
+  // Новостройка: текстовый блок под ценой во всех вариантах собран как на Циане —
+  // параметры, ЖК, «★ рейтинг ЖК · срок сдачи · Квартиры», полный адрес, транспорт.
+  // Типографику даёт вариант (классы card__params / card__address).
+  function newbuildingInfoHtml(item, transport) {
+    const meta = [
+      item.jkRating ? `<span class="nb__rating">${ICONS.starSmall}${item.jkRating}</span>` : "",
+      [item.deadline, item.isApartments ? "Апартаменты" : "Квартиры"].filter(Boolean).join(" · "),
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    return `
+      <div class="card__params">${paramsLine(item)}</div>
+      ${item.jk ? `<div class="card__params">${item.jk}</div>` : ""}
+      <div class="card__address">${meta}</div>
+      <div class="card__address nb__address">${item.fullAddress || addressLine(item)}</div>
+      ${transport}
+    `;
+  }
+
+  // Посуточно: текстовый блок под ценой во всех вариантах собран как на Циане —
+  // параметры, «★ рейтинг · N отзывов», адрес, транспорт (гостей и залог Циан в сниппете не показывает)
+  function dailyRatingHtml(item) {
+    return `<span class="nb__rating">${ICONS.starSmall}${item.rating}</span>${item.reviews ? ` · ${item.reviews}` : ""}`;
+  }
+
+  // ratingInPrice — рейтинг вынесен в строку цены (v2), отдельной строки нет
+  function dailyInfoHtml(item, transport, { ratingInPrice = false } = {}) {
+    const rating = item.rating && !ratingInPrice ? `<div class="card__address">${dailyRatingHtml(item)}</div>` : "";
+    const address = item.fullAddress || (item.propertyType === "house" ? `${item.address}, Ленинградская область` : addressLine(item));
+    return `
+      <div class="card__params">${paramsLine(item)}</div>
+      ${rating}
+      <div class="card__address nb__address">${address}</div>
+      ${transport}
+    `;
+  }
+
+  // Новостройка и посуточно — свой блок под ценой (как на Циане), остальное — общий
+  function cianInfoHtml(item, transport, options) {
+    if (item.isNewbuilding) return newbuildingInfoHtml(item, transport);
+    if (item.dealType === "daily") return dailyInfoHtml(item, transport, options);
+    return null;
+  }
+
+  // Строка условий есть везде, кроме вторички в продаже (там она ушла в подписи к фото) — для «Нового 2/3»
+  function hasTermsLine(item) {
+    return !(item.dealType === "sale" && item.propertyType === "flat" && !item.isNewbuilding);
+  }
+
   // Продажа дома: газ · отопление · канализация (год постройки — в подписях к фото)
   function houseSaleTermsLine(item) {
     return [item.gas, item.heating, item.sewer].filter(Boolean).join(" · ");
@@ -35,6 +112,7 @@
   // Продажа квартиры: ремонт и год ремонта (год пока сгенерирован, см. data.js) · мебель
   function saleTermsLine(item) {
     if (item.propertyType === "house") return houseSaleTermsLine(item);
+    if (item.isNewbuilding) return newbuildingTermsLine(item);
     const repair = item.repairYear ? `${item.repair} ${item.repairYear} г.` : item.repair;
     return [repair, item.hasFurniture ? "С мебелью" : "Без мебели"].filter(Boolean).join(" · ");
   }
@@ -47,6 +125,7 @@
   // Аренда квартиры: комиссия (clientFee — % от месячной цены), залог (и можно ли частями)
   function termsLine(item) {
     if (item.dealType === "sale") return saleTermsLine(item);
+    if (item.dealType === "daily") return dailyTermsLine(item);
     if (item.propertyType === "house") return houseRentTermsLine(item);
     const parts = [item.clientFee ? `Комиссия ${item.clientFee}%` : "Без комиссии"];
     if (item.deposit) parts.push(`Залог ${formatPrice(item.deposit)}${item.depositByParts ? " (можно частями)" : ""}`);
@@ -64,6 +143,7 @@
     const title = item.agency || item.sellerRole;
     let subtitle = "";
     if (item.isSuperAgent) subtitle = `<div class="card__seller-level">${ICONS.superAgent}Суперагент</div>`;
+    else if (item.isSuperHost) subtitle = `<div class="card__seller-level">${ICONS.superAgent}Суперхозяин</div>`;
     else if (item.agency) subtitle = `<div class="card__seller-role">${item.sellerRole}</div>`;
     return `
       <div class="card__seller-text">
@@ -125,7 +205,7 @@
     if (item.dealType === "sale") {
       return `<div class="card__price">${formatPrice(item.price)}<span class="card__price-sqm">${formatPrice(item.pricePerSqm)}/м²</span></div>`;
     }
-    return `<div class="card__price">${formatPrice(item.price)}/мес.</div>`;
+    return `<div class="card__price">${pricePrefix(item)}${formatPrice(item.price)}${priceSuffix(item)}</div>`;
   }
 
   function priceDeltaInfo(item) {
@@ -149,7 +229,7 @@
       <div class="mix-carousel__photo">
       </div>
       <div class="mix-carousel__body">
-        <div class="mix-carousel__price">${formatPrice(item.price)}${item.dealType === "sale" ? "" : "/мес."}</div>
+        <div class="mix-carousel__price">${formatPrice(item.price)}${priceSuffix(item)}</div>
         <div class="mix-carousel__type">${item.propertyType === "house" ? item.houseKind : flatTypeLabel(item)} · ${formatAreaRu(item.area)}</div>
         <div class="mix-carousel__meta">${item.metro || ""}</div>
       </div>
@@ -312,7 +392,8 @@
   // на отпускании доводим до ближайшего фото, а при быстром броске — до следующего.
   const FLICK_VELOCITY = 0.4; // px/мс
 
-  function setupMouseDrag(track) {
+  // step() — шаг между фото в px (по умолчанию ширина ленты: одно фото на экран)
+  function setupMouseDrag(track, step = () => track.clientWidth) {
     let drag = null;
 
     track.addEventListener("pointerdown", (e) => {
@@ -336,7 +417,7 @@
 
     function finish() {
       if (!drag) return;
-      const width = track.clientWidth;
+      const width = step();
       const position = track.scrollLeft / width;
       let index = Math.round(position);
       if (Math.abs(drag.velocity) > FLICK_VELOCITY) {
@@ -366,6 +447,7 @@
   function createCardEl(item, mixed, showDelta = mixed) {
     if (window.App.session && window.App.session.variant === "asis") return createAsisCardEl(item);
     if (window.App.session && window.App.session.variant === "new2") return createNew2CardEl(item);
+    if (window.App.session && window.App.session.variant === "new3") return createNew3CardEl(item);
     const card = document.createElement("article");
     card.className = "card" + (mixed ? " card--mixed" : "");
     card.dataset.listingId = item.id;
@@ -377,10 +459,13 @@
       <div class="card__info">
         ${priceRowHtml(item)}
         ${showDelta ? mixedDeltaHtml(item) : ""}
-        <div class="card__params">${paramsLine(item)}</div>
+        ${
+          cianInfoHtml(item, transportHtml(item)) ||
+            `<div class="card__params">${paramsLine(item)}</div>
         <div class="card__terms">${termsLine(item)}</div>
         <div class="card__address">${addressLine(item)}</div>
-        ${transportHtml(item)}
+        ${transportHtml(item)}`
+        }
       </div>
       <div class="card__footer">
         <div class="card__seller">
@@ -448,12 +533,137 @@
     return chips.length ? `<div class="card__labels asis__labels">${chips.join("")}</div>` : "";
   }
 
+  // Под главным фото — три превью следующих фото (без планировки). Показываются только
+  // у первых трёх сниппетов выдачи (CSS, см. «Галерея с превью» в card.css) — так в макете.
+  function asisExtrasHtml(item) {
+    const layout = layoutPhoto(item);
+    const extras = item.photos
+      .map((photo, index) => ({ photo, index }))
+      .filter(({ index }) => index > 0 && !(layout && index === layout.index))
+      .slice(0, 3);
+    if (extras.length < 3) return "";
+    return `<div class="asis__extras">${extras
+      .map(({ photo, index }) => `<button class="asis__extra" type="button" data-index="${index}" aria-label="Фото ${index + 1}"><img src="${encodeURI(photo.src)}" alt="" loading="lazy" /></button>`)
+      .join("")}</div>`;
+  }
+
+  function setupAsisExtras(card, item) {
+    const track = card.querySelector('[data-role="track"]');
+    card.querySelectorAll(".asis__extra").forEach((btn) =>
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const index = Number(btn.dataset.index);
+        if (window.App.track) window.App.track("Превью фото под галереей", { item, value: `${index + 1}/${item.photos.length}` });
+        track.scrollTo({ left: index * track.clientWidth, behavior: "smooth" });
+      })
+    );
+  }
+
+  // Новостройка «как сейчас» (макет «Анализ сниппетов», 65:7893): застройщик сверху, заголовок
+  // объявления — зелёной плашкой с короной, ЖК отдельной строкой, рейтинг ЖК · срок сдачи · тип,
+  // полный адрес, «Позвонить застройщику» + «Написать». Акций, скидок и счётчика похожих квартир
+  // в данных нет — их не показываем.
+  function createAsisNewbuildingCardEl(item) {
+    const card = document.createElement("article");
+    card.className = "card card--asis card--asis-nb";
+    card.dataset.listingId = item.id;
+    const seller = item.agency || item.sellerRole;
+    const chips = [];
+    if (item.isDeveloper) chips.push('<span class="asisnb__chip">От застройщика</span>');
+    item.labels.forEach((l) => chips.push(`<span class="asis__chip">${l}</span>`));
+    const meta = [
+      item.jkRating ? `<span class="nb__rating">${ICONS.starSmall}${item.jkRating}</span>` : "",
+      [item.deadline, item.isApartments ? "Апартаменты" : "Квартиры"].filter(Boolean).join(" · "),
+    ]
+      .filter(Boolean)
+      .join(" · ");
+
+    card.innerHTML = `
+      <div class="asis__seller">
+        ${
+          item.avatar
+            ? `<div class="asis__avatar asisnb__logo"><img src="${encodeURI(item.avatar)}" alt="" loading="lazy" /></div>`
+            : `<div class="asis__avatar">${sellerInitials(seller)}</div>`
+        }
+        <div class="asis__seller-text">
+          <div class="asis__seller-name">${seller}</div>
+          <div class="asisnb__role">${item.sellerRole}</div>
+        </div>
+      </div>
+      ${item.promoLabel ? `<div class="asisnb__promo">${ICONS.crownNew2}<span>${item.promoLabel}</span></div>` : ""}
+      <div class="asis__media">
+        ${galleryHtml(item, { asis: true })}
+        ${asisExtrasHtml(item)}
+      </div>
+      ${chips.length ? `<div class="card__labels asisnb__labels">${chips.join("")}</div>` : ""}
+      <div class="card__info">
+        <div class="card__price">${formatPrice(item.price)}</div>
+        <div class="card__params">${asisParamsLine(item)}</div>
+        ${item.jk ? `<div class="card__terms">${item.jk}</div>` : ""}
+        ${meta ? `<div class="card__address">${meta}</div>` : ""}
+        <div class="card__address nb__address">${item.fullAddress || asisAddress(item)}</div>
+        ${asisTransportHtml(item)}
+      </div>
+      <div class="asis__buttons asisnb__buttons">
+        <button class="card__btn card__btn--call asis__btn asis__btn--call" type="button">Позвонить застройщику</button>
+        <button class="card__btn card__btn--message asisnb__btn-icon" type="button" aria-label="Написать">${ICONS.message}</button>
+      </div>
+    `;
+    setupGallery(card, item, { asis: true });
+    setupAsisExtras(card, item);
+    setupCardTracking(card, item);
+    return card;
+  }
+
+  // Посуточно «как сейчас» (макет «Анализ сниппетов», 65:7931): без продавца и кнопок —
+  // галерея, лейблы («Проверено Цианом» голубой, «Мгновенная бронь» и «Собственник» серые),
+  // «от N ₽/сут.», параметры, рейтинг · отзывы, адрес, метро. «Суперхозяина» в данных нет.
+  const ASIS_DAILY_CHIPS = { "Проверено Цианом": "asisd__chip--blue", Суперхозяин: "asisd__chip--green" };
+
+  function createAsisDailyCardEl(item) {
+    const card = document.createElement("article");
+    card.className = "card card--asis card--asis-daily";
+    card.dataset.listingId = item.id;
+    // Порядок как на Циане: отметки Циана, «Собственник», затем условия проживания
+    const CIAN_FIRST = ["Проверено Цианом", "Мгновенная бронь"];
+    const labels = item.labels.filter((l) => CIAN_FIRST.includes(l));
+    if (item.isSuperHost) labels.unshift("Суперхозяин");
+    if (item.isByHomeowner) labels.push("Собственник");
+    labels.push(...item.labels.filter((l) => !CIAN_FIRST.includes(l)));
+    const chips = labels.map((l) => `<span class="asisd__chip ${ASIS_DAILY_CHIPS[l] || ""}">${l}</span>`).join("");
+
+    card.innerHTML = `
+      <div class="asis__media">
+        ${galleryHtml(item, { asis: true })}
+        ${asisExtrasHtml(item)}
+      </div>
+      ${chips ? `<div class="card__labels asisd__labels">${chips}</div>` : ""}
+      <div class="card__info">
+        <div class="card__price">${pricePrefix(item).replace("от", "От")}${formatPrice(item.price)}${priceSuffix(item)}</div>
+        <div class="card__params">${asisParamsLine(item)}</div>
+        ${
+          item.rating
+            ? `<div class="card__terms asisd__rating-line"><span class="nb__rating">${ICONS.starSmall}${item.rating}</span>${item.reviews ? ` · ${item.reviews}` : ""}</div>`
+            : ""
+        }
+        <div class="card__address nb__address">${item.fullAddress || asisAddress(item)}</div>
+        ${asisTransportHtml(item)}
+      </div>
+    `;
+    setupGallery(card, item, { asis: true });
+    setupAsisExtras(card, item);
+    setupCardTracking(card, item);
+    return card;
+  }
+
   function createAsisCardEl(item) {
+    if (item.isNewbuilding) return createAsisNewbuildingCardEl(item);
+    if (item.dealType === "daily") return createAsisDailyCardEl(item);
     const card = document.createElement("article");
     card.className = "card card--asis";
     card.dataset.listingId = item.id;
     const seller = item.agency || item.sellerRole;
-    const price = `${formatPrice(item.price)}${item.dealType === "rent" ? "/мес." : ""}`;
+    const price = `${formatPrice(item.price)}${priceSuffix(item)}`;
 
     card.innerHTML = `
       <div class="asis__seller">
@@ -467,13 +677,16 @@
           ${item.agency ? `<div class="asis__seller-role">${asisRole(item)}</div>` : ""}
         </div>
       </div>
-      ${galleryHtml(item, { asis: true })}
+      <div class="asis__media">
+        ${galleryHtml(item, { asis: true })}
+        ${asisExtrasHtml(item)}
+      </div>
       ${asisLabelsHtml(item)}
       <div class="card__info">
         ${item.promoLabel ? `<div class="card__params asis__title">${item.promoLabel}</div>` : ""}
         <div class="card__price">${price}</div>
         <div class="card__params">${asisParamsLine(item)}</div>
-        ${item.jk ? `<div class="card__terms">${item.jk}</div>` : ""}
+        ${item.jk || item.deadline ? `<div class="card__terms">${[item.jk, item.deadline].filter(Boolean).join(" · ")}</div>` : ""}
         <div class="card__address">${asisAddress(item)}</div>
         ${asisTransportHtml(item)}
       </div>
@@ -483,6 +696,7 @@
       </div>
     `;
     setupGallery(card, item, { asis: true });
+    setupAsisExtras(card, item);
     setupCardTracking(card, item);
     return card;
   }
@@ -548,6 +762,8 @@
 
   function new2RoleHtml(item) {
     if (item.isSuperAgent) return `<div class="n2__role n2__role--super">${ICONS.superAgent}Суперагент</div>`;
+    // Посуточно — «Суперхозяин» с той же звездой
+    if (item.isSuperHost) return `<div class="n2__role n2__role--super">${ICONS.superAgent}Суперхозяин</div>`;
     const ROLE_LABELS = { Агент: "Риелтор" };
     return `<div class="n2__role">${ROLE_LABELS[item.sellerRole] || item.sellerRole}</div>`;
   }
@@ -878,17 +1094,24 @@
     card.className = "card card--n2";
     card.dataset.listingId = item.id;
     // Строку «ремонт · мебель» у продажи квартир убрали — мебель теперь в подписях к фото
-    const showTerms = !(item.dealType === "sale" && item.propertyType === "flat");
+    const showTerms = hasTermsLine(item);
 
     card.innerHTML = `
       ${new2GalleryHtml(item)}
       ${new2LabelsHtml(item)}
       <div class="card__info">
-        ${priceRowHtml(item)}
-        <div class="card__params">${paramsLine(item)}</div>
+        ${
+          item.dealType === "daily" && item.rating
+            ? `<div class="n2__price-row">${priceRowHtml(item)}<span class="card__address n2__price-rating">${dailyRatingHtml(item)}</span></div>`
+            : priceRowHtml(item)
+        }
+        ${
+          cianInfoHtml(item, transportHtml(item), { ratingInPrice: true }) ||
+            `<div class="card__params">${paramsLine(item)}</div>
         ${showTerms ? `<div class="card__terms">${termsLine(item)}</div>` : ""}
         <div class="card__address">${addressLine(item)}</div>
-        ${transportHtml(item)}
+        ${transportHtml(item)}`
+        }
       </div>
       <div class="card__footer">
         ${new2RoleHtml(item)}
@@ -903,10 +1126,119 @@
     return card;
   }
 
+  // ---------- Вариант «Новый 3» (?variant=new3) — по макету «Анализ сниппетов», узел 576:22786 ----------
+  // Галерея — горизонтальная лента фото 256×164 с зазором 4px (планировка вторым кадром, вписана
+  // целиком), без подписей и кнопок на фото. Под лентой — лейблы внахлёст, как в «Новом 2».
+  // Избранное — сердце справа в строке цены. Внизу роль продавца,
+  // звонок иконкой, «Написать» текстом и «…». Строка условий — как в «Новом 2» (нет у продажи квартир).
+  const N3_PHOTO_STEP = 256 + 4;
+
+  function new3GalleryHtml(item) {
+    const layout = layoutPhoto(item);
+    return `
+      <div class="n3__gallery" data-role="track">${item.photos
+        .map(
+          (photo, i) =>
+            `<div class="n3__photo${layout && i === layout.index ? " n3__photo--layout" : ""}"><img src="${encodeURI(photo.src)}" alt=""${i > 1 ? ' loading="lazy"' : ""} /></div>`
+        )
+        .join("")}</div>
+    `;
+  }
+
+  function new3PriceHtml(item) {
+    let price = pricePrefix(item) + formatPrice(item.price);
+    price += priceSuffix(item);
+    const sqm = item.dealType === "sale" && item.propertyType === "flat" ? `<span class="n3__sqm">${formatPrice(item.pricePerSqm)}/м²</span>` : "";
+    return `
+      <div class="n3__price-row">
+        <span class="n3__price">${price}</span>${sqm}
+        <button class="card__gallery-btn n3__fav n3__control" type="button" aria-label="В избранное">${ICONS.heartNew3}</button>
+      </div>
+    `;
+  }
+
+  function new3TransportHtml(item) {
+    if (item.propertyType === "house" && item.highway) return transportHtml(item);
+    if (!item.metro) return "";
+    const color = item.metroColor ? `#${item.metroColor}` : "var(--text-secondary)";
+    const timeIcon = item.metroTransport === "transport" ? ICONS.bus : ICONS.walk;
+    return `
+      <div class="card__transport n3__transport">
+        <span class="card__transport-item"><span class="card__metro-icon" style="color:${color}">${ICONS.metroSpb}</span>${item.metro}</span>
+        <span class="card__transport-item">${timeIcon}${item.metroMin} мин.</span>
+      </div>
+    `;
+  }
+
+  function setupNew3Gallery(card, item) {
+    const track = card.querySelector('[data-role="track"]');
+    // Лог: на каком кадре остановились (после 0,5 с без движения)
+    let loggedIndex = 0;
+    let settleTimer = 0;
+    track.addEventListener(
+      "scroll",
+      () => {
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(() => {
+          const index = Math.min(Math.round(track.scrollLeft / N3_PHOTO_STEP), item.photos.length - 1);
+          if (index === loggedIndex || !window.App.track) return;
+          loggedIndex = index;
+          const isLayout = track.children[index].classList.contains("n3__photo--layout");
+          window.App.track(isLayout ? "Фото: планировка" : "Фото", { item, value: `${index + 1}/${item.photos.length}` });
+        }, 500);
+      },
+      { passive: true }
+    );
+    setupMouseDrag(track, () => N3_PHOTO_STEP);
+  }
+
+  function createNew3CardEl(item) {
+    const card = document.createElement("article");
+    card.className = "card card--n3";
+    card.dataset.listingId = item.id;
+    const showTerms = hasTermsLine(item);
+
+    card.innerHTML = `
+      ${new3GalleryHtml(item)}
+      ${new2LabelsHtml(item)}
+      <div class="card__info n3__info">
+        ${new3PriceHtml(item)}
+        ${
+          cianInfoHtml(item, new3TransportHtml(item)) ||
+            `<div class="card__params">${paramsLine(item)}</div>
+        ${showTerms ? `<div class="card__terms">${termsLine(item)}</div>` : ""}
+        <div class="card__address n3__address">${addressLine(item)}</div>
+        ${new3TransportHtml(item)}`
+        }
+      </div>
+      <div class="card__footer n3__footer">
+        ${new2RoleHtml(item)}
+        <button class="card__btn card__btn--call n2__btn n2__btn--accent" type="button" aria-label="Позвонить">${ICONS.phone}</button>
+        <button class="card__btn card__btn--message n3__btn-text" type="button">Написать</button>
+        <button class="card__btn n2__btn n2__btn--more" type="button" aria-label="Ещё">${ICONS.more}</button>
+      </div>
+    `;
+    setupNew3Gallery(card, item);
+
+    const { track, openInfoStub } = window.App;
+    const fav = card.querySelector(".n3__fav");
+    fav.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fav.classList.toggle("is-active");
+    });
+    card.querySelector(".n2__btn--more").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (track) track("Меню «…» под сниппетом", { item });
+      if (openInfoStub) openInfoStub({ title: "Ещё", text: "Здесь будет меню действий с объявлением." });
+    });
+    setupCardTracking(card, item);
+    return card;
+  }
+
   // ---------- Логи UX-теста: открытие карточки, прокрутка лейблов, показ сниппета ----------
   // Тап по сниппету (кроме кнопок и контролов галереи) = «открыл карточку». Карточки в
   // прототипе нет — показываем заглушку, чтобы респондент вернулся к выдаче (см. card-stub).
-  const CARD_CONTROLS = ".card__btn, .card__gallery-btn, .card__gallery-badge, .card__labels, .n2__control";
+  const CARD_CONTROLS = ".card__btn, .card__gallery-btn, .card__gallery-badge, .card__labels, .n2__control, .n3__control, .asis__extra";
 
   function setupCardTracking(card, item) {
     const { track, observeSnippet, openCardStub } = window.App;

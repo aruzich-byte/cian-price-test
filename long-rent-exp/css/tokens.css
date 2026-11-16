@@ -60,5 +60,5 @@
 
   --font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", Roboto, Arial, sans-serif;
 
-  --phone-width: 390px;
+  --phone-width: 421px; /* экран 393px (как у iPhone 15) + рамка 14px с каждой стороны */
 }
