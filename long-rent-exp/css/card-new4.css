@@ -1,0 +1,188 @@
+/* ---------- Вариант «Новый 4» (?variant=new4) — макет «Анализ сниппетов», узел 600:24863 ---------- */
+/* Карточка собрана на стилях «Нового 2» (.card--n2): галерея, подписи, миниатюры, лейблы внахлёст, текст.
+   Здесь — отличия: отступы 20px, шапка продавца, градиент на фото и ряд иконок внизу. */
+.card--n4 {
+  padding: 0 20px 40px; /* между сниппетами 40px: от низа контента до шапки следующего */
+  gap: 4px;
+}
+
+/* ---------- Шапка продавца ---------- */
+/* Заголовок — как сообщение продавца: аватар внизу слева, рядом серое облачко;
+   угол облачка у аватара острый — «хвостик» сообщения */
+.n4__seller {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0 -20px;
+  padding: 8px 10px 12px;
+  background: var(--color-white);
+}
+
+.n4__logos {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.n4__logo {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e3e6ed;
+  border-radius: 50%;
+  background: var(--color-white);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+/* Логотип компании — под фото агента, агент заходит на него */
+.n4__logo + .n4__logo {
+  margin-left: -12px;
+}
+
+.n4__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.n4__seller-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 16px 16px 16px 4px;
+  background: #f3f5f8;
+}
+
+.n4__seller-name,
+.n4__title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.n4__seller-name {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+}
+
+/* Промо-заголовок — тем же начертанием, что строка параметров (комнатность · площадь · этаж): 14/17, 600, −0.4;
+   длинный переносится, как текст сообщения */
+.n4__title {
+  white-space: normal;
+  font-size: 14px;
+  line-height: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+/* Суперагент / Суперхозяин — звезда в правом нижнем углу логотипа, на белой подложке */
+.n4__logos {
+  position: relative;
+}
+
+.n4__star {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-white);
+  color: var(--positive-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.n4__star svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---------- Галерея: вплотную к шапке, на всю ширину ---------- */
+.card--n4 .n2__gallery {
+  margin: -4px -20px 0;
+}
+
+/* Лёгкое затемнение к низу кадра */
+.n4__toner {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 100%);
+  pointer-events: none;
+}
+
+.n2__gallery.is-overlay .n4__toner {
+  display: none;
+}
+
+/* ---------- Лейблы: текст первой капсулы — по левому краю текста (20px) ---------- */
+.card--n4 .n2__labels {
+  margin-left: -12px;
+  padding: 4px 0 0;
+}
+
+.card--n4 .card__labels + .card__info {
+  margin-top: 0;
+}
+
+.card--n4 .card__info {
+  gap: 4px;
+}
+
+/* ---------- Ряд иконок ---------- */
+.n4__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 -10px;
+}
+
+.n4__actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.n4__actions-group--contact {
+  gap: 16px;
+}
+
+.card__btn.n4__btn,
+.n4__btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.n4__btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.n4__fav.is-active {
+  color: #c2122d;
+}
+

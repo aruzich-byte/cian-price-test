@@ -448,6 +448,7 @@
     if (window.App.session && window.App.session.variant === "asis") return createAsisCardEl(item);
     if (window.App.session && window.App.session.variant === "new2") return createNew2CardEl(item);
     if (window.App.session && window.App.session.variant === "new3") return createNew3CardEl(item);
+    if (window.App.session && window.App.session.variant === "new4") return createNew4CardEl(item);
     const card = document.createElement("article");
     card.className = "card" + (mixed ? " card--mixed" : "");
     card.dataset.listingId = item.id;
@@ -725,7 +726,7 @@
     return own || item.photos[index].caption;
   }
 
-  function new2GalleryHtml(item) {
+  function new2GalleryHtml(item, { actions = true, toner = false } = {}) {
     const total = item.photos.length;
     const dots = Math.min(total, MAX_DOTS);
     const layout = layoutPhoto(item);
@@ -739,12 +740,17 @@
         <div class="card__gallery-track" data-role="track">${item.photos
           .map((photo, i) => `<img src="${encodeURI(photo.src)}" alt=""${layout && i === layout.index ? ' class="is-layout"' : ""}${i > 0 ? ' loading="lazy"' : ""} />`)
           .join("")}</div>
+        ${toner ? '<div class="n4__toner"></div>' : ""}
         <div class="n2__overlay n2__control" data-role="overlay" hidden></div>
         <span class="n2__caption" data-role="caption"></span>
-        <div class="n2__actions">
+        ${
+          actions
+            ? `<div class="n2__actions">
           <button class="n2__round n2__control" type="button" data-role="share" aria-label="Поделиться">${ICONS.share}</button>
           <button class="card__gallery-btn n2__round n2__control" type="button" aria-label="В избранное">${ICONS.heart}</button>
-        </div>
+        </div>`
+            : ""
+        }
         <div class="n2__thumbs">
           ${layout ? thumb("layout", "Показать планировку", `<img class="n2__thumb-img n2__thumb-img--layout" src="${encodeURI(layout.src)}" alt="" loading="lazy" />`) : ""}
           ${thumb("map", "Показать на карте", `<img class="n2__thumb-img n2__thumb-img--map" src="${staticMapUrl(item, 160, 15)}" alt="" loading="lazy" /><span class="n2__thumb-pin">${ICONS.mapPin}</span>`)}
@@ -1069,7 +1075,13 @@
       heart.innerHTML = active ? ICONS.heartFilled : ICONS.heart;
     });
 
-    // Телефон — нативное меню «Поделиться»; десктоп (или если платформа его не пускает) — заглушка
+    setupShareAndMore(card, item);
+  }
+
+  // «Поделиться»: на телефоне — нативное меню, на десктопе (или если платформа его не пускает) — заглушка.
+  // «…» — заглушка меню действий. Общие для «Нового 2» и «Нового 4».
+  function setupShareAndMore(card, item) {
+    const { track, openInfoStub } = window.App;
     card.querySelector('[data-role="share"]').addEventListener("click", (e) => {
       e.stopPropagation();
       if (track) track("Поделиться", { item });
@@ -1082,7 +1094,7 @@
       } else stub();
     });
 
-    card.querySelector(".n2__btn--more").addEventListener("click", (e) => {
+    card.querySelector('[data-role="more"]').addEventListener("click", (e) => {
       e.stopPropagation();
       if (track) track("Меню «…» под сниппетом", { item });
       if (openInfoStub) openInfoStub({ title: "Ещё", text: "Здесь будет меню действий с объявлением." });
@@ -1115,7 +1127,7 @@
       </div>
       <div class="card__footer">
         ${new2RoleHtml(item)}
-        <button class="card__btn n2__btn n2__btn--more" type="button" aria-label="Ещё">${ICONS.more}</button>
+        <button class="card__btn n2__btn n2__btn--more" type="button" data-role="more" aria-label="Ещё">${ICONS.more}</button>
         <button class="card__btn card__btn--message n2__btn n2__btn--accent" type="button" aria-label="Написать">${ICONS.message}</button>
         <button class="card__btn card__btn--call n2__btn n2__btn--accent" type="button" aria-label="Позвонить">${ICONS.phone}</button>
       </div>
@@ -1231,6 +1243,115 @@
       if (track) track("Меню «…» под сниппетом", { item });
       if (openInfoStub) openInfoStub({ title: "Ещё", text: "Здесь будет меню действий с объявлением." });
     });
+    setupCardTracking(card, item);
+    return card;
+  }
+
+  // ---------- Вариант «Новый 4» (?variant=new4) — по макету «Анализ сниппетов», узел 600:24863 ----------
+  // Сверху — шапка продавца на сером фоне: логотип агентства и фото агента внахлёст, «Кто продаёт:»
+  // и заголовок объявления. Дальше галерея «Нового 2» (на всю ширину, подписи на фото и миниатюры
+  // планировки и карты — как были), но без кнопок на фото; снизу лёгкий затемняющий градиент.
+  // Сразу под фото — ряд иконок без фона: избранное, поделиться, «…» слева; написать и позвонить
+  // справа. Дальше текст как в «Новом 2», лейблы внахлёст — в самом низу.
+  // Заголовок в шапке — промо-лейбл объявления (под фото его в v4 нет). Если промо-лейбла нет —
+  // ЗАГОЛОВОК СОБРАН ИСКУССТВЕННО (у нас нет заголовков с Циана) — только из фактов
+  // объявления: комнатность / тип дома, ремонт или мебель, ЖК, метро, участок.
+  const N4_ROOMS = { 1: "Однушка", 2: "Двушка", 3: "Трёшка" };
+
+  function new4Title(item) {
+    if (item.propertyType === "house") {
+      const kind = item.houseKind || "Дом";
+      return item.landArea ? `${kind} на участке ${String(item.landArea).replace(".", ",")} сот.` : kind;
+    }
+    const room = item.flatType === "studio" || !item.rooms ? "Студия" : N4_ROOMS[item.rooms] || `${item.rooms}-комнатная квартира`;
+    if (item.isNewbuilding && item.jk) return `${room} в ${item.jk}`;
+    let extra = "";
+    if (item.repair === "Дизайнерский ремонт") extra = " с дизайнерским ремонтом";
+    else if (item.repair === "Евроремонт") extra = " с евроремонтом";
+    else if (item.hasFurniture) extra = " с мебелью";
+    const place = item.metro ? ` у м. ${item.metro}` : item.street ? ` на ${item.street}` : "";
+    return room + extra + place;
+  }
+
+  function new4SellerLabel(item) {
+    const ROLE_LABELS = { Агент: "Риелтор" };
+    // Суперагент / Суперхозяин — вместо роли, со звездой
+    const level = item.isSuperAgent ? "Суперагент" : item.isSuperHost ? "Суперхозяин" : "";
+    const role = level || ROLE_LABELS[item.sellerRole] || item.sellerRole; // звезда — в уголке логотипа (new4LogosHtml)
+    // У собственника имя не показываем — только «Собственник»
+    if (!item.agency || item.sellerRole === "Собственник") return role;
+    // У агентства и застройщика имя — это название компании
+    return `${role} ${item.agency}`;
+  }
+
+  function new4LogosHtml(item) {
+    const circle = (inner, cls = "") => `<span class="n4__logo${cls}">${inner}</span>`;
+    if (item.avatar) return circle(`<img src="${encodeURI(item.avatar)}" alt="" loading="lazy" />`, " n4__logo--image");
+    const name = item.sellerRole === "Собственник" ? item.sellerRole : item.agency || item.sellerRole;
+    // Агент из компании — логотип компании и сам агент внахлёст
+    const company = item.company && item.sellerRole !== "Собственник" ? circle(sellerInitials(item.company), " n4__logo--company") : "";
+    return company + circle(sellerInitials(name));
+  }
+
+  // Шапка — заголовок как сообщение продавца: облачко с хвостиком к аватару, сверху мелко имя,
+  // заголовок без кавычек
+  function new4HeaderHtml(item) {
+    const title = (item.promoLabel || new4Title(item)).replace(/[«»]/g, "");
+    return `
+      <div class="n4__seller">
+        <div class="n4__logos">${new4LogosHtml(item)}${item.isSuperAgent || item.isSuperHost ? `<span class="n4__star">${ICONS.superAgent}</span>` : ""}</div>
+        <div class="n4__seller-text">
+          <div class="n4__seller-name">${new4SellerLabel(item)}</div>
+          <div class="n4__title">${title}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function createNew4CardEl(item) {
+    const card = document.createElement("article");
+    card.className = "card card--n2 card--n4";
+    card.dataset.listingId = item.id;
+    const showTerms = hasTermsLine(item);
+
+    card.innerHTML = `
+      ${new4HeaderHtml(item)}
+      ${new2GalleryHtml(item, { actions: false, toner: true })}
+      <div class="n4__actions">
+        <div class="n4__actions-group">
+          <button class="card__gallery-btn n4__btn n4__fav n3__control" type="button" aria-label="В избранное">${ICONS.heart}</button>
+          <button class="n4__btn n3__control" type="button" data-role="share" aria-label="Поделиться">${ICONS.share}</button>
+          <button class="n4__btn n3__control" type="button" data-role="more" aria-label="Ещё">${ICONS.more}</button>
+        </div>
+        <div class="n4__actions-group n4__actions-group--contact">
+          <button class="card__btn card__btn--message n4__btn" type="button" aria-label="Написать">${ICONS.message}</button>
+          <button class="card__btn card__btn--call n4__btn" type="button" aria-label="Позвонить">${ICONS.phone}</button>
+        </div>
+      </div>
+      <div class="card__info">
+        ${
+          item.dealType === "daily" && item.rating
+            ? `<div class="n2__price-row">${priceRowHtml(item)}<span class="card__address n2__price-rating">${dailyRatingHtml(item)}</span></div>`
+            : priceRowHtml(item)
+        }
+        ${
+          cianInfoHtml(item, transportHtml(item), { ratingInPrice: true }) ||
+            `<div class="card__params">${paramsLine(item)}</div>
+        ${showTerms ? `<div class="card__terms">${termsLine(item)}</div>` : ""}
+        <div class="card__address">${addressLine(item)}</div>
+        ${transportHtml(item)}`
+        }
+      </div>
+      ${new2LabelsHtml({ ...item, promoLabel: null })}
+    `;
+    setupNew2Gallery(card, item);
+    const fav = card.querySelector(".n4__fav");
+    fav.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const active = fav.classList.toggle("is-active");
+      fav.innerHTML = active ? ICONS.heartFilled : ICONS.heart;
+    });
+    setupShareAndMore(card, item);
     setupCardTracking(card, item);
     return card;
   }
