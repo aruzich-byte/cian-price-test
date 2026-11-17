@@ -125,8 +125,28 @@
   pointer-events: none;
 }
 
-.n2__gallery.is-overlay .n4__toner {
+.n2__gallery.is-overlay .n4__toner,
+.n2__gallery.is-overlay .n4__counter {
   display: none;
+}
+
+/* Счётчик слайдов «2/12» — маленькая тёмная полупрозрачная капсула справа сверху */
+.n4__counter {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--overlay-dark);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
+  color: var(--color-white);
+  font-size: 11px;
+  line-height: 20px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 
 /* ---------- Лейблы: текст первой капсулы — по левому краю текста (20px) ---------- */
@@ -186,3 +206,8 @@
   color: #c2122d;
 }
 
+
+/* Точки под фото не нужны — номер слайда показывает счётчик */
+.card--n4 .card__gallery-dots {
+  display: none;
+}

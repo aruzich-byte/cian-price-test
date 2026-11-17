@@ -726,7 +726,7 @@
     return own || item.photos[index].caption;
   }
 
-  function new2GalleryHtml(item, { actions = true, toner = false } = {}) {
+  function new2GalleryHtml(item, { actions = true, toner = false, counter = false } = {}) {
     const total = item.photos.length;
     const dots = Math.min(total, MAX_DOTS);
     const layout = layoutPhoto(item);
@@ -743,6 +743,7 @@
         ${toner ? '<div class="n4__toner"></div>' : ""}
         <div class="n2__overlay n2__control" data-role="overlay" hidden></div>
         <span class="n2__caption" data-role="caption"></span>
+        ${counter && total > 1 ? `<span class="n4__counter" data-role="counter">1/${total}</span>` : ""}
         ${
           actions
             ? `<div class="n2__actions">
@@ -966,6 +967,7 @@
     const overlay = card.querySelector('[data-role="overlay"]');
     const thumbs = card.querySelectorAll(".n2__thumb");
     const layoutThumb = card.querySelector('[data-thumb="layout"]');
+    const counter = card.querySelector('[data-role="counter"]');
     const layout = layoutPhoto(item);
     const { track } = window.App;
     let mode = null; // null | "layout" | "map"
@@ -1057,6 +1059,8 @@
       fixed: true,
       captionOf: (index) => new2Caption(item, index),
       onPosition: (position) => {
+        // Счётчик слайдов «2/12» («Новый 4»)
+        if (counter) counter.textContent = `${clamp(Math.round(position), 0, item.photos.length - 1) + 1}/${item.photos.length}`;
         const now = Boolean(layout) && Math.round(position) === layout.index;
         if (now !== onLayoutSlide) {
           onLayoutSlide = now;
@@ -1316,7 +1320,7 @@
 
     card.innerHTML = `
       ${new4HeaderHtml(item)}
-      ${new2GalleryHtml(item, { actions: false, toner: true })}
+      ${new2GalleryHtml(item, { actions: false, toner: true, counter: true })}
       <div class="n4__actions">
         <div class="n4__actions-group">
           <button class="card__gallery-btn n4__btn n4__fav n3__control" type="button" aria-label="В избранное">${ICONS.heart}</button>
