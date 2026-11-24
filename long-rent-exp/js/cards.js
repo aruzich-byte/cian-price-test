@@ -1312,6 +1312,29 @@
     `;
   }
 
+  // Бренд-код «заряд аберрации» на избранном — по наброску «Пины и кластеры» с воркшопа
+  // «Бренд-коды в продукте». Нажали: сердце чуть подрастает, от него один раз расходятся
+  // две копии его же формы (аберрации) в фирменном синем, и оно возвращается в размер уже залитым.
+  // Снятие из избранного — без анимации. Тайминги и цвета — в css/card-new4.css (.n4__fav-echo).
+  function playFavCharge(btn) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    btn.classList.remove("is-charging");
+    void btn.offsetWidth; // перезапуск анимации при быстрых повторных нажатиях
+    btn.classList.add("is-charging");
+    ["n4__fav-echo--near", "n4__fav-echo--far"].forEach((mod) => {
+      const echo = document.createElement("span");
+      echo.className = `n4__fav-echo ${mod}`;
+      echo.setAttribute("aria-hidden", "true");
+      echo.innerHTML = ICONS.heartFilled;
+      btn.appendChild(echo);
+    });
+    clearTimeout(btn._chargeTimer);
+    btn._chargeTimer = setTimeout(() => {
+      btn.classList.remove("is-charging");
+      btn.querySelectorAll(".n4__fav-echo").forEach((el) => el.remove());
+    }, 900);
+  }
+
   function createNew4CardEl(item) {
     const card = document.createElement("article");
     card.className = "card card--n2 card--n4";
@@ -1354,6 +1377,7 @@
       e.stopPropagation();
       const active = fav.classList.toggle("is-active");
       fav.innerHTML = active ? ICONS.heartFilled : ICONS.heart;
+      if (active) playFavCharge(fav);
     });
     setupShareAndMore(card, item);
     setupCardTracking(card, item);
