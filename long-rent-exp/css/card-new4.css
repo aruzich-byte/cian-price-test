@@ -112,6 +112,24 @@
   height: 14px;
 }
 
+/* Вариант шапки «Серая полоса» (панель «Шапка продавца», ?sellerhead=strip): фон облачка на всю ширину,
+   вплотную к фото, без облачка — текст прямо на сером */
+[data-seller-head="strip"] .n4__seller {
+  align-items: center;
+  padding: 12px 20px;
+  background: #f3f5f8;
+}
+
+[data-seller-head="strip"] .n4__seller-text {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+
+[data-seller-head="strip"] .n4__logo {
+  border-color: var(--color-white);
+}
+
 /* ---------- Галерея: вплотную к шапке, на всю ширину ---------- */
 .card--n4 .n2__gallery {
   margin: -4px -20px 0;
