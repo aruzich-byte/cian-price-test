@@ -316,20 +316,23 @@
   box-sizing: border-box;
 }
 
-/* Иконка 56px; слои того же размера сдвинуты вправо на шаг --ask-step и 2 × шаг */
+/* Иконка 48px; слои того же размера сдвинуты вправо на шаг --ask-step и 2 × шаг.
+   Ширина блока — вместе со слоями, поэтому по центру выровнена вся группа целиком. */
 .n4__ask-icon {
-  --ask-step: 14px;
+  --ask-size: 48px;
+  --ask-step: 12px;
   position: relative;
-  width: 56px;
-  height: 56px;
-  margin-right: calc(var(--ask-step) * 2); /* компенсируем выступающие слои — визуально по центру */
-  transform: translateX(var(--ask-step));
+  width: calc(var(--ask-size) + var(--ask-step) * 2);
+  height: var(--ask-size);
 }
 
 .n4__ask-icon-layer {
   position: absolute;
-  inset: 0;
-  border-radius: 14px;
+  top: 0;
+  left: 0;
+  width: var(--ask-size);
+  height: var(--ask-size);
+  border-radius: 12px;
 }
 
 .n4__ask-icon-layer--yellow {
@@ -351,8 +354,8 @@
 }
 
 .n4__ask-icon-layer--blue svg {
-  width: 31px;
-  height: 31px;
+  width: 27px;
+  height: 27px;
 }
 
 .n4__ask-title {
