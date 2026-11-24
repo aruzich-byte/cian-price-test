@@ -398,6 +398,8 @@
 
     track.addEventListener("pointerdown", (e) => {
       if (e.pointerType !== "mouse" || e.button !== 0) return;
+      // Кнопки внутри ленты (бабблы «Спросите продавца») — не тянем, иначе захват указателя съест клик
+      if (e.target.closest("button")) return;
       drag = { startX: e.clientX, startLeft: track.scrollLeft, lastX: e.clientX, lastT: e.timeStamp, velocity: 0, moved: false };
       track.style.scrollSnapType = "none";
       track.style.scrollBehavior = "auto";
@@ -726,7 +728,7 @@
     return own || item.photos[index].caption;
   }
 
-  function new2GalleryHtml(item, { actions = true, toner = false, counter = false } = {}) {
+  function new2GalleryHtml(item, { actions = true, toner = false, counter = false, ask = false } = {}) {
     const total = item.photos.length;
     const dots = Math.min(total, MAX_DOTS);
     const layout = layoutPhoto(item);
@@ -739,7 +741,7 @@
       <div class="card__gallery n2__gallery">
         <div class="card__gallery-track" data-role="track">${item.photos
           .map((photo, i) => `<img src="${encodeURI(photo.src)}" alt=""${layout && i === layout.index ? ' class="is-layout"' : ""}${i > 0 ? ' loading="lazy"' : ""} />`)
-          .join("")}</div>
+          .join("")}${ask ? new4AskSlideHtml(item) : ""}</div>
         ${toner ? '<div class="n4__toner"></div>' : ""}
         <div class="n2__overlay n2__control" data-role="overlay" hidden></div>
         <span class="n2__caption" data-role="caption"></span>
@@ -1061,6 +1063,8 @@
       onPosition: (position) => {
         // Счётчик слайдов «2/12» («Новый 4»)
         if (counter) counter.textContent = `${clamp(Math.round(position), 0, item.photos.length - 1) + 1}/${item.photos.length}`;
+        // Последний слайд «Спросите продавца» («Новый 4») — без счётчика, затемнения и миниатюр
+        gallery.classList.toggle("is-ask", Math.round(position) >= item.photos.length);
         const now = Boolean(layout) && Math.round(position) === layout.index;
         if (now !== onLayoutSlide) {
           onLayoutSlide = now;
@@ -1338,6 +1342,89 @@
     }, 800);
   }
 
+  // ---------- Последний слайд галереи «Спросите продавца» («Новый 4») ----------
+  // Готовые сообщения в чат. Сначала — вопросы о том, чего в объявлении нет (по полям модели),
+  // потом общие («Можно посмотреть?»), всего до 4. Объявление заполнено полностью — только общие.
+  // Тексты короткие, как кнопка: до ~20 знаков. Тап по баблу — переход в чат с этим сообщением.
+  const ASK_MAX = 4;
+  const ASK_MISSING_MAX = 3;
+
+  function new4MissingQuestions(item) {
+    const q = [];
+    const has = (label) => item.labels.includes(label);
+    const isHouse = item.propertyType === "house";
+    if (item.dealType === "rent" || item.dealType === "daily") {
+      if (!has("Можно с животными")) q.push("Можно с животными?");
+      if (!has("Можно с детьми")) q.push("Можно с детьми?");
+    }
+    if (item.dealType === "rent") {
+      if (item.deposit == null) q.push("Какой залог?");
+      if (!item.utilitiesIncluded && !item.utilitiesPrice) q.push("Сколько за ЖКУ?");
+      if (item.metersExtra) q.push("Сколько по счётчикам?");
+      if (isHouse && item.water == null) q.push("Какая в доме вода?");
+      if (isHouse && item.toiletInside == null) q.push("Туалет в доме?");
+    }
+    if (item.dealType === "sale" && !isHouse) {
+      if (item.isNewbuilding) {
+        if (!item.deadline) q.push("Когда сдача дома?");
+      } else {
+        if (!item.repairYear) q.push("Когда делали ремонт?");
+        // Числа собственников в модели нет вовсе — у вторички спрашиваем всегда
+        q.push("Сколько собственников?");
+        if (!item.isRosreestrChecked) q.push("Пришлёте выписку ЕГРН?");
+      }
+    }
+    if (item.dealType === "sale" && isHouse) {
+      if (!item.buildYear) q.push("Какой год постройки?");
+      if (!item.gas) q.push("Есть ли газ?");
+      if (!item.heating) q.push("Какое отопление?");
+      if (!item.sewer) q.push("Какая канализация?");
+    }
+    if (!item.hasLayout && item.dealType !== "daily") q.push("Пришлите планировку");
+    return q.slice(0, ASK_MISSING_MAX);
+  }
+
+  function new4GeneralQuestions(item) {
+    if (item.dealType === "daily") return ["Свободно на мои даты?", "Можно заселиться раньше?", "Ещё актуально?"];
+    if (item.dealType === "sale") return ["Можно посмотреть?", "Ещё актуально?", "Возможен торг?"];
+    return ["Можно посмотреть?", "Когда можно въехать?", "Ещё актуально?"];
+  }
+
+  function new4AskQuestions(item) {
+    const missing = new4MissingQuestions(item);
+    const general = new4GeneralQuestions(item).filter((t) => !missing.includes(t));
+    return { missing, list: [...missing, ...general].slice(0, ASK_MAX) };
+  }
+
+  function new4AskSlideHtml(item) {
+    const { missing, list } = new4AskQuestions(item);
+    const bg = item.photos[0] ? `<img class="n4__ask-bg" src="${encodeURI(item.photos[0].src)}" alt="" loading="lazy" />` : "";
+    return `
+      <div class="n4__ask" data-role="ask">
+        ${bg}
+        <div class="n4__ask-body">
+          <div class="n4__ask-title">${missing.length ? "Чего-то не хватает?" : "Понравилось?"}</div>
+          <div class="n4__ask-hint">Спросите у продавца в чате</div>
+          <div class="n4__ask-bubbles">
+            ${list.map((t) => `<button class="n4__ask-bubble n3__control" type="button" data-text="${t}">${t}</button>`).join("")}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function setupNew4Ask(card, item) {
+    const { track, openInfoStub } = window.App;
+    card.querySelectorAll(".n4__ask-bubble").forEach((bubble) => {
+      bubble.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const text = bubble.dataset.text;
+        if (track) track("Вопрос продавцу с фото", { item, value: text });
+        // Чата в прототипе нет — заглушка с уже отправленным сообщением
+        if (openInfoStub) openInfoStub({ title: "Чат с продавцом", text: `Ваше сообщение «${text}» отправлено. Продавец ответит здесь же, в чате.` });
+      });
+    });
+  }
+
   function createNew4CardEl(item) {
     const card = document.createElement("article");
     card.className = "card card--n2 card--n4";
@@ -1346,7 +1433,7 @@
 
     card.innerHTML = `
       ${new4HeaderHtml(item)}
-      ${new2GalleryHtml(item, { actions: false, toner: true, counter: true })}
+      ${new2GalleryHtml(item, { actions: false, toner: true, counter: true, ask: true })}
       <div class="n4__actions">
         <div class="n4__actions-group">
           <button class="card__gallery-btn n4__btn n4__fav n3__control" type="button" aria-label="В избранное">${ICONS.heart}</button>
@@ -1375,6 +1462,7 @@
       ${new2LabelsHtml({ ...item, promoLabel: null })}
     `;
     setupNew2Gallery(card, item);
+    setupNew4Ask(card, item);
     const fav = card.querySelector(".n4__fav");
     fav.addEventListener("click", (e) => {
       e.stopPropagation();

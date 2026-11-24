@@ -288,3 +288,96 @@
   65% { stroke-width: 12px; opacity: 0.14; }
   100% { stroke-width: 12px; opacity: 0; }
 }
+
+/* ---------- Последний слайд галереи «Спросите продавца» (см. new4AskSlideHtml в cards.js) ---------- */
+/* Фон — первое фото, сильно размытое и высветленное; бабблы — как исходящие сообщения
+   в чате: справа, хвостик в правом нижнем углу (зеркально облачку продавца в шапке). */
+.n4__ask {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: #f3f5f8;
+}
+
+.card__gallery-track .n4__ask-bg {
+  position: absolute;
+  inset: -40px;
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  object-fit: cover;
+  filter: blur(28px) saturate(1.1);
+  opacity: 0.55;
+}
+
+.n4__ask-body {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.n4__ask-title {
+  color: var(--text-primary);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.n4__ask-hint {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.2px;
+}
+
+.n4__ask-bubbles {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.n4__ask-bubble {
+  max-width: 85%;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 18px 18px 4px 18px;
+  background: var(--accent);
+  color: var(--color-white);
+  font: inherit;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(4, 104, 255, 0.18);
+  transition: transform 120ms ease;
+}
+
+.n4__ask-bubble:active {
+  transform: scale(0.96);
+}
+
+/* На слайде с вопросами — без счётчика, затемнения, подписи и миниатюр карты/планировки */
+.n2__gallery.is-ask .n4__counter,
+.n2__gallery.is-ask .n4__toner,
+.n2__gallery.is-ask .n2__thumbs {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.n4__counter,
+.n4__toner,
+.card--n4 .n2__thumbs {
+  transition: opacity 160ms ease;
+}
