@@ -203,7 +203,7 @@
 }
 
 .n4__fav.is-active {
-  color: #c2122d;
+  color: var(--fav-color);
 }
 
 
@@ -219,7 +219,8 @@
 .n4__fav {
   position: relative;
   overflow: visible;
-  --fav-color: #c2122d; /* цвет залитого сердца (.n4__fav.is-active) */
+  /* Цвет залитого сердца и его аберрации — фирменный оранжевый (было #c2122d, красный) */
+  --fav-color: #f4631b;
 }
 
 .n4__fav > svg {
