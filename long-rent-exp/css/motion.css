@@ -114,12 +114,12 @@
 }
 
 .variant-new4 .n2__gallery.is-ask .n4__ask-icon-layer--orange {
-  transform: translateX(9px);
+  transform: translateX(var(--ask-step));
   transition: transform 520ms var(--spring-bouncy) 120ms;
 }
 
 .variant-new4 .n2__gallery.is-ask .n4__ask-icon-layer--yellow {
-  transform: translateX(18px);
+  transform: translateX(calc(var(--ask-step) * 2));
   transition: transform 560ms var(--spring-bouncy) 180ms;
 }
 

@@ -316,29 +316,30 @@
   box-sizing: border-box;
 }
 
-/* Иконка 36px; слои того же размера сдвинуты вправо на 9px и 18px */
+/* Иконка 56px; слои того же размера сдвинуты вправо на шаг --ask-step и 2 × шаг */
 .n4__ask-icon {
+  --ask-step: 14px;
   position: relative;
-  width: 36px;
-  height: 36px;
-  margin-right: 18px; /* компенсируем выступающие слои — визуально по центру */
-  transform: translateX(9px);
+  width: 56px;
+  height: 56px;
+  margin-right: calc(var(--ask-step) * 2); /* компенсируем выступающие слои — визуально по центру */
+  transform: translateX(var(--ask-step));
 }
 
 .n4__ask-icon-layer {
   position: absolute;
   inset: 0;
-  border-radius: 9px;
+  border-radius: 14px;
 }
 
 .n4__ask-icon-layer--yellow {
   background: var(--brand-yellow);
-  transform: translateX(18px);
+  transform: translateX(calc(var(--ask-step) * 2));
 }
 
 .n4__ask-icon-layer--orange {
   background: var(--brand-orange);
-  transform: translateX(9px);
+  transform: translateX(var(--ask-step));
 }
 
 .n4__ask-icon-layer--blue {
@@ -350,8 +351,8 @@
 }
 
 .n4__ask-icon-layer--blue svg {
-  width: 20px;
-  height: 20px;
+  width: 31px;
+  height: 31px;
 }
 
 .n4__ask-title {
