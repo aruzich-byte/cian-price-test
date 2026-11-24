@@ -86,6 +86,22 @@
 
 /* ---------- 5. Слайд «Спросите у продавца»: иконка, слои, бабблы по одному ---------- */
 /* Пока слайд не открыт — всё в начальном положении без анимации; открыли (.is-ask) — разъезжается */
+/* Порядок слоёв фиксируем явно: синий сверху, жёлтый снизу. Без этого Safari к концу
+   анимации держит на отдельном GPU-слое только жёлтый (он доезжает последним) и рисует его
+   поверх уже «осевших» синего и оранжевого. will-change держит все три слоя на GPU всё время,
+   isolation замыкает их z-index внутри иконки. */
+.variant-new4 .n4__ask-icon {
+  isolation: isolate;
+}
+
+.variant-new4 .n4__ask-icon-layer {
+  will-change: transform, opacity;
+}
+
+.variant-new4 .n4__ask-icon-layer--yellow { z-index: 1; }
+.variant-new4 .n4__ask-icon-layer--orange { z-index: 2; }
+.variant-new4 .n4__ask-icon-layer--blue { z-index: 3; }
+
 .variant-new4 .n4__ask-icon-layer--blue {
   transform: scale(0.6);
   opacity: 0;
