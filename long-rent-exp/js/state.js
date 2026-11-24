@@ -68,7 +68,7 @@
   const session = {
     task: params.get("task") || "",
     pid: params.get("pid") || "",
-    variant: params.get("variant") || "new",
+    variant: params.get("variant") || "new4", // версия воркшопа: по умолчанию и единственный в панели — v4
     gallery: params.get("gallery") === "4x3" ? "4x3" : "1x1",
     // Кнопки и подпись поверх фото в «Новом 2»: light — белые (по макету), dark — как в «Новом»
     photoUi: params.get("photoui") === "light" ? "light" : "dark", // по умолчанию — Overlay

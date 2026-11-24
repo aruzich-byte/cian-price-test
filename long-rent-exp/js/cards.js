@@ -1015,7 +1015,9 @@
     const rects = keys
       .map((key) => {
         const [x1, y1, x2, y2] = plan.rooms[key];
-        return `<rect x="${x1}" y="${y1}" width="${x2 - x1}" height="${y2 - y1}" />`;
+        // Три фигуры одной формы: слои аберрации и сама комната — стиль в css/plan-highlight.css
+        const r = `x="${x1}" y="${y1}" width="${x2 - x1}" height="${y2 - y1}"`;
+        return `<rect class="plan-room__far" ${r} /><rect class="plan-room__near" ${r} /><rect class="plan-room" ${r} />`;
       })
       .join("");
     return `<svg class="n2__plan-rooms" viewBox="0 0 100 100" preserveAspectRatio="none">${rects}</svg>`;
