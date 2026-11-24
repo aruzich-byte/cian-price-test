@@ -47,6 +47,12 @@
         }
       });
     }
+    // Круглая кнопка внизу экрана (мобильный) — второй способ открыть панель, помимо тройного тапа
+    const prototypePanelFab = document.getElementById("prototype-panel-fab");
+    if (prototypePanelFab) {
+      if (!prototypePanel || window.App.session.task) prototypePanelFab.hidden = true;
+      else prototypePanelFab.addEventListener("click", () => prototypePanel.classList.add("is-open"));
+    }
     if (prototypePanelClose && prototypePanel) {
       prototypePanelClose.addEventListener("click", () => prototypePanel.classList.remove("is-open"));
     }

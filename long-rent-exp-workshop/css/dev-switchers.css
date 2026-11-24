@@ -44,6 +44,43 @@
   }
 }
 
+/* Круглая кнопка вызова панели: только на мобильном, закреплена внизу экрана и не уезжает при скролле.
+   z-index ниже шторок (100+) — открытая шторка её перекрывает; панель (250) — тоже. */
+.prototype-panel-fab {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .prototype-panel-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    color: var(--text-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .prototype-panel-fab[hidden] {
+    display: none;
+  }
+
+  .prototype-panel-fab svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 .prototype-panel__header {
   display: flex;
   align-items: center;
