@@ -37,7 +37,7 @@
   const ui = {
     mixMode: typeof MIX_MODE !== "undefined" ? MIX_MODE : "inline",
     priceVariant: "histogram", // 'histogram' | 'presets'
-    histogramShape: "curve", // 'bars' | 'curve'
+    histogramShape: "bars", // 'bars' | 'curve'
     // Если true — гистограмма строится не по всем LISTINGS, а по объектам,
     // которые проходят остальные применённые фильтры (площадь, этаж, класс) —
     // см. getBaseFiltered()/getAdaptiveBase в price-widget.js. Плейсхолдеры
