@@ -56,6 +56,32 @@
       }).observe(counter, { childList: true, characterData: true, subtree: true });
     }
 
+    // ---------- 8. «Найдено N» перелистывается: больше — снизу вверх, меньше — сверху вниз;
+    // подпись чипа («Цена» → «до 60 тыс.») мягко проявляется ----------
+    function tick(el, cls) {
+      el.classList.remove("is-tick", "is-tick-next", "is-tick-prev");
+      void el.offsetWidth;
+      el.classList.add(cls);
+    }
+    const count = document.getElementById("results-count");
+    if (count) {
+      const num = () => parseInt(count.textContent.replace(/\D/g, ""), 10) || 0;
+      let prevCount = null;
+      new MutationObserver(() => {
+        const now = num();
+        if (prevCount !== null && now !== prevCount) tick(count, now > prevCount ? "is-tick-next" : "is-tick-prev");
+        prevCount = now;
+      }).observe(count, { childList: true, characterData: true, subtree: true });
+    }
+    document.querySelectorAll(".qf-chip__label").forEach((label) => {
+      let prev = label.textContent;
+      new MutationObserver(() => {
+        if (label.textContent === prev) return;
+        prev = label.textContent;
+        tick(label, "is-tick");
+      }).observe(label, { childList: true, characterData: true, subtree: true });
+    });
+
     // ---------- 3. Шторки смахиваются вниз ----------
     // Тянем за верх шторки (крестик/заголовок, первые 72px): идёт за пальцем, отпустили ниже
     // 90px или быстрым броском — закрываем тем же крестиком, иначе пружиной на место.

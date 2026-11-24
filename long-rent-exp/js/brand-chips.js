@@ -13,9 +13,9 @@
     const chips = Array.from(row.querySelectorAll(".qf-chip"));
     const signature = (chip) => `${chip.classList.contains("is-set")}|${chip.textContent.trim()}`;
 
-    // Фильтр применяется из шторки, а затенение под ней гаснет 0.2s (.overlay-backdrop) —
+    // Фильтр применяется из шторки, а затенение под ней гаснет 0.36s (.overlay-backdrop, css/motion.css) —
     // импульс ждёт, пока чип станет виден целиком
-    const AFTER_SHEET_MS = 220;
+    const AFTER_SHEET_MS = 380; // под пружинное закрытие шторки и затенение 360ms (css/motion.css)
 
     function pulse(chip) {
       clearTimeout(chip._pulseTimer);

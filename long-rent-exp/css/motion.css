@@ -160,6 +160,40 @@
   transition: background 120ms ease, color 120ms ease, transform 380ms var(--ease-sheet), opacity 260ms ease 120ms;
 }
 
+/* ---------- 8. Фильтры: чипы плавно перекрашиваются, «Найдено N» перелистывается ---------- */
+.variant-new4 .qf-chip {
+  transition:
+    transform var(--dur-spring) var(--spring),
+    background-color 260ms ease,
+    border-color 260ms ease,
+    color 260ms ease;
+}
+
+.variant-new4 .qf-chip__label {
+  display: inline-block;
+}
+
+.variant-new4 .qf-chip__label.is-tick {
+  animation: n4-label-swap 320ms var(--spring);
+}
+
+@keyframes n4-label-swap {
+  from { transform: translateY(5px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.variant-new4 .results-bar__count {
+  display: inline-block;
+}
+
+.variant-new4 .results-bar__count.is-tick-next {
+  animation: n4-tick-next 340ms var(--spring);
+}
+
+.variant-new4 .results-bar__count.is-tick-prev {
+  animation: n4-tick-prev 340ms var(--spring);
+}
+
 /* ---------- Без движения ---------- */
 @media (prefers-reduced-motion: reduce) {
   .variant-new4 *,
