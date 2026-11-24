@@ -1420,8 +1420,8 @@
   // Готовые сообщения в чат. Сначала — вопросы о том, чего в объявлении нет (по полям модели),
   // потом общие («Можно посмотреть?»), всего до 4. Объявление заполнено полностью — только общие.
   // Тексты короткие, как кнопка: до ~20 знаков. Тап по баблу — переход в чат с этим сообщением.
-  const ASK_MAX = 4;
-  const ASK_MISSING_MAX = 3;
+  const ASK_MAX = 3;
+  const ASK_MISSING_MAX = 2;
 
   function new4MissingQuestions(item) {
     const q = [];
@@ -1470,15 +1470,21 @@
     return { missing, list: [...missing, ...general].slice(0, ASK_MAX) };
   }
 
+  // Иконка чата — синий скруглённый квадрат, за ним сдвинутые вправо слои фирменных
+  // оранжевого и жёлтого (аберрация в цветах бренда), как в макете слайда
+  const ASK_CHAT_ICON = `<svg viewBox="0 0 20 20" fill="none"><path d="M8.5 2.5C4.9 2.5 2 4.9 2 7.9c0 1.4.6 2.6 1.6 3.6L3 14l2.9-1.3c.8.3 1.7.4 2.6.4 3.6 0 6.5-2.4 6.5-5.3S12.1 2.5 8.5 2.5Z" fill="currentColor"/><path d="M16.2 8.6c.1.3.1.6.1 1 0 3.6-3.3 6.4-7.4 6.6.9 1.4 2.7 2.3 4.7 2.3.7 0 1.3-.1 1.9-.3L18 19l-.5-2.2c.9-.8 1.5-1.9 1.5-3.1 0-2-1.2-3.8-2.8-5.1Z" fill="currentColor"/></svg>`;
+
   function new4AskSlideHtml(item) {
-    const { missing, list } = new4AskQuestions(item);
-    const bg = item.photos[0] ? `<img class="n4__ask-bg" src="${encodeURI(item.photos[0].src)}" alt="" loading="lazy" />` : "";
+    const { list } = new4AskQuestions(item);
     return `
       <div class="n4__ask" data-role="ask">
-        ${bg}
         <div class="n4__ask-body">
-          <div class="n4__ask-title">${missing.length ? "Чего-то не хватает?" : "Понравилось?"}</div>
-          <div class="n4__ask-hint">Спросите у продавца в чате</div>
+          <div class="n4__ask-icon" aria-hidden="true">
+            <span class="n4__ask-icon-layer n4__ask-icon-layer--yellow"></span>
+            <span class="n4__ask-icon-layer n4__ask-icon-layer--orange"></span>
+            <span class="n4__ask-icon-layer n4__ask-icon-layer--blue">${ASK_CHAT_ICON}</span>
+          </div>
+          <div class="n4__ask-title">Спросите у продавца в чате</div>
           <div class="n4__ask-bubbles">
             ${list.map((t) => `<button class="n4__ask-bubble n3__control" type="button" data-text="${t}">${t}</button>`).join("")}
           </div>
