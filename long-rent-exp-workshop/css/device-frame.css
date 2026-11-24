@@ -9,37 +9,48 @@
   padding-left: calc(20px + 340px + 20px);
 }
 
+/* Рамка iPhone — картинка icons/device/iphone-frame.png (1299×2637).
+   Прозрачный «экран» в ней — 1159×2511 px, то есть 390×844 CSS px при масштабе 1159/390 ≈ 2.972.
+   Отсюда размер рамки 437.1×887.3 и отступ экрана 23.55 / 21.2 px.
+   Картинка лежит поверх экрана (::after, pointer-events: none) — вырез Dynamic Island
+   рисуется ею же. Все шторки, модалки и кнопки позиционированы absolute внутри
+   .phone-frame__screen, поэтому живут внутри экрана рамки. */
 .phone-frame {
   position: relative;
-  width: var(--phone-width);
-  height: 844px;
-  background: var(--device-chrome);
-  border-radius: 54px;
-  padding: 14px;
-  box-shadow: 0 30px 60px rgba(13, 22, 46, 0.35), 0 4px 16px rgba(13, 22, 46, 0.2);
+  flex-shrink: 0;
+  width: 437.1px;
+  height: 887.3px;
+  filter: drop-shadow(0 30px 40px rgba(13, 22, 46, 0.25));
+}
+
+.phone-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: url("../icons/device/iphone-frame.png") center / 100% 100% no-repeat;
+  pointer-events: none;
 }
 
 .phone-frame__screen {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  left: 23.55px;
+  top: 21.2px;
+  width: 390px;
+  height: 844px;
   background: var(--bg-page);
-  border-radius: 40px;
+  border-radius: 52px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* Свой слой: z-index шторок и модалок внутри экрана не перекрывают картинку рамки */
+  isolation: isolate;
+  z-index: 0;
 }
 
+/* Вырез уже нарисован на картинке рамки */
 .phone-frame__island {
-  position: absolute;
-  top: 25px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 30px;
-  background: var(--device-chrome);
-  border-radius: 99px;
-  z-index: 200;
+  display: none;
 }
 
 /* Edge-to-edge on real phones */
@@ -51,12 +62,20 @@
   .phone-frame {
     width: 100%;
     height: 100dvh;
-    border-radius: 0;
-    padding: 0;
-    box-shadow: none;
+    filter: none;
+  }
+  .phone-frame::after {
+    display: none;
   }
   .phone-frame__screen {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: 100%;
+    height: 100%;
     border-radius: 0;
+    z-index: auto;
+    isolation: auto;
   }
   .phone-frame__island {
     display: none;
