@@ -60,7 +60,7 @@
   gap: 2px;
   padding: 8px 12px;
   border-radius: 16px 16px 16px 4px;
-  background: #f3f5f8;
+  background: #e6f0ff; /* как фон слайда «Спросите у продавца» (.n4__ask) */
 }
 
 .n4__seller-name,
