@@ -381,3 +381,22 @@
 .card--n4 .n2__thumbs {
   transition: opacity 160ms ease;
 }
+
+/* ---------- Галерея по кругу: перескочивший слайд «въезжает» с той стороны, откуда тянули ---------- */
+.card--n4 .card__gallery-track.is-wrap-left {
+  animation: n4-wrap-from-left 300ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.card--n4 .card__gallery-track.is-wrap-right {
+  animation: n4-wrap-from-right 300ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes n4-wrap-from-left {
+  from { transform: translateX(-28%); opacity: 0.3; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes n4-wrap-from-right {
+  from { transform: translateX(28%); opacity: 0.3; }
+  to { transform: none; opacity: 1; }
+}

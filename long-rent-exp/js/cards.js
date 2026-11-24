@@ -309,7 +309,7 @@
   // fixed — галерея не растёт при свайпе (у «Нового 2» она сразу 1:1);
   // captionOf(index) — своя подпись к фото (у «Нового 2» подписи для продажи квартир свои);
   // onPosition(position) — дополнительная реакция на листание.
-  function setupGallery(card, item, { asis = false, fixed = asis, captionOf = null, onPosition = null } = {}) {
+  function setupGallery(card, item, { asis = false, fixed = asis, captionOf = null, onPosition = null, loop = false } = {}) {
     const track = card.querySelector('[data-role="track"]');
     if (!track) return;
     const gallery = card.querySelector(".card__gallery");
@@ -383,7 +383,70 @@
       { passive: true }
     );
 
-    setupMouseDrag(track);
+    const wrap = loop ? setupGalleryLoop(card, track) : null;
+    setupMouseDrag(track, undefined, wrap);
+  }
+
+  // ---------- Галерея по кругу («Новый 4») ----------
+  // Свайп вправо с первого слайда — на последний, свайп влево с последнего — на первый.
+  // Нативный скролл дальше краёв не пускает, поэтому ловим «упор» в край сами: палец/мышь
+  // ушли за край больше чем на EDGE_SWIPE px — мгновенно переставляем ленту и даём слайду
+  // «въехать» с той стороны, откуда тянули.
+  const EDGE_SWIPE = 40;
+
+  function setupGalleryLoop(card, track) {
+    const last = () => track.children.length - 1;
+    const atStart = () => track.scrollLeft <= 1;
+    const atEnd = () => track.scrollLeft >= track.scrollWidth - track.clientWidth - 1;
+
+    function wrapTo(index, fromLeft) {
+      track.style.scrollSnapType = "none";
+      track.style.scrollBehavior = "auto";
+      track.scrollLeft = index * track.clientWidth;
+      track.classList.remove("is-wrap-left", "is-wrap-right");
+      void track.offsetWidth;
+      track.classList.add(fromLeft ? "is-wrap-left" : "is-wrap-right");
+      setTimeout(() => {
+        track.classList.remove("is-wrap-left", "is-wrap-right");
+        track.style.scrollSnapType = "";
+        track.style.scrollBehavior = "";
+      }, 320);
+      if (window.App.track) window.App.track("Галерея по кругу", { value: index === 0 ? "с последнего на первое" : "с первого на последнее" });
+    }
+
+    // dx > 0 — тянули вправо (хотят предыдущий слайд), dx < 0 — влево (следующий)
+    function onEdgeSwipe(startedAtStart, startedAtEnd, dx) {
+      if (startedAtStart && dx > EDGE_SWIPE) wrapTo(last(), true);
+      else if (startedAtEnd && dx < -EDGE_SWIPE) wrapTo(0, false);
+      else return false;
+      return true;
+    }
+
+    let touch = null;
+    track.addEventListener(
+      "touchstart",
+      (e) => {
+        if (e.touches.length !== 1) return (touch = null);
+        const t = e.touches[0];
+        touch = { x: t.clientX, y: t.clientY, dx: 0, dy: 0, start: atStart(), end: atEnd() };
+      },
+      { passive: true }
+    );
+    track.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!touch || e.touches.length !== 1) return (touch = null);
+        touch.dx = e.touches[0].clientX - touch.x;
+        touch.dy = e.touches[0].clientY - touch.y;
+      },
+      { passive: true }
+    );
+    track.addEventListener("touchend", () => {
+      if (touch && Math.abs(touch.dx) > Math.abs(touch.dy)) onEdgeSwipe(touch.start, touch.end, touch.dx);
+      touch = null;
+    });
+
+    return { atStart, atEnd, onEdgeSwipe };
   }
 
   // ---------- Перетаскивание галереи мышью ----------
@@ -393,17 +456,18 @@
   const FLICK_VELOCITY = 0.4; // px/мс
 
   // step() — шаг между фото в px (по умолчанию ширина ленты: одно фото на экран)
-  function setupMouseDrag(track, step = () => track.clientWidth) {
+  function setupMouseDrag(track, step = () => track.clientWidth, wrap = null) {
     let drag = null;
 
     track.addEventListener("pointerdown", (e) => {
       if (e.pointerType !== "mouse" || e.button !== 0) return;
-      // Кнопки внутри ленты (бабблы «Спросите продавца») — не тянем, иначе захват указателя съест клик
-      if (e.target.closest("button")) return;
       drag = { startX: e.clientX, startLeft: track.scrollLeft, lastX: e.clientX, lastT: e.timeStamp, velocity: 0, moved: false };
+      if (wrap) Object.assign(drag, { atStart: wrap.atStart(), atEnd: wrap.atEnd() });
       track.style.scrollSnapType = "none";
       track.style.scrollBehavior = "auto";
-      track.setPointerCapture(e.pointerId);
+      // Указатель захватываем только когда начали тянуть: иначе клик по кнопке внутри ленты
+      // (бабблы «Спросите продавца») уходит ленте, а не кнопке
+      drag.pointerId = e.pointerId;
       track.classList.add("is-dragging");
     });
 
@@ -413,7 +477,10 @@
       if (dt > 0) drag.velocity = (e.clientX - drag.lastX) / dt;
       drag.lastX = e.clientX;
       drag.lastT = e.timeStamp;
-      if (Math.abs(e.clientX - drag.startX) > 3) drag.moved = true;
+      if (Math.abs(e.clientX - drag.startX) > 3 && !drag.moved) {
+        drag.moved = true;
+        track.setPointerCapture(drag.pointerId);
+      }
       track.scrollLeft = drag.startLeft - (e.clientX - drag.startX);
     });
 
@@ -429,6 +496,12 @@
       if (drag.moved) {
         track.dataset.justDragged = "1";
         setTimeout(() => delete track.dataset.justDragged, 0);
+      }
+      // По кругу: потянули за край ленты — перескок на противоположный край
+      if (wrap && wrap.onEdgeSwipe(drag.atStart, drag.atEnd, drag.lastX - drag.startX)) {
+        drag = null;
+        track.classList.remove("is-dragging");
+        return;
       }
       drag = null;
       track.classList.remove("is-dragging");
@@ -1059,6 +1132,7 @@
 
     setupGallery(card, item, {
       fixed: true,
+      loop: card.classList.contains("card--n4"),
       captionOf: (index) => new2Caption(item, index),
       onPosition: (position) => {
         // Счётчик слайдов «2/12» («Новый 4»)
