@@ -1,0 +1,455 @@
+/* ---------- Вариант «Новый 4» (?variant=new4) — макет «Анализ сниппетов», узел 600:24863 ---------- */
+/* Карточка собрана на стилях «Нового 2» (.card--n2): галерея, подписи, миниатюры, лейблы внахлёст, текст.
+   Здесь — отличия: отступы 20px, шапка продавца, градиент на фото и ряд иконок внизу. */
+.card--n4 {
+  padding: 0 20px 40px; /* между сниппетами 40px: от низа контента до шапки следующего */
+  gap: 4px;
+}
+
+/* ---------- Шапка продавца ---------- */
+/* Заголовок — как сообщение продавца: аватар внизу слева, рядом серое облачко;
+   угол облачка у аватара острый — «хвостик» сообщения */
+.n4__seller {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0 -20px;
+  padding: 8px 10px 12px;
+  background: var(--color-white);
+}
+
+.n4__logos {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.n4__logo {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e3e6ed;
+  border-radius: 50%;
+  background: var(--color-white);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+/* Логотип компании — под фото агента, агент заходит на него */
+.n4__logo + .n4__logo {
+  margin-left: -12px;
+}
+
+.n4__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.n4__seller-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 16px 16px 16px 4px;
+  background: #e6f0ff; /* как фон слайда «Спросите у продавца» (.n4__ask) */
+}
+
+.n4__seller-name,
+.n4__title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.n4__seller-name {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+}
+
+/* Промо-заголовок — тем же начертанием, что строка параметров (комнатность · площадь · этаж): 14/17, 600, −0.4;
+   длинный переносится, как текст сообщения */
+.n4__title {
+  white-space: normal;
+  font-size: 14px;
+  line-height: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+/* Суперагент / Суперхозяин — звезда в правом нижнем углу логотипа, на белой подложке */
+.n4__logos {
+  position: relative;
+}
+
+.n4__star {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-white);
+  color: var(--positive-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.n4__star svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---------- Галерея: вплотную к шапке, на всю ширину ---------- */
+.card--n4 .n2__gallery {
+  margin: -4px -20px 0;
+}
+
+/* Лёгкое затемнение к низу кадра */
+.n4__toner {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 100%);
+  pointer-events: none;
+}
+
+.n2__gallery.is-overlay .n4__toner,
+.n2__gallery.is-overlay .n4__counter {
+  display: none;
+}
+
+/* Счётчик слайдов «2/12» — маленькая тёмная полупрозрачная капсула справа сверху */
+.n4__counter {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--overlay-dark);
+  backdrop-filter: var(--overlay-blur);
+  -webkit-backdrop-filter: var(--overlay-blur);
+  color: var(--color-white);
+  font-size: 11px;
+  line-height: 20px;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+/* ---------- Лейблы: текст первой капсулы — по левому краю текста (20px) ---------- */
+.card--n4 .n2__labels {
+  margin-left: -12px;
+  padding: 4px 0 0;
+}
+
+.card--n4 .card__labels + .card__info {
+  margin-top: 0;
+}
+
+.card--n4 .card__info {
+  gap: 4px;
+}
+
+/* ---------- Ряд иконок ---------- */
+.n4__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 -10px;
+}
+
+.n4__actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.n4__actions-group--contact {
+  gap: 16px;
+}
+
+.card__btn.n4__btn,
+.n4__btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.n4__btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.n4__fav.is-active {
+  color: var(--fav-color);
+}
+
+
+/* Точки под фото не нужны — номер слайда показывает счётчик */
+.card--n4 .card__gallery-dots {
+  display: none;
+}
+
+/* ---------- Избранное: «заряд аберрации» при добавлении (см. playFavCharge в cards.js) ---------- */
+/* Как у пина на тёмной карте: два слоя формы сердца с равным шагом (3px и 6px от контура),
+   чёткие края, внутренний плотнее, внешний прозрачнее; цвет — как у залитого сердца.
+   Слои — обводка контура, stroke-width = 2 × отступ. */
+.n4__fav {
+  position: relative;
+  overflow: visible;
+  /* Цвет залитого сердца и его аберрации — оранжевый #E85810 (было #c2122d, красный) */
+  --fav-color: #e85810;
+}
+
+.n4__fav > svg {
+  position: relative;
+  z-index: 1;
+}
+
+.n4__fav-aura {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  pointer-events: none;
+}
+
+.n4__fav-aura svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  overflow: visible;
+}
+
+.n4__fav-aura path {
+  fill: var(--fav-color);
+  stroke: var(--fav-color);
+  stroke-linejoin: round;
+  stroke-width: 0;
+}
+
+.n4__fav-aura-inner {
+  opacity: 0.3;
+  animation: n4-aura-inner 720ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+.n4__fav-aura-outer {
+  opacity: 0.14;
+  animation: n4-aura-outer 720ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+/* Сердце и слои подрастают вместе, чтобы шаг аберрации оставался ровным */
+.n4__fav.is-charging > svg,
+.n4__fav.is-charging .n4__fav-aura {
+  animation: n4-fav-pop 720ms var(--spring, cubic-bezier(0.3, 0, 0.2, 1));
+}
+
+@keyframes n4-fav-pop {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.14); }
+  65% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+@keyframes n4-aura-inner {
+  0% { stroke-width: 0; opacity: 0.3; }
+  35% { stroke-width: 6px; opacity: 0.3; }
+  65% { stroke-width: 6px; opacity: 0.3; }
+  100% { stroke-width: 6px; opacity: 0; }
+}
+
+@keyframes n4-aura-outer {
+  0% { stroke-width: 0; opacity: 0.14; }
+  10% { stroke-width: 0; opacity: 0.14; }
+  45% { stroke-width: 12px; opacity: 0.14; }
+  65% { stroke-width: 12px; opacity: 0.14; }
+  100% { stroke-width: 12px; opacity: 0; }
+}
+
+/* ---------- Последний слайд галереи «Спросите продавца» (см. new4AskSlideHtml в cards.js) ---------- */
+/* По макету: светло-голубой фон, по центру иконка чата с фирменными слоями (синий, оранжевый,
+   жёлтый), заголовок и белые бабблы с синим текстом — хвостик в правом нижнем углу. */
+.n4__ask {
+  --ask-bg: #e6f0ff;
+  --brand-blue: #0468ff;
+  --brand-orange: #f4631b;
+  --brand-yellow: #f1af11;
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: var(--ask-bg);
+}
+
+.n4__ask-body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  box-sizing: border-box;
+}
+
+/* Иконка 48px; слои того же размера сдвинуты вправо на шаг --ask-step и 2 × шаг.
+   Ширина блока — вместе со слоями, поэтому по центру выровнена вся группа целиком. */
+.n4__ask-icon {
+  --ask-size: 48px;
+  --ask-step: 12px;
+  position: relative;
+  width: calc(var(--ask-size) + var(--ask-step) * 2);
+  height: var(--ask-size);
+}
+
+.n4__ask-icon-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--ask-size);
+  height: var(--ask-size);
+  border-radius: 12px;
+}
+
+.n4__ask-icon-layer--yellow {
+  background: var(--brand-yellow);
+  transform: translateX(calc(var(--ask-step) * 2));
+}
+
+.n4__ask-icon-layer--orange {
+  background: var(--brand-orange);
+  transform: translateX(var(--ask-step));
+}
+
+.n4__ask-icon-layer--blue {
+  background: var(--brand-blue);
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.n4__ask-icon-layer--blue svg {
+  width: 27px;
+  height: 27px;
+}
+
+.n4__ask-title {
+  margin-top: 14px;
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  text-align: center;
+}
+
+.n4__ask-bubbles {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.n4__ask-bubble {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 20px 20px 4px 20px;
+  background: var(--color-white);
+  color: var(--brand-blue);
+  font: inherit;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+
+.n4__ask-bubble:active {
+  transform: scale(0.96);
+}
+
+/* На слайде с вопросами — без счётчика, затемнения, подписи и миниатюр карты/планировки */
+.n2__gallery.is-ask .n4__counter,
+.n2__gallery.is-ask .n4__toner,
+.n2__gallery.is-ask .n2__thumbs {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.n4__counter,
+.n4__toner,
+.card--n4 .n2__thumbs {
+  transition: opacity 160ms ease;
+}
+
+/* ---------- Галерея по кругу: перескочивший слайд «въезжает» с той стороны, откуда тянули ---------- */
+.card--n4 .card__gallery-track.is-wrap-left {
+  animation: n4-wrap-from-left 300ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.card--n4 .card__gallery-track.is-wrap-right {
+  animation: n4-wrap-from-right 300ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+@keyframes n4-wrap-from-left {
+  from { transform: translateX(-28%); opacity: 0.3; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes n4-wrap-from-right {
+  from { transform: translateX(28%); opacity: 0.3; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ---------- Лейбл «Новое» на первом фото (только .card--n4.is-new — первые 2 в выдаче) ---------- */
+/* Картинка icons/label-new.svg из макета: пилюля «НОВОЕ» в трёх слоях фирменного синего
+   (#0054FD → #0095FF → #74D6FD) — та же аберрация, что у пина и избранного.
+   Стоит на месте подписи фото (слева сверху), внешним краем на 12px от краёв фото —
+   как счётчик и миниатюры. */
+.n4__new {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  height: 36px;
+  width: auto;
+  display: none;
+  pointer-events: none;
+  will-change: transform, opacity;
+  transform-origin: 20px 50%;
+}
+
+.card--n4.is-new .n4__new {
+  display: block;
+}
+
+.n2__gallery.is-overlay .n4__new {
+  visibility: hidden;
+}
