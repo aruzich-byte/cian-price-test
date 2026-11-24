@@ -79,7 +79,12 @@
   // отличия задаём CSS через .variant-new2 и проверками session.variant === "new2" в cards.js
   if (session.variant === "new2") document.documentElement.classList.add("variant-new2");
   if (session.variant === "new3") document.documentElement.classList.add("variant-new3");
-  if (session.variant === "new4") document.documentElement.classList.add("variant-new4");
+  // В «Новом 4» шапка с поиском и быстрыми фильтрами видна: снимаем no-search с <body>.
+  // Бренд-импульс выбранного чипа — css/brand-chips.css и js/brand-chips.js.
+  if (session.variant === "new4") {
+    document.documentElement.classList.add("variant-new4");
+    document.body.classList.remove("no-search");
+  }
   if ((session.variant === "new2" || session.variant === "new4") && session.photoUi === "dark") document.documentElement.classList.add("n2-photo-dark");
 
   Object.assign(window.App, { state, ui, session });

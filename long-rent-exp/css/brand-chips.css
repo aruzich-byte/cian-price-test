@@ -1,0 +1,68 @@
+/* ---------- Бренд-импульс выбранного быстрого фильтра (только ?variant=new4) ---------- */
+/* Бренд-код воркшопа «Бренд-коды в продукте»: аберрация как у пина на тёмной карте.
+   Когда фильтр применился (чип стал выбранным или сменил значение), за чипом один раз
+   проступают два слоя его же формы с шагом 3px и 6px, чёткие края, 30% и 14% прозрачности,
+   в фирменном синем — и гаснут. Слои — box-shadow со spread на ::before, поэтому
+   повторяют скругление чипа. Запуск — класс is-pulsing из js/brand-chips.js.
+   Тот же шаг и прозрачности, что у сердца избранного (.n4__fav-aura). */
+.variant-new4 .quickfilters {
+  /* место под внешний слой: у ленты overflow-x: auto, и всё, что выше неё, обрезается */
+  padding-top: 6px;
+  margin-top: -6px;
+}
+
+.variant-new4 .qf-chip {
+  position: relative;
+  --chip-pulse: 4, 104, 255; /* --accent #0468ff в RGB */
+}
+
+.variant-new4 .qf-chip::before {
+  content: "";
+  position: absolute;
+  inset: -1px; /* по внешнему краю обводки чипа */
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.variant-new4 .qf-chip.is-pulsing::before {
+  animation: qf-brand-pulse 720ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+.variant-new4 .qf-chip.is-pulsing {
+  animation: qf-brand-pop 720ms cubic-bezier(0.3, 0, 0.2, 1);
+}
+
+@keyframes qf-brand-pulse {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(var(--chip-pulse), 0.3), 0 0 0 0 rgba(var(--chip-pulse), 0.14);
+  }
+  35% {
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(var(--chip-pulse), 0.3), 0 0 0 3px rgba(var(--chip-pulse), 0.14);
+  }
+  50%,
+  65% {
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(var(--chip-pulse), 0.3), 0 0 0 6px rgba(var(--chip-pulse), 0.14);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 3px rgba(var(--chip-pulse), 0.3), 0 0 0 6px rgba(var(--chip-pulse), 0.14);
+  }
+}
+
+/* Чип чуть «вдыхает» вместе со слоями — как сердце избранного, но мягче: он шире */
+@keyframes qf-brand-pop {
+  0% { transform: scale(1); }
+  30%, 65% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .variant-new4 .qf-chip.is-pulsing,
+  .variant-new4 .qf-chip.is-pulsing::before {
+    animation: none;
+  }
+}
