@@ -816,6 +816,7 @@
           .map((photo, i) => `<img src="${encodeURI(photo.src)}" alt=""${layout && i === layout.index ? ' class="is-layout"' : ""}${i > 0 ? ' loading="lazy"' : ""} />`)
           .join("")}${ask ? new4AskSlideHtml(item) : ""}</div>
         ${toner ? '<div class="n4__toner"></div>' : ""}
+        ${ask ? '<img class="n4__new" data-role="new" src="icons/label-new.svg" alt="Новое" />' : ""}
         <div class="n2__overlay n2__control" data-role="overlay" hidden></div>
         <span class="n2__caption" data-role="caption"></span>
         ${counter && total > 1 ? `<span class="n4__counter" data-role="counter">1/${total}</span>` : ""}
@@ -1043,6 +1044,7 @@
     const thumbs = card.querySelectorAll(".n2__thumb");
     const layoutThumb = card.querySelector('[data-thumb="layout"]');
     const counter = card.querySelector('[data-role="counter"]');
+    const newLabel = card.querySelector('[data-role="new"]');
     const layout = layoutPhoto(item);
     const { track } = window.App;
     let mode = null; // null | "layout" | "map"
@@ -1139,6 +1141,11 @@
         if (counter) counter.textContent = `${clamp(Math.round(position), 0, item.photos.length - 1) + 1}/${item.photos.length}`;
         // Последний слайд «Спросите продавца» («Новый 4») — без счётчика, затемнения и миниатюр
         gallery.classList.toggle("is-ask", Math.round(position) >= item.photos.length);
+        // Лейбл «Новое» живёт на первом фото: уезжает вместе с ним, гаснет к середине свайпа
+        if (newLabel) {
+          newLabel.style.transform = `translateX(${-position * gallery.clientWidth}px)`;
+          newLabel.style.opacity = String(Math.max(0, 1 - Math.abs(position) * 1.5));
+        }
         const now = Boolean(layout) && Math.round(position) === layout.index;
         if (now !== onLayoutSlide) {
           onLayoutSlide = now;
@@ -1605,6 +1612,18 @@
     `;
     container.appendChild(empty);
   }
+
+  // Лейбл «Новое» («Новый 4») — только у первых NEW_LABEL_COUNT сниппетов выдачи, в любом порядке
+  // и после любых фильтров: следим за списком и помечаем первые карточки классом is-new.
+  const NEW_LABEL_COUNT = 2;
+  document.addEventListener("DOMContentLoaded", () => {
+    const list = document.getElementById("results-list");
+    if (!list) return;
+    const mark = () =>
+      list.querySelectorAll(".card--n4").forEach((card, i) => card.classList.toggle("is-new", i < NEW_LABEL_COUNT));
+    new MutationObserver(mark).observe(list, { childList: true });
+    mark();
+  });
 
   window.App = window.App || {};
   Object.assign(window.App, { createCarouselCardEl, createMixCarouselEl, createCardEl, renderEmptyState });

@@ -423,3 +423,28 @@
   from { transform: translateX(28%); opacity: 0.3; }
   to { transform: none; opacity: 1; }
 }
+
+/* ---------- Лейбл «Новое» на первом фото (только .card--n4.is-new — первые 2 в выдаче) ---------- */
+/* Картинка icons/label-new.svg из макета: пилюля «НОВОЕ» в трёх слоях фирменного синего
+   (#0054FD → #0095FF → #74D6FD) — та же аберрация, что у пина и избранного.
+   Стоит на месте подписи фото (слева сверху); внешний слой выходит за отступ, поэтому
+   сдвинут на -6px, чтобы сама пилюля стояла на 12px от края, как подписи. */
+.n4__new {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  height: 40px;
+  width: auto;
+  display: none;
+  pointer-events: none;
+  will-change: transform, opacity;
+  transform-origin: 20px 50%;
+}
+
+.card--n4.is-new .n4__new {
+  display: block;
+}
+
+.n2__gallery.is-overlay .n4__new {
+  visibility: hidden;
+}

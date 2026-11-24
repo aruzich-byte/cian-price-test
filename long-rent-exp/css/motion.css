@@ -194,6 +194,16 @@
   animation: n4-tick-prev 340ms var(--spring);
 }
 
+/* ---------- Лейбл «Новое»: слои разъезжаются, когда сниппет появился ---------- */
+.variant-new4.motion-ready .card--n4.is-new.is-in .n4__new {
+  animation: n4-new-pop 620ms var(--spring-bouncy) 180ms backwards;
+}
+
+@keyframes n4-new-pop {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
 /* ---------- Без движения ---------- */
 @media (prefers-reduced-motion: reduce) {
   .variant-new4 *,
