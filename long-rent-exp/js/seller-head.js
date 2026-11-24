@@ -1,10 +1,10 @@
 (function () {
   // Вид шапки продавца в «Новом 4» (стили — css/card-new4.css, [data-seller-head]).
-  // bubble — как сейчас: облачко-сообщение на белом; strip — серая полоса на всю ширину вплотную к фото.
+  // strip (по умолчанию) — серая полоса на всю ширину вплотную к фото; bubble — облачко-сообщение на белом.
   // Берётся из ?sellerhead=…, переключается в панели «Настройка прототипа» без перезагрузки.
   const PRESETS = ["bubble", "strip"];
   const url = new URL(window.location.href);
-  let preset = PRESETS.includes(url.searchParams.get("sellerhead")) ? url.searchParams.get("sellerhead") : "bubble";
+  let preset = PRESETS.includes(url.searchParams.get("sellerhead")) ? url.searchParams.get("sellerhead") : "strip";
   const apply = () => document.documentElement.setAttribute("data-seller-head", preset);
   apply();
 
@@ -17,7 +17,7 @@
         apply();
         sync();
         const u = new URL(window.location.href);
-        if (preset === "bubble") u.searchParams.delete("sellerhead");
+        if (preset === "strip") u.searchParams.delete("sellerhead");
         else u.searchParams.set("sellerhead", preset);
         history.replaceState(null, "", u);
       })
