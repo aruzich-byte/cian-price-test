@@ -1312,27 +1312,30 @@
     `;
   }
 
-  // Бренд-код «заряд аберрации» на избранном — по наброску «Пины и кластеры» с воркшопа
-  // «Бренд-коды в продукте». Нажали: сердце чуть подрастает, от него один раз расходятся
-  // две копии его же формы (аберрации) в фирменном синем, и оно возвращается в размер уже залитым.
-  // Снятие из избранного — без анимации. Тайминги и цвета — в css/card-new4.css (.n4__fav-echo).
+  // Бренд-код «заряд аберрации» на избранном — повторяет аберрацию пина с наброска «Пины и кластеры»
+  // воркшопа «Бренд-коды в продукте»: за элементом два слоя его же формы с равным шагом отступа,
+  // чёткие края, внутренний плотнее, внешний прозрачнее. Слои — обводка контура сердца
+  // (stroke растёт от 0), поэтому отступ одинаковый по всему контуру, как у пина.
+  // Нажали: сердце чуть подрастает, слои расходятся один раз и гаснут, сердце возвращается залитым.
+  // Снятие из избранного — без анимации. Тайминги, шаг и прозрачность — в css/card-new4.css (.n4__fav-aura).
+  const HEART_PATH = "M8 14.86S0 10.6 0 5.86C0 3.17 2.21 1 4.93 1c1.16 0 2.23.4 3.07 1.06A4.95 4.95 0 0 1 11.07 1C13.79 1 16 3.17 16 5.86 16 10.6 8 14.86 8 14.86Z";
+
   function playFavCharge(btn) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     btn.classList.remove("is-charging");
+    btn.querySelectorAll(".n4__fav-aura").forEach((el) => el.remove());
     void btn.offsetWidth; // перезапуск анимации при быстрых повторных нажатиях
+    const aura = document.createElement("span");
+    aura.className = "n4__fav-aura";
+    aura.setAttribute("aria-hidden", "true");
+    aura.innerHTML = `<svg viewBox="0 0 16 16"><path class="n4__fav-aura-outer" d="${HEART_PATH}"/><path class="n4__fav-aura-inner" d="${HEART_PATH}"/></svg>`;
+    btn.prepend(aura);
     btn.classList.add("is-charging");
-    ["n4__fav-echo--near", "n4__fav-echo--far"].forEach((mod) => {
-      const echo = document.createElement("span");
-      echo.className = `n4__fav-echo ${mod}`;
-      echo.setAttribute("aria-hidden", "true");
-      echo.innerHTML = ICONS.heartFilled;
-      btn.appendChild(echo);
-    });
     clearTimeout(btn._chargeTimer);
     btn._chargeTimer = setTimeout(() => {
       btn.classList.remove("is-charging");
-      btn.querySelectorAll(".n4__fav-echo").forEach((el) => el.remove());
-    }, 900);
+      aura.remove();
+    }, 800);
   }
 
   function createNew4CardEl(item) {

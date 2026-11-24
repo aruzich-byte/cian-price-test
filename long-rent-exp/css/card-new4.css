@@ -213,16 +213,13 @@
 }
 
 /* ---------- Избранное: «заряд аберрации» при добавлении (см. playFavCharge в cards.js) ---------- */
-/* Сердце подрастает на ~15% и возвращается; из-под него расходятся две копии его же формы:
-   ближняя — плотнее, дальняя — светлее и чуть размыта, как ореол у пина на тёмной карте. */
-.card--n4 {
-  --brand-charge: #0468ff; /* фирменный синий Циана; поменять на #c2122d, если аберрация должна быть в цвет сердца */
-  --brand-charge-soft: #6ea8ff;
-}
-
+/* Как у пина на тёмной карте: два слоя формы сердца с равным шагом (3px и 6px от контура),
+   чёткие края, внутренний плотнее, внешний прозрачнее; цвет — как у залитого сердца.
+   Слои — обводка контура, stroke-width = 2 × отступ. */
 .n4__fav {
   position: relative;
   overflow: visible;
+  --fav-color: #c2122d; /* цвет залитого сердца (.n4__fav.is-active) */
 }
 
 .n4__fav > svg {
@@ -230,11 +227,7 @@
   z-index: 1;
 }
 
-.n4__fav.is-charging > svg:first-child {
-  animation: n4-fav-pop 420ms cubic-bezier(0.3, 0, 0.2, 1);
-}
-
-.n4__fav-echo {
+.n4__fav-aura {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -242,38 +235,56 @@
   height: 16px;
   margin: -8px 0 0 -8px;
   pointer-events: none;
-  color: var(--brand-charge);
-  opacity: 0;
 }
 
-.n4__fav-echo svg {
+.n4__fav-aura svg {
   width: 16px;
   height: 16px;
   display: block;
+  overflow: visible;
 }
 
-.n4__fav-echo--near {
-  animation: n4-fav-echo-near 560ms cubic-bezier(0.2, 0.6, 0.3, 1) 90ms;
+.n4__fav-aura path {
+  fill: var(--fav-color);
+  stroke: var(--fav-color);
+  stroke-linejoin: round;
+  stroke-width: 0;
 }
 
-.n4__fav-echo--far {
-  color: var(--brand-charge-soft);
-  filter: blur(1.5px);
-  animation: n4-fav-echo-far 720ms cubic-bezier(0.2, 0.6, 0.3, 1) 150ms;
+.n4__fav-aura-inner {
+  opacity: 0.3;
+  animation: n4-aura-inner 720ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+.n4__fav-aura-outer {
+  opacity: 0.14;
+  animation: n4-aura-outer 720ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+/* Сердце и слои подрастают вместе, чтобы шаг аберрации оставался ровным */
+.n4__fav.is-charging > svg,
+.n4__fav.is-charging .n4__fav-aura {
+  animation: n4-fav-pop 720ms cubic-bezier(0.3, 0, 0.2, 1);
 }
 
 @keyframes n4-fav-pop {
   0% { transform: scale(1); }
-  35% { transform: scale(1.16); }
+  30% { transform: scale(1.14); }
+  65% { transform: scale(1.14); }
   100% { transform: scale(1); }
 }
 
-@keyframes n4-fav-echo-near {
-  0% { transform: scale(1); opacity: 0.6; }
-  100% { transform: scale(1.9); opacity: 0; }
+@keyframes n4-aura-inner {
+  0% { stroke-width: 0; opacity: 0.3; }
+  35% { stroke-width: 6px; opacity: 0.3; }
+  65% { stroke-width: 6px; opacity: 0.3; }
+  100% { stroke-width: 6px; opacity: 0; }
 }
 
-@keyframes n4-fav-echo-far {
-  0% { transform: scale(1.1); opacity: 0.4; }
-  100% { transform: scale(2.6); opacity: 0; }
+@keyframes n4-aura-outer {
+  0% { stroke-width: 0; opacity: 0.14; }
+  10% { stroke-width: 0; opacity: 0.14; }
+  45% { stroke-width: 12px; opacity: 0.14; }
+  65% { stroke-width: 12px; opacity: 0.14; }
+  100% { stroke-width: 12px; opacity: 0; }
 }
