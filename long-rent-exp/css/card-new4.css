@@ -116,7 +116,7 @@
    вплотную к фото, без облачка — текст прямо на сером */
 [data-seller-head="strip"] .n4__seller {
   align-items: center;
-  padding: 12px 20px;
+  padding: 12px; /* по бокам 12px — одна вертикаль с «новое» и счётчиком на фото */
   background: #f3f5f8;
 }
 
