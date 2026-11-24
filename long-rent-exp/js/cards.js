@@ -1415,7 +1415,7 @@
     const aura = document.createElement("span");
     aura.className = "n4__fav-aura";
     aura.setAttribute("aria-hidden", "true");
-    aura.innerHTML = `<svg viewBox="0 0 16 16"><path class="n4__fav-aura-outer" d="${HEART_PATH}"/><path class="n4__fav-aura-inner" d="${HEART_PATH}"/></svg>`;
+    aura.innerHTML = `<svg viewBox="-8 -8 32 32"><path class="n4__fav-aura-outer" d="${HEART_PATH}"/><path class="n4__fav-aura-inner" d="${HEART_PATH}"/></svg>`;
     btn.prepend(aura);
     btn.classList.add("is-charging");
     clearTimeout(btn._chargeTimer);
