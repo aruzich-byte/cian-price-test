@@ -264,7 +264,7 @@
 /* Сердце и слои подрастают вместе, чтобы шаг аберрации оставался ровным */
 .n4__fav.is-charging > svg,
 .n4__fav.is-charging .n4__fav-aura {
-  animation: n4-fav-pop 720ms cubic-bezier(0.3, 0, 0.2, 1);
+  animation: n4-fav-pop 720ms var(--spring, cubic-bezier(0.3, 0, 0.2, 1));
 }
 
 @keyframes n4-fav-pop {

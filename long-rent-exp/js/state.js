@@ -79,6 +79,7 @@
   // отличия задаём CSS через .variant-new2 и проверками session.variant === "new2" в cards.js
   if (session.variant === "new2") document.documentElement.classList.add("variant-new2");
   if (session.variant === "new3") document.documentElement.classList.add("variant-new3");
+  if (session.variant === "new4") document.documentElement.classList.add("variant-new4");
   if ((session.variant === "new2" || session.variant === "new4") && session.photoUi === "dark") document.documentElement.classList.add("n2-photo-dark");
 
   Object.assign(window.App, { state, ui, session });

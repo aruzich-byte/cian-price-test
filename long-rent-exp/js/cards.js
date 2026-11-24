@@ -1500,7 +1500,18 @@
         const text = bubble.dataset.text;
         if (track) track("Вопрос продавцу с фото", { item, value: text });
         // Чата в прототипе нет — заглушка с уже отправленным сообщением
-        if (openInfoStub) openInfoStub({ title: "Чат с продавцом", text: `Ваше сообщение «${text}» отправлено. Продавец ответит здесь же, в чате.` });
+        const openChat = () => openInfoStub && openInfoStub({ title: "Чат с продавцом", text: `Ваше сообщение «${text}» отправлено. Продавец ответит здесь же, в чате.` });
+        const ask = bubble.closest(".n4__ask");
+        if (window.App.motion && !window.App.motion.reduce && ask) {
+          // Баббл «улетает» как отправленное сообщение, потом открывается чат (css/motion.css, п. 6)
+          ask.classList.add("is-sending");
+          bubble.classList.add("is-sent");
+          setTimeout(openChat, 340);
+          setTimeout(() => {
+            ask.classList.remove("is-sending");
+            bubble.classList.remove("is-sent");
+          }, 900);
+        } else openChat();
       });
     });
   }

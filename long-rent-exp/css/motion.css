@@ -1,0 +1,172 @@
+/* ---------- Анимации в стиле iOS — только для «Нового 4» (html.variant-new4, см. state.js) ----------
+   Пружинные кривые: быстрый старт, мягкое торможение, лёгкий «отскок». Все параметры — здесь.
+   Логика (появление сниппетов, смахивание шторок, счётчик, отправка вопроса) — в js/motion.js.
+   При «Уменьшить движение» в системе всё выключается. */
+:root {
+  /* Мягкая пружина с отскоком ~3% (как UISpringTimingParameters, damping ≈ 0.8) */
+  --spring: linear(0, 0.1 4%, 0.32 9%, 0.6 16%, 0.82 24%, 0.95 32%, 1.02 41%, 1.035 50%, 1.025 62%, 1.005 78%, 1);
+  /* Пружина пободрее — для иконок и маленьких элементов, отскок ~10% */
+  --spring-bouncy: linear(0, 0.14 4%, 0.5 11%, 0.86 19%, 1.06 27%, 1.1 33%, 1.08 40%, 1.02 52%, 0.99 64%, 1);
+  /* Кривая шторок iOS — без отскока */
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --press-scale: 0.94;
+  --dur-press-in: 90ms;
+  --dur-spring: 480ms;
+  --dur-sheet: 520ms;
+}
+
+/* ---------- 1. Нажатия: сжатие и пружинный возврат ---------- */
+.variant-new4 :is(.n4__btn, .n4__ask-bubble, .qf-chip, .btn-primary, .btn-outline, .sheet__close, .n2__thumb, .sort-btn) {
+  transition: transform var(--dur-spring) var(--spring);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.variant-new4 :is(.n4__btn, .n4__ask-bubble, .qf-chip, .btn-primary, .btn-outline, .sheet__close, .n2__thumb, .sort-btn):active {
+  transform: scale(var(--press-scale));
+  transition-duration: var(--dur-press-in);
+  transition-timing-function: ease-out;
+}
+
+/* ---------- 2. Появление сниппетов при прокрутке ---------- */
+.variant-new4.motion-ready .card--n4 {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.variant-new4.motion-ready .card--n4.is-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity 420ms ease-out, transform 640ms var(--spring);
+  transition-delay: var(--in-delay, 0ms);
+}
+
+/* ---------- 3. Шторки: пружинный выезд, мягкое затемнение ---------- */
+.variant-new4 .sheet {
+  transition: transform var(--dur-sheet) var(--ease-sheet);
+}
+
+.variant-new4 .sheet.is-dragging {
+  transition: none;
+}
+
+.variant-new4 .overlay-backdrop {
+  transition: opacity 360ms ease;
+}
+
+/* ---------- 4. Галерея: счётчик перелистывается, миниатюры — с масштабом ---------- */
+.variant-new4 .n4__counter {
+  overflow: hidden;
+}
+
+.variant-new4 .n4__counter.is-tick-next {
+  animation: n4-tick-next 260ms var(--spring);
+}
+
+.variant-new4 .n4__counter.is-tick-prev {
+  animation: n4-tick-prev 260ms var(--spring);
+}
+
+@keyframes n4-tick-next {
+  from { transform: translateY(6px); opacity: 0.2; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes n4-tick-prev {
+  from { transform: translateY(-6px); opacity: 0.2; }
+  to { transform: none; opacity: 1; }
+}
+
+.variant-new4 .card--n4 .n2__thumbs {
+  transition: opacity 200ms ease, transform var(--dur-spring) var(--spring);
+}
+
+.variant-new4 .n2__gallery.is-ask .n2__thumbs {
+  transform: scale(0.7);
+}
+
+/* ---------- 5. Слайд «Спросите у продавца»: иконка, слои, бабблы по одному ---------- */
+/* Пока слайд не открыт — всё в начальном положении без анимации; открыли (.is-ask) — разъезжается */
+.variant-new4 .n4__ask-icon-layer--blue {
+  transform: scale(0.6);
+  opacity: 0;
+}
+
+.variant-new4 .n4__ask-icon-layer--orange,
+.variant-new4 .n4__ask-icon-layer--yellow {
+  transform: translateX(0);
+}
+
+.variant-new4 .n4__ask-title {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.variant-new4 .n4__ask-bubble {
+  opacity: 0;
+  transform: translateY(14px) scale(0.92);
+  transform-origin: 100% 100%; /* из хвостика, как сообщение */
+}
+
+.variant-new4 .n2__gallery.is-ask .n4__ask-icon-layer--blue {
+  transform: none;
+  opacity: 1;
+  transition: transform 560ms var(--spring-bouncy), opacity 200ms ease;
+}
+
+.variant-new4 .n2__gallery.is-ask .n4__ask-icon-layer--orange {
+  transform: translateX(9px);
+  transition: transform 520ms var(--spring-bouncy) 120ms;
+}
+
+.variant-new4 .n2__gallery.is-ask .n4__ask-icon-layer--yellow {
+  transform: translateX(18px);
+  transition: transform 560ms var(--spring-bouncy) 180ms;
+}
+
+.variant-new4 .n2__gallery.is-ask .n4__ask-title {
+  opacity: 1;
+  transform: none;
+  transition: opacity 300ms ease 140ms, transform var(--dur-spring) var(--spring) 140ms;
+}
+
+.variant-new4 .n2__gallery.is-ask .n4__ask-bubble {
+  opacity: 1;
+  transform: none;
+  transition: opacity 260ms ease, transform 560ms var(--spring-bouncy);
+}
+
+.variant-new4 .n2__gallery.is-ask .n4__ask-bubble:nth-child(1) { transition-delay: 240ms; }
+.variant-new4 .n2__gallery.is-ask .n4__ask-bubble:nth-child(2) { transition-delay: 320ms; }
+.variant-new4 .n2__gallery.is-ask .n4__ask-bubble:nth-child(3) { transition-delay: 400ms; }
+
+/* Нажатие баббла на открытом слайде — без задержки появления */
+.variant-new4 .n2__gallery.is-ask .n4__ask-bubble:active {
+  transform: scale(var(--press-scale));
+  transition: transform var(--dur-press-in) ease-out;
+}
+
+/* ---------- 6. Отправка вопроса: баббл улетает вверх, остальные гаснут ---------- */
+.variant-new4 .n2__gallery.is-ask .n4__ask.is-sending .n4__ask-bubble {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.variant-new4 .n2__gallery.is-ask .n4__ask.is-sending .n4__ask-bubble.is-sent {
+  opacity: 0;
+  transform: translateY(-56px) scale(0.9);
+  background: var(--brand-blue);
+  color: var(--color-white);
+  transition: background 120ms ease, color 120ms ease, transform 380ms var(--ease-sheet), opacity 260ms ease 120ms;
+}
+
+/* ---------- Без движения ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .variant-new4 *,
+  .variant-new4 *::before,
+  .variant-new4 *::after {
+    transition-duration: 0ms !important;
+    transition-delay: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
