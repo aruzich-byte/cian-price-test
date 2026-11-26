@@ -1533,7 +1533,7 @@
 
     card.innerHTML = `
       ${new4HeaderHtml(item)}
-      ${new2GalleryHtml(item, { actions: false, toner: true, counter: true, ask: true })}
+      ${new2GalleryHtml(item, { actions: false, toner: true, counter: false, ask: true })}
       <div class="n4__actions">
         <div class="n4__actions-group">
           <button class="card__gallery-btn n4__btn n4__fav n3__control" type="button" aria-label="В избранное">${ICONS.heart}</button>
