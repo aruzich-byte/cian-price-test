@@ -349,6 +349,64 @@
     if (top.view === "card" && top.active) scrollToCard(top.active, false);
   }
 
+  // Полшторки: скролл списка вниз тянет шторку вверх, пока она не займёт весь экран под шапкой (Katya 26.11)
+  const FULL_TOP = 128;
+  function watchSheet(top) {
+    const pb = $(".fw-pb", FW.root);
+    const sh = pb && $(".fw-pb__sheet", pb);
+    if (!sh) return;
+    let lift = 0, base = 0, touchY = null;
+    const isHalf = () => pb.classList.contains("is-half");
+    const apply = () => {
+      sh.style.transition = "none";
+      sh.style.top = Math.max(FULL_TOP, base - lift) + "px";
+    };
+    const finish = (force) => {
+      sh.style.transition = "";
+      if (force || base - lift <= FULL_TOP + 1 || lift > 20) {
+        sh.style.top = "";
+        setView("full");
+      } else sh.style.top = "";
+      lift = 0;
+    };
+    const begin = () => {
+      if (!lift) base = sh.getBoundingClientRect().top - pb.getBoundingClientRect().top;
+    };
+    let wheelT;
+    sh.addEventListener(
+      "wheel",
+      (e) => {
+        if (!isHalf() || e.deltaY <= 0) return;
+        e.preventDefault();
+        begin();
+        lift += e.deltaY;
+        apply();
+        clearTimeout(wheelT);
+        if (base - lift <= FULL_TOP) finish(true);
+        else wheelT = setTimeout(() => finish(false), 160);
+      },
+      { passive: false }
+    );
+    sh.addEventListener("touchstart", (e) => isHalf() && ((touchY = e.touches[0].clientY), begin()), { passive: true });
+    sh.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!isHalf() || touchY === null) return;
+        const dy = touchY - e.touches[0].clientY;
+        if (dy <= 0) return;
+        e.preventDefault();
+        lift = dy;
+        apply();
+      },
+      { passive: false }
+    );
+    sh.addEventListener("touchend", () => {
+      if (touchY === null || !isHalf()) return;
+      touchY = null;
+      if (lift) finish(false);
+    });
+  }
+
   function screenMain() {
     const p = store.pendingInvite && store.podborki.find((x) => x.id === store.pendingInvite);
     const inv = p
@@ -375,6 +433,7 @@
       const p = store.podborki.find((x) => x.id === top.id);
       if (!p) return;
       watchCarousel(top);
+      watchSheet(top);
       root.querySelectorAll(".fw-pb__list .card--n4[data-listing-id]").forEach((card) => {
         const id = card.dataset.listingId;
         card.insertAdjacentHTML("beforeend", footHtml(p, id).replace('class="fw-mc__foot"', 'class="fw-mc__foot fw-mc__foot--n4"'));
