@@ -96,7 +96,7 @@
       </button>
       <span class="fw-mc__reacts">
         ${reacts.map(([e, list]) => `<button class="fw-react${list.includes(store.me) ? " is-mine" : ""}" type="button" data-tg="react" data-id="${id}" data-emoji="${e}">${e}<b>${list.length}</b></button>`).join("")}
-        <button class="fw-react fw-react--add" type="button" data-tg="react-add" data-id="${id}" aria-label="Добавить реакцию"><svg viewBox="0 0 24 24"><circle cx="11" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.3" cy="11.5" r="1.3" fill="currentColor"/><circle cx="13.7" cy="11.5" r="1.3" fill="currentColor"/><path d="M7.8 15.2a4 4 0 0 0 6.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19.5 2.5v6M16.5 5.5h6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+        <button class="fw-react fw-react--add" type="button" data-tg="react-add" data-id="${id}" aria-label="Добавить реакцию"><img src="${ASSETS}together/add-reaction.svg" alt="" /></button>
       </span>
     </div>`;
   }

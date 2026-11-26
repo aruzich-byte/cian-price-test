@@ -2289,9 +2289,10 @@
   width: 34px;
   color: #0468ff;
 }
-.fw-react--add svg {
-  width: 22px;
-  height: 22px;
+.fw-react--add img {
+  width: 17px;
+  height: 18px;
+  display: block;
 }
 .fw-rpick {
   position: absolute;
