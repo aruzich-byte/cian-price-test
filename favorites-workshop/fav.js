@@ -429,7 +429,9 @@
     if (!act) return;
     const a = act.dataset.act;
     if (a === "back") {
-      stack.pop();
+      // из подборки — сразу на главный экран Избранного, где подборки лежат плитками (Katya 26.11)
+      if ((stack[stack.length - 1] || {}).type === "podborka") stack.length = 0;
+      else stack.pop();
       rerender();
     } else if (a === "search") {
       stack.length = 0;
