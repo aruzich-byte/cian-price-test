@@ -90,7 +90,7 @@
     const notes = p.notes[id] || [];
     const who = [...new Set(notes.map((n) => n.who))];
     const reacts = Object.entries(p.reactions[id] || {}).filter(([, list]) => list.length);
-    return `<div class="fw-mc__foot">
+    return `<div class="fw-mc__foot" data-foot="${id}">
       <button class="fw-mc__notes" type="button" data-tg="notes" data-id="${id}">
         ${who.length ? `<span class="fw-mc__avs">${who.map((m) => `<img class="fw-av" src="${PEOPLE[m].img}" alt="${PEOPLE[m].name}" />`).join("")}</span>` : ""}
         ${notes.length ? notesWord(notes.length) : "Добавить заметку"}
@@ -144,7 +144,10 @@
     p.updated = Date.now();
   }
   function refreshFoot(p, id) {
-    document.querySelectorAll(`.fw-mc[data-open-card="${id}"] .fw-mc__foot`).forEach((f) => (f.outerHTML = footHtml(p, id)));
+    document.querySelectorAll(`[data-foot="${id}"]`).forEach((f) => {
+      const n4 = f.classList.contains("fw-mc__foot--n4");
+      f.outerHTML = footHtml(p, id).replace('class="fw-mc__foot"', `class="fw-mc__foot${n4 ? " fw-mc__foot--n4" : ""}"`);
+    });
   }
   function openReactPicker(btn, p, id) {
     document.querySelectorAll(".fw-rpick").forEach((x) => x.remove());
@@ -273,6 +276,15 @@
   function after(root, top) {
     document.body.classList.toggle("fw-blue-top", FW.tab === "fav" && top.type === "podborka");
     if (FW.tab === "home") document.querySelectorAll(".fw-tab").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === "home"));
+    // Строка заметок и реакций — и под большим сниппетом new4 в списке подборки
+    if (top.type === "podborka") {
+      const p = store.podborki.find((x) => x.id === top.id);
+      if (!p) return;
+      root.querySelectorAll(".fw-pb__list .card--n4[data-listing-id]").forEach((card) => {
+        const id = card.dataset.listingId;
+        card.insertAdjacentHTML("beforeend", footHtml(p, id).replace('class="fw-mc__foot"', 'class="fw-mc__foot fw-mc__foot--n4"'));
+      });
+    }
   }
 
   // ---------- Шторки ----------
