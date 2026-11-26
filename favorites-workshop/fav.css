@@ -2747,3 +2747,14 @@
   font: 600 15px/20px var(--font-family);
   cursor: pointer;
 }
+
+/* Шторка заметок по содержимому: мало заметок — ниже, минимум 300px, максимум 72% */
+.fw-sheet--notes {
+  height: auto;
+  min-height: 300px;
+  max-height: 72%;
+}
+.fw-sheet--notes .fw-notes__list {
+  flex: 1 1 auto;
+  min-height: 0;
+}
