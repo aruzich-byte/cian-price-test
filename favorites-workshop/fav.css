@@ -2471,3 +2471,30 @@
   margin-left: -4px;
   box-shadow: 0 0 0 1.5px #fff;
 }
+
+/* Свернутая шторка «N вариантов» поменьше (правка Katya): 16/20, без сортировки */
+.fw-pb__sheet {
+  top: calc(100% - 52px);
+}
+.fw-pb__sheet-head {
+  padding: 20px 16px 12px 20px;
+}
+.fw-pb__count {
+  font-size: 16px;
+  line-height: 20px;
+}
+.fw-pb:not(.is-expanded) .fw-pb__sort {
+  display: none;
+}
+.fw-pb__sort {
+  width: 24px;
+  height: 20px;
+}
+.fw-pb__sort svg {
+  width: 22px;
+  height: 22px;
+  margin-top: -1px;
+}
+.fw-pb__carousel {
+  bottom: 52px;
+}
