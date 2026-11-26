@@ -1504,7 +1504,6 @@
 }
 .fw-pb__avs {
   display: flex;
-  gap: 1px;
   height: 38px;
   padding: 4px;
   border-radius: 19px;
@@ -2461,4 +2460,14 @@
 .fw-rpick button {
   font-size: 26px;
   padding: 2px 8px;
+}
+
+/* Наложение аватаров как в макете: второй заходит на первый на 3px, вокруг — кольцо 1px цвета подложки */
+.fw-pb__avs .fw-av + .fw-av {
+  margin-left: -3px;
+  box-shadow: 0 0 0 1px #74d6fd;
+}
+.fw-mc__avs .fw-av + .fw-av {
+  margin-left: -4px;
+  box-shadow: 0 0 0 1.5px #fff;
 }
