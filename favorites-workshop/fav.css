@@ -2758,3 +2758,26 @@
   flex: 1 1 auto;
   min-height: 0;
 }
+
+/* ---------- Состояния экрана подборки: half (старт) / card (выбран пин) / full ---------- */
+.fw-pb__map {
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+/* полшторки: карта сдвигается вверх, чтобы пины были в видимой половине */
+.fw-pb.is-half .fw-pb__map {
+  transform: translateY(-70px);
+}
+.fw-pb.is-half .fw-pb__sheet,
+.fw-in-podborka .fw-pb.is-half .fw-pb__sheet {
+  top: 52%;
+}
+.fw-pb.is-half .fw-pb__carousel {
+  opacity: 0;
+  pointer-events: none;
+}
+.fw-pb:not(.is-expanded) .fw-pb__sort {
+  display: inline-flex;
+}
+.fw-pb.is-card .fw-pb__sort {
+  display: none;
+}

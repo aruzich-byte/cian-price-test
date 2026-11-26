@@ -85,7 +85,7 @@
       p.reactions = { [items[0]]: { "👍": ["anya"] }, [items[2]]: { "👎": ["anya"] } };
       p.places = [
         { id: "pl-pool", kind: "pool", x: 19, y: 41, who: "anya" },
-        { id: "pl-office", kind: "office", x: 86, y: 30, who: "anya" },
+        { id: "pl-office", kind: "office", x: 86, y: 34, who: "anya" },
       ];
       p.notes["pl-pool"] = [{ who: "anya", text: "Сюда в бассейн пойдём в субботу вечером", ts: ago(240) }];
       p.notes["pl-office"] = [{ who: "anya", text: "Здесь в офис за документами заеду", ts: ago(235) }];
@@ -269,10 +269,13 @@
     const top = stack[stack.length - 1] || {};
     const items = orderedItems(p).map(byId).filter(Boolean);
     const empty = !items.length;
-    const expanded = empty || top.expanded;
+    // Состояния экрана (Katya 26.11): half — полкарты без выбранных пинов + полшторки списка (старт),
+    // card — выбран пин: карусель карточек, шторка свёрнута; full — список на весь экран
+    const view = empty ? "full" : top.view || "half";
+    const expanded = view === "full";
     const chip = p.type === "daily" ? `<button class="fw-pb__chip" type="button" data-tg="dates">${DATES[p.dates].short} · ${p.guests} ${plural(p.guests, ["гость", "гостя", "гостей"])}</button>` : "";
-    return `<div class="fw-pb${expanded ? " is-expanded" : ""}">
-      <div class="fw-pb__map">${pinsHtml(items).replace(/<\/div>$/, placesHtml(p) + "</div>")}</div>
+    return `<div class="fw-pb${expanded ? " is-expanded" : ""} is-${view}">
+      <div class="fw-pb__map" data-tg="map">${pinsHtml(items).replace(/<\/div>$/, placesHtml(p) + "</div>")}</div>
       <div class="fw-pb__head">
         <div class="fw-pb__bar">
           <button class="fw-pb__icon" type="button" data-act="back" aria-label="Назад">${IC.back}</button>
@@ -296,6 +299,54 @@
         </div>
       </div>
     </div>`;
+  }
+
+  function setView(v) {
+    const top = stack[stack.length - 1] || {};
+    top.view = v;
+    if (v !== "card") top.active = null;
+    const pb = $(".fw-pb", FW.root);
+    if (!pb) return;
+    pb.classList.remove("is-half", "is-card", "is-full");
+    pb.classList.add("is-" + v);
+    pb.classList.toggle("is-expanded", v === "full");
+    $(".fw-pb__sheet", pb).scrollTop = 0;
+    const list = $(".fw-pb__list", pb);
+    if (list) list.scrollTop = 0;
+    markPin(top.active);
+  }
+  function markPin(id) {
+    FW.root.querySelectorAll(".fw-mpin").forEach((x) => x.classList.toggle("is-active", !!id && x.dataset.id === id));
+  }
+  function scrollToCard(id, smooth) {
+    const car = $(".fw-pb__carousel", FW.root);
+    const card = car && car.querySelector(`[data-open-card="${id}"]`);
+    if (card) car.scrollTo({ left: card.offsetLeft - 24, behavior: smooth ? "smooth" : "auto" });
+    markPin(id);
+  }
+  // Как на выдаче: синим горит пин карточки, которая сейчас в центре карусели
+  function watchCarousel(top) {
+    const car = $(".fw-pb__carousel", FW.root);
+    if (!car) return;
+    let raf = 0;
+    car.addEventListener("scroll", () => {
+      if (top.view !== "card" || raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const mid = car.getBoundingClientRect().left + car.clientWidth / 2;
+        let best = null, dist = Infinity;
+        car.querySelectorAll("[data-open-card]").forEach((c) => {
+          const r = c.getBoundingClientRect();
+          const d = Math.abs(r.left + r.width / 2 - mid);
+          if (d < dist) (dist = d), (best = c);
+        });
+        if (best && best.dataset.openCard !== top.active) {
+          top.active = best.dataset.openCard;
+          markPin(top.active);
+        }
+      });
+    });
+    if (top.view === "card" && top.active) scrollToCard(top.active, false);
   }
 
   function screenMain() {
@@ -323,6 +374,7 @@
     if (top.type === "podborka") {
       const p = store.podborki.find((x) => x.id === top.id);
       if (!p) return;
+      watchCarousel(top);
       root.querySelectorAll(".fw-pb__list .card--n4[data-listing-id]").forEach((card) => {
         const id = card.dataset.listingId;
         card.insertAdjacentHTML("beforeend", footHtml(p, id).replace('class="fw-mc__foot"', 'class="fw-mc__foot fw-mc__foot--n4"'));
@@ -672,18 +724,16 @@
         FW.rerender();
         FW.toast(p.sort === "price" ? "Сначала дешевле" : "По дате добавления");
       } else if (a === "toggle") {
-        top.expanded = !top.expanded;
-        const pb = $(".fw-pb", FW.root);
-        if (pb && p && p.items.length) {
-          pb.classList.toggle("is-expanded", top.expanded);
-          $(".fw-pb__sheet", pb).scrollTop = 0;
-        }
+        if (p && p.items.length) setView((top.view || "half") === "half" ? "full" : "half");
+      } else if (a === "map" && p) {
+        // тап по пустой карте — назад к стартовому виду
+        if (top.view === "card") setView("half");
       } else if (a === "pin" && p) {
-        // пин → карточка в карусели, активный пин синий
-        FW.root.querySelectorAll(".fw-mpin").forEach((x) => x.classList.toggle("is-active", x === t));
-        const car = $(".fw-pb__carousel", FW.root);
-        const card = car && car.querySelector(`[data-open-card="${t.dataset.id}"]`);
-        if (card) car.scrollTo({ left: card.offsetLeft - 24, behavior: "smooth" });
+        // пин → карусель с его карточкой, шторка сворачивается
+        const fromHalf = top.view !== "card";
+        top.active = t.dataset.id;
+        setView("card");
+        scrollToCard(t.dataset.id, !fromHalf);
       } else if (a === "notes" && p) openNotes(p, t.dataset.id);
       else if (a === "react" && p) {
         toggleReaction(p, t.dataset.id, t.dataset.emoji);
