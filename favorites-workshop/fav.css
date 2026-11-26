@@ -2605,3 +2605,8 @@
     stroke-dashoffset: 62.83;
   }
 }
+
+/* Одна квартира в подборке — карточка на карте по центру */
+.fw-pb__carousel > .fw-mc:only-child {
+  margin: 0 auto;
+}
