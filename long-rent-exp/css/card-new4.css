@@ -231,16 +231,16 @@
   flex-direction: column;
 }
 
-/* Миниатюры планировки и карты — чуть меньше, чем в «Новом 2» */
+/* Миниатюры планировки и карты — 40px, чуть меньше, чем в «Новом 2» (44px) */
 .card--n4 .n2__thumb {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 40px; /* как кнопки действий под фото */
+  height: 40px;
+  border-radius: 11px;
 }
 
 .card--n4 .n2__thumb-pin {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 /* Точки внизу фото вместо счётчика «2/12»; на слайде «Спросите продавца» их нет */
