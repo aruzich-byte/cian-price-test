@@ -446,15 +446,371 @@
     $(".app").appendChild(tabbar);
   }
 
-  // «Вы смотрели»: тап по сниппету (не по кнопкам) = открыл объявление
-  const CARD_CONTROLS = ".card__btn, .card__gallery-btn, .card__gallery-badge, .card__labels, .n2__control, .n3__control, .asis__extra";
+  // ---------- Карточка объекта (по макету «Sale · B») ----------
+  // Открывается тапом по сниппету new4 (выдача, «Объявления», подборка), по мини-сниппету
+  // «Могут подойти» и по «Похожим». Открытие = объект в «Вы смотрели».
+  // Сердце — то же, что на сниппете new4: иконка и «заряд аберрации» #E85810.
+  const HEART_PATH = "M8 14.86S0 10.6 0 5.86C0 3.17 2.21 1 4.93 1c1.16 0 2.23.4 3.07 1.06A4.95 4.95 0 0 1 11.07 1C13.79 1 16 3.17 16 5.86 16 10.6 8 14.86 8 14.86Z";
+  function favCharge(btn) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    btn.classList.remove("is-charging");
+    btn.querySelectorAll(".n4__fav-aura").forEach((el) => el.remove());
+    void btn.offsetWidth;
+    const aura = document.createElement("span");
+    aura.className = "n4__fav-aura";
+    aura.setAttribute("aria-hidden", "true");
+    aura.innerHTML = `<svg viewBox="-8 -8 32 32"><path class="n4__fav-aura-outer" d="${HEART_PATH}"/><path class="n4__fav-aura-inner" d="${HEART_PATH}"/></svg>`;
+    btn.prepend(aura);
+    btn.classList.add("is-charging");
+    clearTimeout(btn._chargeTimer);
+    btn._chargeTimer = setTimeout(() => {
+      btn.classList.remove("is-charging");
+      aura.remove();
+    }, 800);
+  }
+
+  function setSaved(id, on) {
+    store.saved = store.saved.filter((x) => x !== id);
+    if (on) store.saved.unshift(id);
+  }
+  function addViewed(id) {
+    store.viewed = [id].concat(store.viewed.filter((x) => x !== id));
+  }
+
+  const CI = {
+    share: '<svg viewBox="0 0 24 24"><path d="M12 15V3.5m0 0L7.5 8M12 3.5 16.5 8M5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    layout: '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z M4 13h7M11 4v5M15 13v7M15 16h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>',
+    chart: '<svg viewBox="0 0 24 24"><path d="M6 13v7M12 8v12M18 4v16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
+    arrow: '<svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    copy: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+    walk: '<svg viewBox="0 0 24 24"><circle cx="13" cy="4" r="2" fill="currentColor"/><path d="M10 21l2-6 3 3v3M8 12l2-4 4 1 2 4M11 8l-1 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    bus: '<svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="15" rx="3" fill="currentColor"/><rect x="7" y="6" width="10" height="5" rx="1" fill="#fff"/><path d="M7 18v2.5M17 18v2.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+    phone: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M6.6 3.5c.5-.5 1.3-.5 1.8 0l2.2 2.3c.5.5.5 1.2.1 1.7l-1.3 1.6c-.3.4-.3.9 0 1.3a14 14 0 0 0 4.2 4.2c.4.3.9.3 1.3 0l1.6-1.3c.5-.4 1.2-.4 1.7.1l2.3 2.2c.5.5.5 1.3 0 1.8l-1.2 1.3c-.9.9-2.2 1.3-3.4.9C10 17.8 6.2 14 4.4 8.6c-.4-1.2 0-2.5.9-3.4l1.3-1.7Z"/></svg>',
+    chat: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3.5c-5 0-9 3.4-9 7.6 0 2.3 1.2 4.3 3 5.7l-.5 3.4c-.1.5.5.9.9.6l3.4-2c.7.1 1.4.2 2.2.2 5 0 9-3.4 9-7.6S17 3.5 12 3.5Z"/><circle cx="8" cy="11" r="1.3" fill="#fff"/><circle cx="12" cy="11" r="1.3" fill="#fff"/><circle cx="16" cy="11" r="1.3" fill="#fff"/></svg>',
+    star: '<svg viewBox="0 0 24 24"><path fill="#FF8A00" d="m12 2.5 2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5-4.9-4.5 6.6-.8z"/></svg>',
+    cianMark: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 4 4 20h5.5L20 9.5zM20 12.5 12.5 20H20z"/></svg>',
+    superStar: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="currentColor"/><path fill="#fff" d="m12 6.5 1.6 3.4 3.7.4-2.8 2.5.8 3.7-3.3-1.9-3.3 1.9.8-3.7-2.8-2.5 3.7-.4z"/></svg>',
+    pencil: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="m14.5 5.5 4 4L9 19H5v-4zM16 4l1.3-1.3a1.4 1.4 0 0 1 2 0l2 2a1.4 1.4 0 0 1 0 2L20 8z"/></svg>',
+    chevron: '<svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    person: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="currentColor"/><path fill="currentColor" d="M4 20c0-3.6 3.6-6 8-6s8 2.4 8 6z"/></svg>',
+    bank: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3 3 8v2h18V8zM5 11h2.5v6H5zm5.75 0h2.5v6h-2.5zM16.5 11H19v6h-2.5zM3 18.5h18V21H3z"/></svg>',
+    brick: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 5h7v15H4zM12.5 10H20v10h-7.5z"/><path fill="#E6F0FF" d="M6 8h1.5v1.5H6zM6 12h1.5v1.5H6zM8.5 8H10v1.5H8.5zM8.5 12H10v1.5H8.5z"/></svg>',
+    crane: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M5 4h14v2.5h-6V20H10V6.5H5z M15 8h2.5v4H15z"/></svg>',
+    balcony: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M8 3h8v6H8zM3 11h18v2.5H3zM4.5 14h2v6h-2zm4.3 0h2v6h-2zm4.4 0h2v6h-2zm4.3 0h2v6h-2z"/></svg>',
+    window: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 3h16v18H4z"/><path fill="#E6F0FF" d="M6.5 5.5h5v5h-5zm6.5 0h4.5v5H13zm-6.5 7h5v6h-5z"/></svg>',
+    wheel: '<svg viewBox="0 0 24 24"><circle cx="10" cy="4.5" r="2" fill="currentColor"/><path d="M10 8v6h5l2 5M10 11h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 12.5a5 5 0 1 0 6.5 6.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    ramp: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 18 18 8h3v10z"/></svg>',
+    lift: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="m12 3 5 6H7zM12 21l-5-6h10z"/></svg>',
+    platform: '<svg viewBox="0 0 24 24"><path d="M7 4v14h11M7 11h6l2 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    history: '<svg viewBox="0 0 48 48"><rect x="6" y="20" width="9" height="20" rx="2" fill="#1A73FF"/><rect x="18" y="14" width="9" height="26" rx="2" fill="#FF6A4D"/><rect x="30" y="6" width="9" height="34" rx="2" fill="#1A73FF"/><path d="M4 36c8-2 12-12 20-12s10 4 20-8" fill="none" stroke="#21D07A" stroke-width="3" stroke-linecap="round"/></svg>',
+  };
+
+  const nf = (n) => n.toLocaleString("ru-RU").replace(/[ ,]/g, " ");
+  const area = (n) => String(n).replace(".", ",");
+  const roomsShort = (l) => (l.rooms ? `${l.rooms}-комн` : "Студия");
+
+  function sellerOf(l) {
+    const name = l.agency || "Собственник";
+    const role = l.isByHomeowner ? "Собственник" : l.isSuperAgent ? "Суперагент" : l.isAgency ? "Агентство" : "Агент";
+    const rating = (4 + ((parseInt(l.id, 10) % 9) + 1) / 10).toFixed(1).replace(".", ",");
+    const reviews = 12 + (parseInt(l.id, 10) % 60);
+    return { name, role, rating, reviews, avatar: l.avatar };
+  }
+  function avatarHtml(s, cls) {
+    return s.avatar
+      ? `<span class="${cls}" style="background-image:url('${encodeURI(s.avatar)}')"></span>`
+      : `<span class="${cls} ${cls}--initials">${esc(s.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join(""))}</span>`;
+  }
+  function kvHtml(title, rows, more = true) {
+    return `<section class="fw-cd__sec"><h2 class="fw-cd__h">${title}</h2>
+      <dl class="fw-cd__kv">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
+      ${more ? '<button class="fw-cd__link" type="button" data-cd="soon">Смотреть всё</button>' : ""}</section>`;
+  }
+  function heartBtn(id, cls) {
+    const on = store.saved.includes(id);
+    return `<button class="n4__btn n4__fav ${cls}${on ? " is-active" : ""}" type="button" data-cd="fav" aria-label="В избранное">${on ? App.ICONS.heartFilled20 : App.ICONS.heart20}</button>`;
+  }
+
+  function similarFor(l) {
+    const pool = App.LISTINGS.filter((x) => x.id !== l.id && x.dealType === l.dealType && x.propertyType === l.propertyType && withPhoto(x));
+    const near = pool.filter((x) => x.rooms === l.rooms);
+    return near.concat(pool.filter((x) => !near.includes(x))).slice(0, 4);
+  }
+  function similarHtml(x) {
+    const params = [x.rooms ? `${x.rooms}-комн. кв.` : "Студия", `${area(x.area)} м²`].join(" · ");
+    const walk = x.metroTransport === "walk";
+    return `<button class="fw-cd__sim" type="button" data-open="${x.id}">
+      <span class="fw-cd__sim-photo" style="background-image:url('${photo(x.id)}')"></span>
+      <span class="fw-cd__sim-price">${fmtPrice(x.price)}${x.dealType === "rent" ? "/мес." : ""}</span>
+      <span class="fw-cd__sim-params">${params}</span>
+      ${x.metro ? `<span class="fw-cd__metro"><i style="color:#${x.metroColor || "0468FF"}">M</i>${esc(x.metro)}</span>` : ""}
+      ${x.metroMin ? `<span class="fw-cd__sim-min">${walk ? CI.walk : CI.bus}${x.metroMin} мин</span>` : ""}
+    </button>`;
+  }
+
+  function cardHtml(l) {
+    const s = sellerOf(l);
+    const rent = l.dealType === "rent";
+    const photos = l.photos;
+    const layoutIdx = photos.findIndex((p, i) => p.layout || (l.hasLayout && i === 1 && !photos.some((x) => x.layout)));
+    const walk = l.metroTransport === "walk";
+    const offer = Math.round((l.price * 0.97) / (rent ? 1000 : 100000)) * (rent ? 1000 : 100000);
+    const perSqm = Math.round(l.price / l.area);
+    const floors = l.floorsTotal ? `${l.floor} из ${l.floorsTotal}` : `${l.floor}`;
+    const address = l.address || [l.street, l.house].filter(Boolean).join(", ") || l.fullAddress || "Санкт-Петербург";
+    const year = 1995 + (parseInt(l.id, 10) % 28);
+    const sub = rent
+      ? `Залог ${l.deposit ? nf(l.deposit) + " ₽" : "без залога"} · ${l.clientFee ? "комиссия " + l.clientFee + "%" : "без комиссии"}`
+      : `${nf(perSqm)} ₽/м²`;
+    const verb = rent ? "сдаёт" : "продаёт";
+    const feats = [
+      [CI.person, l.isByHomeowner ? "Сдаёт собственник" : "1 собственник"],
+      [CI.bank, rent ? "Договор аренды" : "Без обременений"],
+      [CI.brick, "Монолитно-кирпичный"],
+      [CI.crane, `${year} год постройки`],
+      [CI.balcony, "1 лоджия"],
+      [CI.window, "Окна во двор"],
+    ];
+    const access = [
+      [CI.wheel, "Вход в подъезд без порога"],
+      [CI.wheel, "Вход в квартиру без порога"],
+      [CI.ramp, "Есть пандус"],
+      [CI.platform, "Есть подъёмная платформа"],
+      [CI.lift, "Есть лифт от 90 см"],
+    ];
+    const descr = `${rent ? "Сдаётся" : "Продаётся"} ${l.rooms ? `светлая ${l.rooms}-комнатная квартира` : "светлая студия"} ${area(l.area)} м² на ${l.floor} этаже${
+      l.metro ? `, ${l.metroMin} минут ${walk ? "пешком" : "на транспорте"} до метро «${l.metro}»` : ""
+    }.`;
+
+    return `<div class="fw-cd__scroll">
+      <div class="fw-cd__head">
+        <button class="fw-cd__icon" type="button" data-cd="back" aria-label="Назад">${IC.back}</button>
+        <span class="fw-cd__head-right">
+          <button class="fw-cd__icon" type="button" data-cd="soon" aria-label="Поделиться">${CI.share}</button>
+          ${heartBtn(l.id, "fw-cd__head-fav")}
+          <button class="fw-cd__icon" type="button" data-cd="soon" aria-label="Ещё">${IC.more}</button>
+        </span>
+      </div>
+      <div class="fw-cd__main">
+        <div class="fw-cd__gallery">
+          <div class="fw-cd__track">${photos.map((p) => `<div class="fw-cd__slide"><img src="${encodeURI(p.src)}" alt="" loading="lazy" /></div>`).join("")}</div>
+          ${layoutIdx > -1 ? `<button class="fw-cd__layout" type="button" data-cd="layout" data-idx="${layoutIdx}">${CI.layout}Планировка</button>` : ""}
+          <span class="fw-cd__counter">1 из ${photos.length}</span>
+        </div>
+
+        <div class="fw-cd__badges">
+          <span class="fw-cd__badge fw-cd__badge--cian">${CI.cianMark}Только на Циане</span>
+          ${l.isSuperAgent ? `<span class="fw-cd__badge fw-cd__badge--super">${CI.superStar}Суперагент</span>` : ""}
+        </div>
+        <div class="fw-cd__lead">${rent ? "Можно въехать сразу" : "Готова к сделке"}${l.metroMin ? `, ${l.metroMin} минут до метро` : ""}</div>
+        <div class="fw-cd__price-row">
+          <div>
+            <div class="fw-cd__price">${fmtPrice(l.price)}${rent ? "/мес." : ""} <button class="fw-cd__chart" type="button" data-cd="soon" aria-label="История цены">${CI.chart}</button></div>
+            <div class="fw-cd__sub">${sub}</div>
+          </div>
+          ${heartBtn(l.id, "fw-cd__round-fav")}
+        </div>
+
+        <label class="fw-cd__offer"><span>Предложите свою цену</span>
+          <span class="fw-cd__offer-row"><input type="text" inputmode="numeric" placeholder="Например, ${nf(offer)} ₽" /><button type="button" data-cd="offer" aria-label="Отправить">${CI.arrow}</button></span>
+        </label>
+
+        <div class="fw-cd__params">
+          <div><b>${roomsShort(l)}</b><span>${l.isApartments ? "апартаменты" : "квартира"}</span></div>
+          <div><b>${area(l.area)} м²</b><span>общая пл</span></div>
+          <div><b>${floors}</b><span>этаж</span></div>
+        </div>
+
+        <div class="fw-cd__addr">
+          ${l.jk ? `<button class="fw-cd__jk" type="button" data-cd="soon">${esc(l.jk)}</button>` : ""}
+          <div>${esc(address)}, Санкт-Петербург <span class="fw-cd__copy">${CI.copy}</span></div>
+          ${l.metro ? `<div class="fw-cd__metro"><i style="color:#${l.metroColor || "0468FF"}">M</i>${esc(l.metro)} <span class="fw-cd__min">${walk ? CI.walk : CI.bus}${l.metroMin} мин</span></div>` : ""}
+          <button class="fw-cd__link" type="button" data-cd="soon">Смотреть на карте</button>
+        </div>
+
+        <section class="fw-cd__sec"><h2 class="fw-cd__h">О квартире</h2>
+          <div class="fw-cd__feats">${feats.map(([ic, t]) => `<div class="fw-cd__feat"><span>${ic}</span>${t}</div>`).join("")}</div>
+        </section>
+
+        <div class="fw-cd__agent">
+          <div class="fw-cd__agent-title">Обсудите условия с ${l.isByHomeowner ? "собственником" : "агентом"}</div>
+          <div class="fw-cd__agent-card">
+            <div class="fw-cd__agent-top">
+              ${avatarHtml(s, "fw-cd__ava")}
+              <div class="fw-cd__agent-name"><b>${esc(s.name)}</b><span>${CI.star}<em>${s.rating}</em> ${s.reviews} ${plural(s.reviews, ["отзыв", "отзыва", "отзывов"])}</span></div>
+              <button class="fw-cd__call" type="button" data-cd="soon" aria-label="Позвонить">${CI.phone}</button>
+            </div>
+            <div class="fw-cd__online">Начните чат, пока он <span>в сети</span></div>
+            <div class="fw-cd__chips">${["Свяжитесь со мной", rent ? "Ещё сдаёте?" : "Ещё продаёте?", "Могу посмотреть?"].map((t) => `<button type="button" data-cd="soon">${t}</button>`).join("")}</div>
+          </div>
+        </div>
+
+        <div class="fw-cd__meta">Обновлено: сегодня в 09:09<br />${nf(1200 + (parseInt(l.id, 10) % 7000))} просмотров, ${40 + (parseInt(l.id, 10) % 160)} за сегодня<br /><span>Топ + 990 ₽</span></div>
+
+        <section class="fw-cd__sec"><h2 class="fw-cd__h">Описание</h2>
+          <p class="fw-cd__descr">${esc(descr)}</p>
+          <p class="fw-cd__descr fw-cd__descr--clip">Квартира после ремонта, в хорошем состоянии, остаётся мебель и техника. Рядом парк, школы и магазины.</p>
+          <button class="fw-cd__link" type="button" data-cd="soon">Читать всё</button>
+        </section>
+
+        ${kvHtml("Общая информация", [
+          ["Общая площадь", `${area(l.area)} м²`],
+          ["Площадь комнат", `${area(Math.round(l.area * 0.5 * 10) / 10)} м²`],
+          ["Высота потолков", "2,8 м"],
+          ["Балкон/лоджия", "1 лоджия"],
+          [rent ? "Мебель" : "Продаётся с мебелью", "Да"],
+        ])}
+        ${kvHtml("Юридические особенности", [
+          ["Собственники до 18 лет", "Нет"],
+          [rent ? "Договор" : "Материнский капитал при покупке", rent ? "Долгосрочный" : "Не использовался"],
+        ], false)}
+        ${kvHtml("Проверено в Росреестре", [
+          ["Обременения", "Нет"],
+          ["Собственников", "1"],
+          ["Площадь", `${area(l.area)} м²`],
+          ["Кадастровый номер", "78:14:0007612:***"],
+          ["Этаж", String(l.floor)],
+        ], false)}
+        ${kvHtml("О доме", [
+          ["Год постройки", String(year)],
+          ["Тип дома", "Монолитно-кирпичный"],
+          ["Этажей в доме", String(l.floorsTotal || "")],
+          ["Лифт", "2 пасс. 1 груз."],
+          ["Парковка", "Подземная"],
+        ])}
+
+        <button class="fw-cd__history" type="button" data-cd="soon"><span class="fw-cd__history-ic">${CI.history}</span><span><b>История объявлений</b><span>В этом и соседних домах</span></span>${CI.chevron}</button>
+
+        <section class="fw-cd__sec"><h2 class="fw-cd__h">Доступная среда</h2>
+          <div class="fw-cd__access">${access.map(([ic, t]) => `<div><span>${ic}</span>${t}</div>`).join("")}</div>
+          <button class="fw-cd__link" type="button" data-cd="soon">Смотреть всё</button>
+        </section>
+
+        <div class="fw-cd__seller">
+          ${avatarHtml(s, "fw-cd__ava fw-cd__ava--lg")}
+          <div class="fw-cd__seller-body">
+            <span class="fw-cd__seller-role">Объект ${verb}</span>
+            <b>${esc(s.name)}</b>
+            <span class="fw-cd__seller-rate">${CI.star}<em>${s.rating}</em> ${s.reviews} ${plural(s.reviews, ["отзыв", "отзыва", "отзывов"])}</span>
+            ${l.isSuperAgent ? `<span class="fw-cd__badge fw-cd__badge--super">${CI.superStar}Суперагент</span>` : ""}
+          </div>
+          <button class="fw-btn fw-btn--light fw-cd__contacts" type="button" data-cd="soon">Посмотреть контакты</button>
+        </div>
+
+        <button class="fw-cd__note" type="button" data-cd="soon"><span>${CI.pencil}Заметка</span><em>Добавить</em></button>
+        <button class="fw-cd__report" type="button" data-cd="soon">Пожаловаться на объявление</button>
+      </div>
+
+      <section class="fw-cd__similar">
+        <h2 class="fw-cd__h">Похожие объявления</h2>
+        <div class="fw-cd__sim-grid">${similarFor(l).map(similarHtml).join("")}</div>
+      </section>
+    </div>
+    <div class="fw-cd__bottom">
+      <div class="fw-cd__actions">
+        <button class="fw-cd__cta" type="button" data-cd="soon">${CI.phone}Позвонить</button>
+        <button class="fw-cd__cta" type="button" data-cd="soon">${CI.chat}Написать</button>
+      </div>
+      <div class="fw-cd__online-note"><i></i>Напишите, пока пользователь в сети</div>
+    </div>`;
+  }
+
+  const cardStack = [];
+  let cardEl;
+  function openCard(id) {
+    const l = byId(id);
+    if (!l || !withPhoto(l)) return;
+    addViewed(id);
+    cardStack.push(id);
+    renderCard(true);
+  }
+  function renderCard(isNew) {
+    const id = cardStack[cardStack.length - 1];
+    if (!id) {
+      closeCards();
+      return;
+    }
+    if (!cardEl) {
+      cardEl = document.createElement("div");
+      cardEl.className = "fw-cd";
+      cardEl.addEventListener("click", onCardClick);
+      $(".app").appendChild(cardEl);
+    }
+    cardEl.innerHTML = cardHtml(byId(id));
+    document.body.classList.add("fw-card-open");
+    if (isNew) {
+      cardEl.classList.remove("is-in");
+      void cardEl.offsetWidth;
+      cardEl.classList.add("is-in");
+    }
+    const track = $(".fw-cd__track", cardEl);
+    const counter = $(".fw-cd__counter", cardEl);
+    track.addEventListener(
+      "scroll",
+      () => {
+        const w = track.firstElementChild ? track.firstElementChild.offsetWidth + 8 : 1;
+        counter.textContent = `${Math.min(track.children.length, Math.round(track.scrollLeft / w) + 1)} из ${track.children.length}`;
+      },
+      { passive: true }
+    );
+  }
+  function closeCards() {
+    cardStack.length = 0;
+    document.body.classList.remove("fw-card-open");
+    if (cardEl) cardEl.innerHTML = "";
+    // Сердца и плитки — по свежему состоянию
+    syncResultHearts();
+    document.querySelectorAll(".fw-root .card--n4").forEach(syncCardHeart);
+    if (tab === "fav") rerender();
+  }
+  function onCardClick(e) {
+    const open = e.target.closest("[data-open]");
+    if (open) {
+      openCard(open.dataset.open);
+      return;
+    }
+    const b = e.target.closest("[data-cd]");
+    if (!b) return;
+    const a = b.dataset.cd;
+    const id = cardStack[cardStack.length - 1];
+    if (a === "back") {
+      cardStack.pop();
+      if (cardStack.length) renderCard(false);
+      else closeCards();
+    } else if (a === "fav") {
+      const on = !store.saved.includes(id);
+      setSaved(id, on);
+      cardEl.querySelectorAll('[data-cd="fav"]').forEach((h) => {
+        h.classList.toggle("is-active", on);
+        h.innerHTML = on ? App.ICONS.heartFilled20 : App.ICONS.heart20;
+        if (on) favCharge(h);
+      });
+    } else if (a === "layout") {
+      const track = $(".fw-cd__track", cardEl);
+      const slide = track.children[+b.dataset.idx];
+      if (slide) track.scrollTo({ left: slide.offsetLeft - track.offsetLeft, behavior: "smooth" });
+    } else if (a === "offer") toast("Предложение цены в прототипе не отправляется");
+    else toast("В прототипе это не работает");
+  }
+
+  // Тап по сниппету (не по кнопкам) — открыть карточку вместо заглушки выдачи
+  const CARD_CONTROLS = ".card__btn, .card__gallery-btn, .card__gallery-badge, .card__labels, .n2__control, .n3__control, .asis__extra, .n4__btn, button, a";
   document.addEventListener(
     "click",
     (e) => {
       const card = e.target.closest(".card--n4[data-listing-id]");
-      if (!card || e.target.closest(CARD_CONTROLS)) return;
-      const id = card.dataset.listingId;
-      store.viewed = [id].concat(store.viewed.filter((x) => x !== id));
+      if (card && !e.target.closest(CARD_CONTROLS)) {
+        const trackEl = card.querySelector('[data-role="track"]');
+        if (trackEl && trackEl.dataset.justDragged) return;
+        e.stopPropagation();
+        openCard(card.dataset.listingId);
+        return;
+      }
+      const mini = e.target.closest(".fw-mini");
+      if (mini && !e.target.closest(".fw-mini__heart")) {
+        e.stopPropagation();
+        openCard(mini.dataset.id);
+      }
     },
     true
   );
