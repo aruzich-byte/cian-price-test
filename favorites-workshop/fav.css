@@ -2521,3 +2521,25 @@
 .fw-in-podborka .fw-pb__carousel {
   bottom: calc(72px + env(safe-area-inset-bottom));
 }
+
+/* Раскрытая шторка: «N вариантов» не закреплено, всё уезжает в скролл под синюю шапку */
+.fw-pb__head {
+  z-index: 6;
+}
+.fw-pb.is-expanded .fw-pb__sheet {
+  top: 128px;
+  display: block;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 26px;
+}
+.fw-in-podborka .fw-pb.is-expanded .fw-pb__sheet {
+  top: 128px;
+}
+.fw-pb.is-expanded .fw-pb__handle {
+  display: none;
+}
+.fw-pb.is-expanded .fw-pb__list.fw-scroll {
+  height: auto;
+  overflow: visible;
+}

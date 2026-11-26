@@ -556,7 +556,10 @@
       } else if (a === "toggle") {
         top.expanded = !top.expanded;
         const pb = $(".fw-pb", FW.root);
-        if (pb && p && p.items.length) pb.classList.toggle("is-expanded", top.expanded);
+        if (pb && p && p.items.length) {
+          pb.classList.toggle("is-expanded", top.expanded);
+          $(".fw-pb__sheet", pb).scrollTop = 0;
+        }
       } else if (a === "notes" && p) openNotes(p, t.dataset.id);
       else if (a === "react" && p) {
         toggleReaction(p, t.dataset.id, t.dataset.emoji);
