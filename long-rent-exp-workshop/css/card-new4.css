@@ -201,9 +201,9 @@
 
 .card__btn.n4__btn,
 .n4__btn {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -215,9 +215,10 @@
   cursor: pointer;
 }
 
+/* Иконки действий под фото — 20px (было 16px) */
 .n4__btn svg {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
 }
 
 .n4__fav.is-active {
@@ -265,15 +266,15 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 32px;
-  height: 32px;
-  margin: -16px 0 0 -16px;
+  width: 40px; /* масштаб под сердце 20px: 1 единица viewBox = 1,25px */
+  height: 40px;
+  margin: -20px 0 0 -20px;
   pointer-events: none;
 }
 
 .n4__fav-aura svg {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   display: block;
   overflow: visible;
 }
