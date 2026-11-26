@@ -2501,3 +2501,23 @@
 .fw-mc__foot--n4 {
   padding: 4px 0 14px;
 }
+
+/* Внутри подборки таб-бар скрыт */
+.fw-in-podborka .fw-tabbar {
+  display: none;
+}
+.fw-in-podborka .fw-root {
+  bottom: 0;
+}
+.fw-in-podborka .fw-toast {
+  bottom: calc(24px + env(safe-area-inset-bottom));
+}
+.fw-in-podborka .fw-pb__sheet {
+  top: calc(100% - 52px - 20px - env(safe-area-inset-bottom));
+}
+.fw-in-podborka .fw-pb.is-expanded .fw-pb__sheet {
+  top: 150px;
+}
+.fw-in-podborka .fw-pb__carousel {
+  bottom: calc(72px + env(safe-area-inset-bottom));
+}

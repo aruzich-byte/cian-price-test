@@ -275,6 +275,8 @@
 
   function after(root, top) {
     document.body.classList.toggle("fw-blue-top", FW.tab === "fav" && top.type === "podborka");
+    // Внутри подборки таб-бара нет, выход — стрелкой «назад» (правка Katya)
+    document.body.classList.toggle("fw-in-podborka", FW.tab === "fav" && top.type === "podborka");
     if (FW.tab === "home") document.querySelectorAll(".fw-tab").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === "home"));
     // Строка заметок и реакций — и под большим сниппетом new4 в списке подборки
     if (top.type === "podborka") {
