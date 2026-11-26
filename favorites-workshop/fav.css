@@ -2781,3 +2781,8 @@
 .fw-pb.is-card .fw-pb__sort {
   display: none;
 }
+
+/* Информация о продавце на сниппетах скрыта (Katya 26.11) — только скрыта, разметка в cards.js остаётся */
+.n4__seller {
+  display: none !important;
+}
