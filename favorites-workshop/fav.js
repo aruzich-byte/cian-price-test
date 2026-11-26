@@ -139,6 +139,21 @@
       <span class="fw-tile__label">${heart}${sec.title}${filled ? ` <span class="fw-tile__count">${count}</span>` : ""}</span>
     </button>`;
   }
+  // Подборки — отдельными плитками на главном экране Избранного, обновлённые выше.
+  // Первая фотка коллажа — обложка подборки. Плитка «Подборки» остаётся, пока подборок нет.
+  function podborkaTileHtml(p) {
+    const list = [p.cover].concat(p.items.filter((x) => x !== p.cover)).filter(Boolean);
+    const n = p.items.length;
+    return `<button class="fw-tile is-filled" type="button" data-podborka-tile="${p.id}">
+      <span class="fw-tile__preview">${collageHtml(list)}</span>
+      <span class="fw-tile__label">${esc(p.name)} <span class="fw-tile__count">${n}</span></span>
+    </button>`;
+  }
+  function gridHtml() {
+    const pods = store.podborki.slice().sort((a, b) => (b.updated || 0) - (a.updated || 0));
+    const secs = SECTIONS.filter((s) => s.key !== "podborki" || !pods.length).sort((a, b) => isFilled(b) - isFilled(a));
+    return pods.map(podborkaTileHtml).join("") + secs.map(tileHtml).join("");
+  }
   // Обложка плитки «Подборки»: по первому объекту каждой подборки
   function podborkiCover() {
     return store.podborki.filter((p) => p.cover || p.items.length).map((p) => p.cover || p.items[0]);
@@ -186,7 +201,7 @@
     return `<div class="fw-scroll fw-home">
       <div class="fw-home__top">
         <div class="fw-head fw-head--plain"><span></span><div class="fw-head__title">Избранное</div><span></span></div>
-        <div class="fw-grid">${order.map(tileHtml).join("")}</div>
+        <div class="fw-grid">${gridHtml()}</div>
       </div>
       <div class="fw-home__recs">
         <div class="fw-h2">Могут подойти</div>
@@ -370,6 +385,8 @@
     const act = e.target.closest("[data-act]");
     const tile = e.target.closest("[data-section]");
     const row = e.target.closest("[data-podborka]");
+    const ptile = e.target.closest("[data-podborka-tile]");
+    if (ptile) return push({ type: "podborka", id: ptile.dataset.podborkaTile });
     const mini = e.target.closest(".fw-mini__heart");
     if (mini) {
       const id = mini.closest(".fw-mini").dataset.id;
@@ -384,7 +401,7 @@
       onRootClick.t = setTimeout(() => {
         // Обновляем плитки, не трогая блок «Могут подойти»
         const grid = $(".fw-grid", root);
-        if (grid) grid.innerHTML = SECTIONS.slice().sort((a, b) => isFilled(b) - isFilled(a)).map(tileHtml).join("");
+        if (grid) grid.innerHTML = gridHtml();
       }, 350);
       return;
     }
@@ -435,7 +452,7 @@
     $(".fw-sheet-backdrop", wrap).addEventListener("click", close);
     $('[data-sheet="create"]', wrap).addEventListener("click", () => {
       const name = input.value.trim() || "Новая подборка";
-      const p = { id: "p" + Date.now(), name, items: [] };
+      const p = { id: "p" + Date.now(), name, items: [], updated: Date.now() };
       store.podborki.unshift(p);
       close();
       if (!stack.length || stack[stack.length - 1].key !== "podborki") stack.push({ type: "section", key: "podborki" });

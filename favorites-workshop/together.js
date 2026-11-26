@@ -50,6 +50,7 @@
     return c ? c.dataset.value : "rent";
   };
   const ensure = (p) => {
+    p.updated = p.updated || Date.now();
     p.members = p.members || [p.creator || "anya"];
     p.creator = p.creator || p.members[0];
     p.type = p.type || "long";
@@ -264,7 +265,10 @@
       if (e.target.closest("[data-pick-done]")) {
         close();
         const list = store.podborki.filter((p) => picked.has(p.id));
-        list.forEach((p) => p.items.unshift(id));
+        list.forEach((p) => {
+          p.items.unshift(id);
+          p.updated = Date.now();
+        });
         if (list.length) FW.toast(`Добавлено в ${list.map((p) => `«${p.name}»`).join(", ")}`);
         if (FW.tab === "fav") FW.rerender();
       }
@@ -318,6 +322,7 @@
       }
       if (e.target.closest("[data-ok]")) {
         p.dates = d;
+        p.updated = Date.now();
         p.guests = g;
         close();
         FW.rerender();
@@ -373,6 +378,7 @@
     if (b.dataset.inv === "join") {
       store.me = "dima";
       if (!p.members.includes("dima")) p.members.push("dima");
+      p.updated = Date.now();
       store.pendingInvite = null;
       stack.length = 0;
       stack.push({ type: "section", key: "podborki" }, { type: "podborka", id: p.id });
