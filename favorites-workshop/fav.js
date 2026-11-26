@@ -321,7 +321,7 @@
   }
 
   let toastTimer;
-  function toast(text, action) {
+  function toast(text, action, timer) {
     let t = $(".fw-toast");
     if (!t) {
       t = document.createElement("div");
@@ -329,6 +329,21 @@
       $(".app").appendChild(t);
     }
     t.textContent = text;
+    clearInterval(toast.tick);
+    if (timer) {
+      // обратный отсчёт: кольцо + секунды, пока можно вернуть
+      const tm = document.createElement("span");
+      tm.className = "fw-toast__timer";
+      tm.style.setProperty("--fw-t", timer + "s");
+      tm.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg><b>${timer}</b>`;
+      t.prepend(tm);
+      let left = timer;
+      toast.tick = setInterval(() => {
+        left -= 1;
+        if (left <= 0) return clearInterval(toast.tick);
+        tm.querySelector("b").textContent = left;
+      }, 1000);
+    }
     if (action) {
       const b = document.createElement("button");
       b.type = "button";
@@ -342,7 +357,7 @@
     }
     t.classList.add("is-on");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove("is-on"), action ? 4500 : 2200);
+    toastTimer = setTimeout(() => t.classList.remove("is-on"), timer ? timer * 1000 : action ? 4500 : 2200);
   }
 
   // Сердце сохраняет сразу (принцип 1), подборка — опционально через снек (1A → 2A Ани)
@@ -372,8 +387,7 @@
       setTimeout(() => {
         const id = card.dataset.listingId;
         const on = fav.classList.contains("is-active");
-        store.saved = store.saved.filter((x) => x !== id);
-        if (on) store.saved.unshift(id);
+        setSaved(id, on);
         if (on) notifySaved(id);
       }, 0);
     },
@@ -391,8 +405,7 @@
     if (mini) {
       const id = mini.closest(".fw-mini").dataset.id;
       const on = !store.saved.includes(id);
-      store.saved = store.saved.filter((x) => x !== id);
-      if (on) store.saved.unshift(id);
+      setSaved(id, on);
       mini.classList.toggle("is-active", on);
       mini.innerHTML = on ? IC.heart : IC.heartLine;
       if (on && App.playFavCharge) App.playFavCharge(mini);
@@ -512,8 +525,40 @@
   }
 
   function setSaved(id, on) {
+    const idx = store.saved.indexOf(id);
     store.saved = store.saved.filter((x) => x !== id);
     if (on) store.saved.unshift(id);
+    else if (idx >= 0) unsaved(id, idx);
+  }
+  // Подборка состоит только из лайкнутых объявлений (решение Katya 26.11):
+  // сняли сердце — объявление уходит из Избранного и из всех подборок, снек 5 с с «Вернуть».
+  const UNDO_SEC = 5;
+  function unsaved(id, savedIdx) {
+    const hits = store.podborki.filter((p) => p.items.includes(id)).map((p) => [p, p.items.indexOf(id)]);
+    if (!hits.length) return;
+    hits.forEach(([p]) => (p.items = p.items.filter((x) => x !== id)));
+    const top = stack[stack.length - 1] || {};
+    const here = top.type === "podborka" && hits.find(([p]) => p.id === top.id);
+    const name = (here || hits[0])[0].name;
+    const redraw = () => {
+      if (tab === "fav" || tab === "home") rerender();
+      else syncResultHearts();
+    };
+    setTimeout(redraw, 250);
+    toast(`Вы удалили из подборки «${name}»`, {
+      label: "Вернуть",
+      run: () => {
+        clearInterval(toast.tick);
+        hits.forEach(([p, i]) => p.items.includes(id) || p.items.splice(i, 0, id));
+        if (!store.saved.includes(id)) store.saved.splice(Math.min(savedIdx, store.saved.length), 0, id);
+        if (cardEl && cardStack[cardStack.length - 1] === id)
+          cardEl.querySelectorAll('[data-cd="fav"]').forEach((h) => {
+            h.classList.add("is-active");
+            h.innerHTML = App.ICONS.heartFilled20;
+          });
+        redraw();
+      },
+    }, UNDO_SEC);
   }
   function addViewed(id) {
     store.viewed = [id].concat(store.viewed.filter((x) => x !== id));

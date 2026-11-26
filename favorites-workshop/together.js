@@ -73,6 +73,8 @@
       };
       p.reactions = { [items[0]]: { "👍": ["anya"] }, [items[2]]: { "👎": ["anya"] } };
       store.podborki.unshift(p);
+      // в подборке только лайкнутые — сердца внутри горят
+      items.slice().reverse().forEach((id) => store.saved.includes(id) || store.saved.unshift(id));
     }
     return p;
   }
@@ -366,6 +368,7 @@
       if (!go) return;
       const p = ensure({ id: "p" + Date.now(), name: input.value.trim() || names[0], items: listingId ? [listingId] : [], cover, type: daily ? "daily" : "long", dates: 0, guests: 2, members: [store.me], creator: store.me });
       store.podborki.unshift(p);
+      if (listingId && !store.saved.includes(listingId)) FW.setSaved(listingId, true);
       close();
       if (listingId && go.dataset.create === "solo") {
         FW.toast(`Подборка «${p.name}» создана`);
@@ -432,6 +435,7 @@
           p.items.unshift(id);
           p.updated = Date.now();
         });
+        if (list.length && !store.saved.includes(id)) FW.setSaved(id, true);
         if (list.length) FW.toast(`Добавлено в ${list.map((p) => `«${p.name}»`).join(", ")}`);
         if (FW.tab === "fav") FW.rerender();
       }
