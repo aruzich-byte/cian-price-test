@@ -13,6 +13,8 @@
     return f[a === 1 && b !== 11 ? 0 : a >= 2 && a <= 4 && (b < 10 || b >= 20) ? 1 : 2];
   };
   const fmtPrice = (n) => n.toLocaleString("ru-RU").replace(/,/g, " ") + " ₽";
+  const SUFFIX = { rent: "/мес.", daily: "/сут." };
+  const priceStr = (l) => (l.dealType === "daily" ? "от " : "") + fmtPrice(l.price) + (SUFFIX[l.dealType] || "");
 
   // ---------- Данные ----------
   const withPhoto = (l) => l.photos && l.photos.length;
@@ -139,7 +141,7 @@
   }
   // Обложка плитки «Подборки»: по первому объекту каждой подборки
   function podborkiCover() {
-    return store.podborki.filter((p) => p.items.length).map((p) => p.items[0]);
+    return store.podborki.filter((p) => p.cover || p.items.length).map((p) => p.cover || p.items[0]);
   }
 
   // ---------- Мини-сниппет «Могут подойти» ----------
@@ -151,7 +153,7 @@
       <div class="fw-mini__photo" style="background-image:url('${photo(l.id)}')">
         <button class="fw-mini__heart${saved ? " is-active" : ""}" type="button" aria-label="В избранное">${saved ? IC.heart : IC.heartLine}</button>
       </div>
-      <div class="fw-mini__price">${fmtPrice(l.price)}${l.dealType === "rent" ? "/мес." : ""}</div>
+      <div class="fw-mini__price">${priceStr(l)}</div>
       <div class="fw-mini__params">${params}</div>
       ${metro}
     </div>`;
@@ -219,7 +221,7 @@
     }
     const rows = store.podborki
       .map((p) => {
-        const cover = p.items.slice(0, 3);
+        const cover = p.cover ? [p.cover] : p.items.slice(0, 3);
         const thumb = cover.length ? collageHtml(cover) : `<span class="fw-row__ph"></span>`;
         return `<button class="fw-row" type="button" data-podborka="${p.id}">
           <span class="fw-row__thumb">${thumb}</span>
@@ -236,6 +238,7 @@
   function screenPodborka(id) {
     const p = store.podborki.find((x) => x.id === id);
     if (!p) return screenPodborki();
+    if (window.FWT) return window.FWT.screen(p);
     if (!p.items.length) return `<div class="fw-scroll">${headerHtml(p.name)}${emptyStateHtml(EMPTY.newPodborka)}</div>`;
     return `<div class="fw-scroll">${headerHtml(p.name)}<div class="fw-count">${p.items.length} ${plural(p.items.length, ["объявление", "объявления", "объявлений"])}</div><div class="fw-cards" data-cards="podborka:${p.id}"></div></div>`;
   }
@@ -245,24 +248,26 @@
 
   function rerender() {
     if (!root) return;
-    const top = stack[stack.length - 1] || { type: "home" };
+    const top = tab === "home" ? { type: "main" } : stack[stack.length - 1] || { type: "home" };
     let html;
     if (top.type === "home") html = screenHome();
     else if (top.type === "section") html = screenSection(top.key);
     else if (top.type === "podborka") html = screenPodborka(top.id);
+    else if (window.FWT && window.FWT.screens[top.type]) html = window.FWT.screens[top.type](top);
     const prevScroll = root.dataset.screen === JSON.stringify(top) ? ($(".fw-scroll", root) || {}).scrollTop : 0;
     root.innerHTML = html;
     root.dataset.screen = JSON.stringify(top);
     // Сниппеты new4 — тем же кодом, что и на выдаче
     root.querySelectorAll("[data-cards]").forEach((box) => {
       const src = box.dataset.cards;
-      const list = src === "saved" ? store.saved : (store.podborki.find((p) => "podborka:" + p.id === src) || { items: [] }).items;
+      const list = src === "saved" ? store.saved : (store.podborki.find((p) => "podborka:" + p.id === src) || { items: [] }).items.slice().sort(window.FWT ? window.FWT.sorter(src) : () => 0);
       list.map(byId).filter(Boolean).forEach((item) => {
         const card = App.createCardEl(item, false);
         syncCardHeart(card);
         box.appendChild(card);
       });
     });
+    if (window.FWT) window.FWT.after(root, top);
     const sc = $(".fw-scroll", root);
     if (sc && prevScroll) sc.scrollTop = prevScroll;
     // Появление сниппетов — как на выдаче (motion.js следит только за #results-list)
@@ -287,9 +292,9 @@
 
   function setTab(t) {
     tab = t;
-    document.body.classList.toggle("fw-on-fav", t === "fav");
+    document.body.classList.toggle("fw-on-fav", t === "fav" || t === "home");
     tabbar.querySelectorAll(".fw-tab").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === t));
-    if (t === "fav") rerender();
+    if (t === "fav" || t === "home") rerender();
     else syncResultHearts();
   }
 
@@ -301,7 +306,7 @@
   }
 
   let toastTimer;
-  function toast(text) {
+  function toast(text, action) {
     let t = $(".fw-toast");
     if (!t) {
       t = document.createElement("div");
@@ -309,9 +314,20 @@
       $(".app").appendChild(t);
     }
     t.textContent = text;
+    if (action) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "fw-toast__act";
+      b.textContent = action.label;
+      b.addEventListener("click", () => {
+        t.classList.remove("is-on");
+        action.run();
+      });
+      t.appendChild(b);
+    }
     t.classList.add("is-on");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.classList.remove("is-on"), 2200);
+    toastTimer = setTimeout(() => t.classList.remove("is-on"), action ? 4500 : 2200);
   }
 
   // ---------- Сердце на сниппетах new4 ↔ «Объявления» ----------
@@ -392,6 +408,7 @@
 
   // ---------- Шторка «Новая подборка» ----------
   function openCreateSheet() {
+    if (window.FWT) return window.FWT.openCreate();
     const wrap = document.createElement("div");
     wrap.className = "fw-sheet-wrap";
     wrap.innerHTML = `<div class="fw-sheet-backdrop"></div>
@@ -441,6 +458,7 @@
         if (tab === "fav") stack.length = 0; // повторный тап — к корню Избранного
         setTab("fav");
       } else if (t === "search") setTab("search");
+      else if (t === "home" && window.FWT) setTab("home");
       else toast("В прототипе есть только «Поиск» и «Избранное»");
     });
     $(".app").appendChild(tabbar);
@@ -541,7 +559,7 @@
     const walk = x.metroTransport === "walk";
     return `<button class="fw-cd__sim" type="button" data-open="${x.id}">
       <span class="fw-cd__sim-photo" style="background-image:url('${photo(x.id)}')"></span>
-      <span class="fw-cd__sim-price">${fmtPrice(x.price)}${x.dealType === "rent" ? "/мес." : ""}</span>
+      <span class="fw-cd__sim-price">${priceStr(x)}</span>
       <span class="fw-cd__sim-params">${params}</span>
       ${x.metro ? `<span class="fw-cd__metro"><i style="color:#${x.metroColor || "0468FF"}">M</i>${esc(x.metro)}</span>` : ""}
       ${x.metroMin ? `<span class="fw-cd__sim-min">${walk ? CI.walk : CI.bus}${x.metroMin} мин</span>` : ""}
@@ -550,7 +568,7 @@
 
   function cardHtml(l) {
     const s = sellerOf(l);
-    const rent = l.dealType === "rent";
+    const rent = l.dealType !== "sale";
     const photos = l.photos;
     const layoutIdx = photos.findIndex((p, i) => p.layout || (l.hasLayout && i === 1 && !photos.some((x) => x.layout)));
     const walk = l.metroTransport === "walk";
@@ -605,7 +623,7 @@
         <div class="fw-cd__lead">${rent ? "Можно въехать сразу" : "Готова к сделке"}${l.metroMin ? `, ${l.metroMin} минут до метро` : ""}</div>
         <div class="fw-cd__price-row">
           <div>
-            <div class="fw-cd__price">${fmtPrice(l.price)}${rent ? "/мес." : ""} <button class="fw-cd__chart" type="button" data-cd="soon" aria-label="История цены">${CI.chart}</button></div>
+            <div class="fw-cd__price">${priceStr(l)} <button class="fw-cd__chart" type="button" data-cd="soon" aria-label="История цены">${CI.chart}</button></div>
             <div class="fw-cd__sub">${sub}</div>
           </div>
           ${heartBtn(l.id, "fw-cd__round-fav")}
@@ -814,6 +832,14 @@
     },
     true
   );
+
+  // API для модуля совместных подборок (together.js)
+  window.FW = {
+    App, store, stack, IC, ASSETS, $, esc, plural, priceStr, byId, photo, withPhoto, collageHtml, emptyStateHtml, EMPTY, RENT,
+    push, rerender, toast, setTab, openCard, favCharge, setSaved, syncCardHeart, CI,
+    get tab() { return tab; },
+    get root() { return root; },
+  };
 
   document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("fw");
