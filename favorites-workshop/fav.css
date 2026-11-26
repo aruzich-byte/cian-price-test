@@ -2433,3 +2433,22 @@
 .fw-mc__params {
   font-weight: 600;
 }
+
+/* Затемнение карты под шторкой приглашения (по макету Katya) */
+.fw-inv__map::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+.fw-inv.is-in .fw-inv__map::after {
+  animation: fw-dim 0.4s ease-out;
+}
+@keyframes fw-dim {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.fw-inv-open .statusbar {
+  background: transparent;
+  text-shadow: none;
+}
