@@ -41,6 +41,16 @@
     if (!p) {
       const items = DAILY.filter((l) => l.rating).slice(0, 10).map((l) => l.id);
       p = { id: PRESET_ID, name: "Выходные в СПб", items, cover: items[0], type: "daily", dates: 0, guests: 2, members: ["anya"], creator: "anya", sort: "added" };
+      const ago = (m) => Date.now() - m * 60000;
+      p.notes = {
+        [items[0]]: [
+          { who: "anya", text: "Близко к метро, и вид из окна классный", ts: ago(180) },
+          { who: "anya", text: "Есть кухня, можно не ходить в кафе по утрам", ts: ago(175) },
+          { who: "anya", text: "Заселение с 14:00, успеем с поезда", ts: ago(170) },
+        ],
+        [items[1]]: [{ who: "anya", text: "Дороговато, но зато в центре", ts: ago(120) }],
+      };
+      p.reactions = { [items[0]]: { "👍": ["anya"] }, [items[2]]: { "🔥": ["anya"] } };
       store.podborki.unshift(p);
     }
     return p;
@@ -50,6 +60,8 @@
     return c ? c.dataset.value : "rent";
   };
   const ensure = (p) => {
+    p.notes = p.notes || {};
+    p.reactions = p.reactions || {};
     p.updated = p.updated || Date.now();
     p.members = p.members || [p.creator || "anya"];
     p.creator = p.creator || p.members[0];
@@ -70,26 +82,135 @@
     const list = [p.creator].concat(p.members.filter((m) => m !== p.creator));
     return list.map((m) => `<img class="fw-av" src="${PEOPLE[m].img}" alt="${PEOPLE[m].name}" />`).join("");
   }
-  function mapCardHtml(l) {
+  // Сниппет на карте — по макету Katya «Card»: звонок и чат справа, внизу заметки и реакции
+  const EMOJI = ["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"];
+  const notesWord = (n) => `${n} ${plural(n, ["заметка", "заметки", "заметок"])}`;
+  function footHtml(p, id) {
+    const notes = p.notes[id] || [];
+    const who = [...new Set(notes.map((n) => n.who))];
+    const reacts = Object.entries(p.reactions[id] || {}).filter(([, list]) => list.length);
+    return `<div class="fw-mc__foot">
+      <button class="fw-mc__notes" type="button" data-tg="notes" data-id="${id}">
+        ${who.length ? `<span class="fw-mc__avs">${who.map((m) => `<img class="fw-av" src="${PEOPLE[m].img}" alt="${PEOPLE[m].name}" />`).join("")}</span>` : ""}
+        ${notes.length ? notesWord(notes.length) : "Добавить заметку"}
+      </button>
+      <span class="fw-mc__reacts">
+        ${reacts.map(([e, list]) => `<button class="fw-react${list.includes(store.me) ? " is-mine" : ""}" type="button" data-tg="react" data-id="${id}" data-emoji="${e}">${e}<b>${list.length}</b></button>`).join("")}
+        <button class="fw-react fw-react--add" type="button" data-tg="react-add" data-id="${id}" aria-label="Добавить реакцию"><svg viewBox="0 0 24 24"><circle cx="11" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.3" cy="11.5" r="1.3" fill="currentColor"/><circle cx="13.7" cy="11.5" r="1.3" fill="currentColor"/><path d="M7.8 15.2a4 4 0 0 0 6.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19.5 2.5v6M16.5 5.5h6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+      </span>
+    </div>`;
+  }
+  function mapCardHtml(l, p) {
     const params = [l.rooms ? `${l.rooms}-комн. кв.` : "Студия", `${String(l.area).replace(".", ",")} м²`, `${l.floor}/${l.floorsTotal} эт.`].join(" · ");
     const on = store.saved.includes(l.id);
-    const host = l.isSuperHost || l.isSuperAgent;
     const addr = [l.street, l.house].filter(Boolean).join(", ");
     const dots = Math.min(5, l.photos.length);
     return `<div class="fw-mc" data-open-card="${l.id}">
       <div class="fw-mc__photo" style="background-image:url('${photo(l.id)}')">
-        ${host ? `<span class="fw-mc__badge">${l.dealType === "daily" ? "Суперхозяин" : "Суперагент"}</span>` : ""}
         <span class="fw-mc__fav-wrap"><button class="n4__btn n4__fav fw-mc__fav${on ? " is-active" : ""}" type="button" data-tg="fav" data-id="${l.id}" aria-label="В избранное">${on ? App.ICONS.heartFilled20 : App.ICONS.heart20}</button></span>
         <span class="fw-mc__dots">${Array.from({ length: dots }, (_, i) => `<i${i === 0 ? ' class="is-on"' : ""}></i>`).join("")}</span>
       </div>
       <div class="fw-mc__body">
-        <div class="fw-mc__price">${priceStr(l)}</div>
-        <div class="fw-mc__params">${params}</div>
-        ${l.rating ? `<div class="fw-mc__rate"><span>★</span> ${esc(l.rating)} <em>·</em> ${esc(l.reviews || "")}</div>` : ""}
-        ${addr ? `<div class="fw-mc__addr">${esc(addr)}</div>` : ""}
-        ${l.metro ? `<div class="fw-mc__metro"><i style="color:#${l.metroColor || "0468FF"}">M</i>${esc(l.metro)}<span>${l.metroMin ? l.metroMin + " мин." : ""}</span></div>` : ""}
+        <div class="fw-mc__info">
+          <div class="fw-mc__price">${priceStr(l)}</div>
+          <div class="fw-mc__params">${params}</div>
+          ${l.rating ? `<div class="fw-mc__rate"><span>★ ${esc(l.rating)}</span> · ${esc(l.reviews || "")}</div>` : ""}
+          ${addr ? `<div class="fw-mc__addr">${esc(addr)}</div>` : ""}
+          ${l.metro ? `<div class="fw-mc__metro"><i style="color:#${l.metroColor || "0468FF"}">M</i>${esc(l.metro)}<span>${l.metroMin ? l.metroMin + " мин." : ""}</span></div>` : ""}
+        </div>
+        <div class="fw-mc__acts">
+          <button class="fw-mc__call" type="button" data-tg="call" aria-label="Позвонить">${FW.CI.phone}</button>
+          <button class="fw-mc__chat" type="button" data-tg="chat" aria-label="Написать"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3.5c-5 0-9 3.4-9 7.6 0 2.3 1.2 4.3 3 5.7l-.5 3.4c-.1.5.5.9.9.6l3.4-2c.7.1 1.4.2 2.2.2 5 0 9-3.4 9-7.6S17 3.5 12 3.5Z"/><circle cx="8" cy="11" r="1.3" fill="#fff"/><circle cx="12" cy="11" r="1.3" fill="#fff"/><circle cx="16" cy="11" r="1.3" fill="#fff"/></svg></button>
+        </div>
       </div>
+      ${p ? footHtml(p, l.id) : ""}
     </div>`;
+  }
+
+  // ---------- Реакции и заметки ----------
+  function toggleReaction(p, id, emoji) {
+    const r = (p.reactions[id] = p.reactions[id] || {});
+    const list = (r[emoji] = r[emoji] || []);
+    const i = list.indexOf(store.me);
+    if (i > -1) list.splice(i, 1);
+    else list.push(store.me);
+    p.updated = Date.now();
+  }
+  function refreshFoot(p, id) {
+    document.querySelectorAll(`.fw-mc[data-open-card="${id}"] .fw-mc__foot`).forEach((f) => (f.outerHTML = footHtml(p, id)));
+  }
+  function openReactPicker(btn, p, id) {
+    document.querySelectorAll(".fw-rpick").forEach((x) => x.remove());
+    const pop = document.createElement("div");
+    pop.className = "fw-rpick";
+    pop.innerHTML = EMOJI.map((e) => `<button type="button" data-e="${e}">${e}</button>`).join("");
+    const app = $(".app");
+    const a = app.getBoundingClientRect(), r = btn.getBoundingClientRect();
+    const scale = a.width / app.offsetWidth || 1;
+    pop.style.top = (r.top - a.top) / scale - 52 + "px";
+    app.appendChild(pop);
+    const off = (e) => {
+      if (pop.contains(e.target)) return;
+      pop.remove();
+      document.removeEventListener("click", off, true);
+    };
+    setTimeout(() => document.addEventListener("click", off, true), 0);
+    pop.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-e]");
+      if (!b) return;
+      toggleReaction(p, id, b.dataset.e);
+      pop.remove();
+      document.removeEventListener("click", off, true);
+      refreshFoot(p, id);
+    });
+  }
+  const timeAgo = (ts) => {
+    const m = Math.max(1, Math.round((Date.now() - ts) / 60000));
+    return m < 60 ? `${m} мин.` : `${Math.round(m / 60)} ч.`;
+  };
+  // Шторка заметок — по структуре комментариев Instagram: заголовок, список, эмодзи над полем ввода
+  function openNotes(p, id) {
+    const noteRow = (n) => `<div class="fw-note"><img class="fw-av" src="${PEOPLE[n.who].img}" alt="" /><div><div class="fw-note__who"><b>${PEOPLE[n.who].name}</b><span>${timeAgo(n.ts)}</span></div><div class="fw-note__text">${esc(n.text)}</div></div></div>`;
+    const listHtml = () => {
+      const notes = p.notes[id] || [];
+      return notes.length
+        ? notes.map(noteRow).join("")
+        : `<div class="fw-notes__empty"><b>Пока нет заметок</b><span>Напишите, что думаете. Участники подборки увидят</span></div>`;
+    };
+    const { wrap } = sheet(`
+      <div class="fw-notes__title">Заметки</div>
+      <div class="fw-notes__list">${listHtml()}</div>
+      <div class="fw-notes__emoji">${EMOJI.map((e) => `<button type="button" data-ins="${e}">${e}</button>`).join("")}</div>
+      <div class="fw-notes__input">
+        <img class="fw-av" src="${PEOPLE[store.me].img}" alt="" />
+        <span class="fw-notes__field"><input type="text" placeholder="Что вы об этом думаете?" maxlength="200" /><button type="button" data-send aria-label="Отправить">${FW.CI.arrow}</button></span>
+      </div>`, "fw-sheet--notes");
+    const input = $("input", wrap);
+    const field = $(".fw-notes__field", wrap);
+    const list = $(".fw-notes__list", wrap);
+    const sync = () => field.classList.toggle("has-text", !!input.value.trim());
+    input.addEventListener("input", sync);
+    const send = () => {
+      const text = input.value.trim();
+      if (!text) return;
+      (p.notes[id] = p.notes[id] || []).push({ who: store.me, text, ts: Date.now() });
+      p.updated = Date.now();
+      input.value = "";
+      sync();
+      list.innerHTML = listHtml();
+      list.scrollTop = list.scrollHeight;
+      refreshFoot(p, id);
+    };
+    input.addEventListener("keydown", (e) => e.key === "Enter" && send());
+    wrap.addEventListener("click", (e) => {
+      const ins = e.target.closest("[data-ins]");
+      if (ins) {
+        input.value += ins.dataset.ins;
+        sync();
+        input.focus();
+      }
+      if (e.target.closest("[data-send]")) send();
+    });
   }
 
   function screenPodborka(p) {
@@ -112,7 +233,7 @@
           <button class="fw-pb__members" type="button" data-tg="share" aria-label="Позвать в подборку"><span class="fw-pb__avs">${avatars(p)}</span><span class="fw-pb__plus"><svg viewBox="0 0 12 12"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2"/></svg></span></button>
         </div>
       </div>
-      ${empty ? "" : `<div class="fw-pb__carousel">${items.map(mapCardHtml).join("")}</div>`}
+      ${empty ? "" : `<div class="fw-pb__carousel">${items.map((l) => mapCardHtml(l, p)).join("")}</div>`}
       <div class="fw-pb__sheet">
         <button class="fw-pb__sheet-head" type="button" data-tg="toggle">
           <span class="fw-pb__handle"></span>
@@ -415,7 +536,13 @@
         top.expanded = !top.expanded;
         const pb = $(".fw-pb", FW.root);
         if (pb && p && p.items.length) pb.classList.toggle("is-expanded", top.expanded);
-      } else if (a === "dates" && p) openDates(p);
+      } else if (a === "notes" && p) openNotes(p, t.dataset.id);
+      else if (a === "react" && p) {
+        toggleReaction(p, t.dataset.id, t.dataset.emoji);
+        refreshFoot(p, t.dataset.id);
+      } else if (a === "react-add" && p) openReactPicker(t, p, t.dataset.id);
+      else if (a === "call" || a === "chat") FW.toast(a === "call" ? "Звонок в прототипе не работает" : "Чат в прототипе не работает");
+      else if (a === "dates" && p) openDates(p);
       else if (a === "share" && p) openShare(p);
       else if (a === "reinvite") openInvite(store.pendingInvite);
       else FW.toast("В прототипе это не работает");

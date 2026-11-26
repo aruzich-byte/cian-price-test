@@ -2176,3 +2176,260 @@
   box-shadow: none;
   background: #0468ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m7 12.5 3.2 3.2L17 9' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 20px no-repeat;
 }
+
+/* Сниппет на карте v2 (макет Katya «Card»): звонок/чат справа, заметки и реакции внизу */
+.fw-mc__body {
+  display: flex;
+  gap: 8px;
+  padding: 12px 12px 10px;
+}
+.fw-mc__info {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 19px;
+}
+.fw-mc__price {
+  font-size: 20px;
+  line-height: 26px;
+}
+.fw-mc__rate span {
+  color: #ff8a00;
+}
+.fw-mc__acts {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.fw-mc__call,
+.fw-mc__chat {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+}
+.fw-mc__call {
+  background: #0468ff;
+  color: #fff;
+}
+.fw-mc__chat {
+  background: #e6f0ff;
+  color: #0468ff;
+}
+.fw-mc__call svg,
+.fw-mc__chat svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.fw-mc__fav-wrap {
+  width: 40px;
+  height: 40px;
+}
+.fw-mc__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+.fw-mc__notes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #0468ff;
+  font: 500 15px/20px var(--font-family);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.fw-mc__avs {
+  display: flex;
+}
+.fw-mc__avs .fw-av {
+  width: 24px;
+  height: 24px;
+}
+.fw-mc__avs .fw-av + .fw-av {
+  margin-left: -4px;
+}
+.fw-mc__reacts {
+  display: flex;
+  gap: 4px;
+}
+.fw-react {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 15px;
+  background: #e6f0ff;
+  color: #14171d;
+  font: 16px/20px var(--font-family);
+  cursor: pointer;
+}
+.fw-react b {
+  font-size: 12px;
+  font-weight: 600;
+}
+.fw-react.is-mine {
+  box-shadow: inset 0 0 0 1.5px #0468ff;
+}
+.fw-react--add {
+  justify-content: center;
+  padding: 0;
+  width: 34px;
+  color: #0468ff;
+}
+.fw-react--add svg {
+  width: 22px;
+  height: 22px;
+}
+.fw-rpick {
+  position: absolute;
+  z-index: 75;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 6px 24px rgba(13, 22, 46, 0.2);
+  animation: fw-pop 0.18s ease-out;
+}
+@keyframes fw-pop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.fw-rpick button,
+.fw-notes__emoji button {
+  border: 0;
+  background: none;
+  font-size: 24px;
+  line-height: 32px;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+/* Шторка заметок — структура как у комментариев Instagram */
+.fw-sheet--notes {
+  height: 72%;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 calc(20px + env(safe-area-inset-bottom));
+}
+.fw-sheet--notes .fw-sheet__handle {
+  margin-bottom: 12px;
+}
+.fw-notes__title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8ebf1;
+}
+.fw-notes__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px;
+}
+.fw-note {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+}
+.fw-note .fw-av {
+  flex: none;
+  width: 36px;
+  height: 36px;
+}
+.fw-note__who {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 14px;
+}
+.fw-note__who span {
+  font-size: 13px;
+  color: #8f9bb6;
+}
+.fw-note__text {
+  font-size: 15px;
+  line-height: 20px;
+}
+.fw-notes__empty {
+  padding: 48px 16px;
+  text-align: center;
+  color: #6f7888;
+}
+.fw-notes__empty b {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 17px;
+  color: #14171d;
+}
+.fw-notes__emoji {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-top: 1px solid #e8ebf1;
+}
+.fw-notes__input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 16px 0;
+}
+.fw-notes__input > .fw-av {
+  flex: none;
+  width: 40px;
+  height: 40px;
+}
+.fw-notes__field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 4px 0 16px;
+  border: 1px solid #d9dee6;
+  border-radius: 22px;
+}
+.fw-notes__field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font: 16px/20px var(--font-family);
+}
+.fw-notes__field button {
+  display: none;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: #0468ff;
+  color: #fff;
+  padding: 7px;
+  cursor: pointer;
+}
+.fw-notes__field.has-text button {
+  display: block;
+}
+.fw-notes__field button svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.fw-mc__params {
+  font-weight: 600;
+}
