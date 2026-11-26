@@ -2809,3 +2809,12 @@
   font-size: 14px;
   line-height: 18px;
 }
+
+/* Свёрнутая шторка без карусели — карта целиком (свайп списка вниз) */
+.fw-pb.is-map .fw-pb__carousel {
+  opacity: 0;
+  pointer-events: none;
+}
+.fw-pb.is-map .fw-pb__sort {
+  display: none;
+}

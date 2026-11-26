@@ -310,7 +310,7 @@
     if (v !== "card") top.active = null;
     const pb = $(".fw-pb", FW.root);
     if (!pb) return;
-    pb.classList.remove("is-half", "is-card", "is-full");
+    pb.classList.remove("is-half", "is-card", "is-full", "is-map");
     pb.classList.add("is-" + v);
     pb.classList.toggle("is-expanded", v === "full");
     $(".fw-pb__sheet", pb).scrollTop = 0;
@@ -355,58 +355,77 @@
   // Полшторки: скролл списка вниз тянет шторку вверх, пока она не займёт весь экран под шапкой (Katya 26.11)
   const FULL_TOP = 128;
   function watchSheet(top) {
+    // Полшторки тянется за скроллом: вверх — до полного экрана, вниз — сворачивается и открывает карту (Katya 26.11).
+    // В полном экране: скролл вверх на самом верху списка — обратно к половине.
     const pb = $(".fw-pb", FW.root);
     const sh = pb && $(".fw-pb__sheet", pb);
     if (!sh) return;
-    let lift = 0, base = 0, touchY = null;
-    const isHalf = () => pb.classList.contains("is-half");
+    let move = 0, base = 0, touchY = null, wheelT;
+    const is = (v) => pb.classList.contains("is-" + v);
+    const maxTop = () => pb.clientHeight - 72;
+    const begin = () => {
+      if (!move) base = sh.getBoundingClientRect().top - pb.getBoundingClientRect().top;
+    };
     const apply = () => {
       sh.style.transition = "none";
-      sh.style.top = Math.max(FULL_TOP, base - lift) + "px";
+      sh.style.top = Math.min(maxTop(), Math.max(FULL_TOP, base - move)) + "px";
     };
-    const finish = (force) => {
+    const finish = () => {
       sh.style.transition = "";
-      if (force || base - lift <= FULL_TOP + 1 || lift > 20) {
-        sh.style.top = "";
-        setView("full");
-      } else sh.style.top = "";
-      lift = 0;
+      sh.style.top = "";
+      const m = move;
+      move = 0;
+      if (m > 20) setView("full");
+      else if (m < -20) setView("map");
     };
-    const begin = () => {
-      if (!lift) base = sh.getBoundingClientRect().top - pb.getBoundingClientRect().top;
+    const onDelta = (d) => {
+      // d > 0 — список тянут вверх
+      if (is("half")) {
+        begin();
+        move += d;
+        apply();
+        return true;
+      }
+      if (is("full") && d < 0 && sh.scrollTop <= 0) {
+        setView("half");
+        return true;
+      }
+      if (is("map") && d > 0) {
+        setView("half");
+        return true;
+      }
+      return false;
     };
-    let wheelT;
     sh.addEventListener(
       "wheel",
       (e) => {
-        if (!isHalf() || e.deltaY <= 0) return;
+        if (!onDelta(e.deltaY)) return;
         e.preventDefault();
-        begin();
-        lift += e.deltaY;
-        apply();
         clearTimeout(wheelT);
-        if (base - lift <= FULL_TOP) finish(true);
-        else wheelT = setTimeout(() => finish(false), 160);
+        if (is("half")) wheelT = setTimeout(finish, 160);
       },
       { passive: false }
     );
-    sh.addEventListener("touchstart", (e) => isHalf() && ((touchY = e.touches[0].clientY), begin()), { passive: true });
+    sh.addEventListener("touchstart", (e) => ((touchY = e.touches[0].clientY), begin()), { passive: true });
     sh.addEventListener(
       "touchmove",
       (e) => {
-        if (!isHalf() || touchY === null) return;
-        const dy = touchY - e.touches[0].clientY;
-        if (dy <= 0) return;
-        e.preventDefault();
-        lift = dy;
-        apply();
+        if (touchY === null) return;
+        const d = touchY - e.touches[0].clientY;
+        if (is("half")) {
+          e.preventDefault();
+          move = d;
+          apply();
+        } else if ((is("full") && d < -30 && sh.scrollTop <= 0) || (is("map") && d > 30)) {
+          touchY = null;
+          setView("half");
+        }
       },
       { passive: false }
     );
     sh.addEventListener("touchend", () => {
-      if (touchY === null || !isHalf()) return;
+      if (touchY !== null && is("half") && move) finish();
       touchY = null;
-      if (lift) finish(false);
     });
   }
 
@@ -787,12 +806,14 @@
         FW.toast(p.sort === "price" ? "Сначала дешевле" : "По дате добавления");
       } else if (a === "toggle") {
         if (p && p.items.length) setView((top.view || "half") === "half" ? "full" : "half");
+        // из свёрнутой (map/card) — к половине
       } else if (a === "map" && p) {
         // тап по пустой карте — назад к стартовому виду
-        if (top.view === "card") setView("half");
+        if (top.view === "card") setView(top.prev || "half");
       } else if (a === "pin" && p) {
         // пин → карусель с его карточкой, шторка сворачивается
         const fromHalf = top.view !== "card";
+        if (fromHalf) top.prev = top.view || "half";
         top.active = t.dataset.id;
         setView("card");
         scrollToCard(t.dataset.id, !fromHalf);
