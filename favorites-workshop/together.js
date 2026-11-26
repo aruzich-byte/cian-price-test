@@ -55,6 +55,17 @@
       })
       .join("")}</div>`;
   }
+  // ---------- Мои места (Katya 26.11): точки на карте подборки с картинкой и заметкой ----------
+  const PLACE_KINDS = {
+    pool: { label: "Бассейн", img: "place-pool.png", hint: "Сюда в бассейн пойдём в субботу вечером" },
+    office: { label: "Офис", img: "place-office.png", hint: "Здесь в офис за документами заеду" },
+  };
+  function placesHtml(p) {
+    return (p.places || [])
+      .map((pl) => `<button class="fw-place fw-place--${pl.kind}" type="button" data-tg="place" data-id="${pl.id}" style="left:${pl.x}%;top:${pl.y}%" aria-label="${PLACE_KINDS[pl.kind].label}"><img src="${ASSETS}together/${PLACE_KINDS[pl.kind].img}" alt="" /></button>`)
+      .join("");
+  }
+
   function presetPodborka() {
     let p = store.podborki.find((x) => x.id === PRESET_ID);
     if (!p) {
@@ -72,6 +83,12 @@
         [items[1]]: [{ who: "anya", text: "Дороговато, но зато в центре", ts: ago(120) }],
       };
       p.reactions = { [items[0]]: { "👍": ["anya"] }, [items[2]]: { "👎": ["anya"] } };
+      p.places = [
+        { id: "pl-pool", kind: "pool", x: 19, y: 41, who: "anya" },
+        { id: "pl-office", kind: "office", x: 86, y: 30, who: "anya" },
+      ];
+      p.notes["pl-pool"] = [{ who: "anya", text: "Сюда в бассейн пойдём в субботу вечером", ts: ago(240) }];
+      p.notes["pl-office"] = [{ who: "anya", text: "Здесь в офис за документами заеду", ts: ago(235) }];
       store.podborki.unshift(p);
       // в подборке только лайкнутые — сердца внутри горят
       items.slice().reverse().forEach((id) => store.saved.includes(id) || store.saved.unshift(id));
@@ -84,6 +101,7 @@
   };
   const ensure = (p) => {
     p.notes = p.notes || {};
+    p.places = p.places || [];
     p.reactions = p.reactions || {};
     p.updated = p.updated || Date.now();
     p.members = p.members || [p.creator || "anya"];
@@ -202,7 +220,7 @@
     return m < 60 ? `${m} мин.` : `${Math.round(m / 60)} ч.`;
   };
   // Шторка заметок — по структуре комментариев Instagram: заголовок, список, эмодзи над полем ввода
-  function openNotes(p, id) {
+  function openNotes(p, id, title = "Заметки") {
     const noteRow = (n) => `<div class="fw-note"><img class="fw-av" src="${PEOPLE[n.who].img}" alt="" /><div><div class="fw-note__who"><b>${PEOPLE[n.who].name}</b><span>${timeAgo(n.ts)}</span></div><div class="fw-note__text">${esc(n.text)}</div></div></div>`;
     const listHtml = () => {
       const notes = p.notes[id] || [];
@@ -211,7 +229,7 @@
         : `<div class="fw-notes__empty"><b>Пока нет заметок</b><span>Напишите, что думаете. Участники подборки увидят</span></div>`;
     };
     const { wrap } = sheet(`
-      <div class="fw-notes__title">Заметки</div>
+      <div class="fw-notes__title">${esc(title)}</div>
       <div class="fw-notes__list">${listHtml()}</div>
       <div class="fw-notes__emoji">${EMOJI.map((e) => `<button type="button" data-ins="${e}">${e}</button>`).join("")}</div>
       <div class="fw-notes__input">
@@ -254,7 +272,7 @@
     const expanded = empty || top.expanded;
     const chip = p.type === "daily" ? `<button class="fw-pb__chip" type="button" data-tg="dates">${DATES[p.dates].short} · ${p.guests} ${plural(p.guests, ["гость", "гостя", "гостей"])}</button>` : "";
     return `<div class="fw-pb${expanded ? " is-expanded" : ""}">
-      <div class="fw-pb__map">${pinsHtml(items)}</div>
+      <div class="fw-pb__map">${pinsHtml(items).replace(/<\/div>$/, placesHtml(p) + "</div>")}</div>
       <div class="fw-pb__head">
         <div class="fw-pb__bar">
           <button class="fw-pb__icon" type="button" data-act="back" aria-label="Назад">${IC.back}</button>
@@ -468,6 +486,81 @@
     });
   }
 
+  function openMore(p) {
+    const { wrap, close } = sheet(`
+      <div class="fw-menu">
+        <button class="fw-menu__row" type="button" data-m="place"><span class="fw-menu__ic"><img src="${ASSETS}together/place-pool.png" alt="" /></span><span><b>Добавить моё место</b><span>Работа, бассейн, родители — увидите, что рядом</span></span></button>
+        <button class="fw-menu__row" type="button" data-m="share"><span class="fw-menu__ic fw-menu__ic--blue">${IC.plus}</span><span><b>Позвать в подборку</b></span></button>
+      </div>`);
+    wrap.addEventListener("click", (e) => {
+      const m = e.target.closest("[data-m]");
+      if (!m) return;
+      close();
+      setTimeout(() => (m.dataset.m === "place" ? openAddPlace(p) : openShare(p)), 260);
+    });
+  }
+  function openAddPlace(p) {
+    let kind = "pool";
+    const { wrap, close } = sheet(`
+      <div class="fw-sheet__title">Моё место</div>
+      <div class="fw-placepick">${Object.entries(PLACE_KINDS)
+        .map(([k, v]) => `<button class="fw-placepick__opt${k === kind ? " is-on" : ""}" type="button" data-kind="${k}"><img src="${ASSETS}together/${v.img}" alt="" /><span>${v.label}</span></button>`)
+        .join("")}</div>
+      <label class="fw-field"><span>Заметка</span><input type="text" placeholder="${esc(PLACE_KINDS[kind].hint)}" maxlength="120" /></label>
+      <div class="fw-dates__note">Место и заметку увидят все участники подборки</div>
+      <button class="fw-btn fw-btn--primary" type="button" data-go>Отметить на карте</button>`);
+    const input = $("input", wrap);
+    wrap.addEventListener("click", (e) => {
+      const k = e.target.closest("[data-kind]");
+      if (k) {
+        kind = k.dataset.kind;
+        wrap.querySelectorAll("[data-kind]").forEach((b) => b.classList.toggle("is-on", b === k));
+        input.placeholder = PLACE_KINDS[kind].hint;
+        return;
+      }
+      if (!e.target.closest("[data-go]")) return;
+      const text = input.value.trim();
+      close();
+      placeOnMap(p, kind, text);
+    });
+  }
+  // режим «нажмите на карту»: следующий тап по карте ставит место
+  function placeOnMap(p, kind, text) {
+    const pb = $(".fw-pb", FW.root);
+    if (!pb) return;
+    pb.classList.add("is-placing");
+    const hint = document.createElement("div");
+    hint.className = "fw-place-hint";
+    hint.innerHTML = `<img src="${ASSETS}together/${PLACE_KINDS[kind].img}" alt="" /><span>Нажмите на карту, где это место</span><button type="button">Отмена</button>`;
+    pb.appendChild(hint);
+    const map = $(".fw-pb__map", pb);
+    const done = () => {
+      pb.classList.remove("is-placing");
+      hint.remove();
+      map.removeEventListener("click", onMap, true);
+    };
+    const onMap = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const r = $(".fw-pins", map).getBoundingClientRect();
+      const pl = {
+        id: "pl" + Date.now(),
+        kind,
+        who: store.me,
+        x: +(((e.clientX - r.left) / r.width) * 100).toFixed(2),
+        y: +(((e.clientY - r.top) / r.height) * 100).toFixed(2),
+      };
+      p.places.push(pl);
+      if (text) p.notes[pl.id] = [{ who: store.me, text, ts: Date.now() }];
+      p.updated = Date.now();
+      done();
+      FW.rerender();
+      FW.toast(`Место «${PLACE_KINDS[kind].label}» на карте`);
+    };
+    $("button", hint).addEventListener("click", done);
+    map.addEventListener("click", onMap, true);
+  }
+
   function openDates(p) {
     let d = p.dates, g = p.guests;
     const { wrap, close } = sheet(`
@@ -599,6 +692,11 @@
       else if (a === "call" || a === "chat") FW.toast(a === "call" ? "Звонок в прототипе не работает" : "Чат в прототипе не работает");
       else if (a === "dates" && p) openDates(p);
       else if (a === "share" && p) openShare(p);
+      else if (a === "more" && p) openMore(p);
+      else if (a === "place" && p) {
+        const pl = p.places.find((x) => x.id === t.dataset.id);
+        if (pl) openNotes(p, pl.id, PLACE_KINDS[pl.kind].label);
+      }
       else if (a === "reinvite") openInvite(store.pendingInvite);
       else FW.toast("В прототипе это не работает");
       return;
