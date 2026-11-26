@@ -17,6 +17,11 @@
   const priceStr = (l) => (l.dealType === "daily" ? "от " : "") + fmtPrice(l.price) + (SUFFIX[l.dealType] || "");
 
   // ---------- Данные ----------
+  // Убираем неудачные первые фото (Katya 26.11): Вознесенский, 3-5 — два уличных фото со стрелками
+  [["206752605", 2]].forEach(([id, n]) => {
+    const l = App.LISTINGS.find((x) => x.id === id);
+    if (l && l.photos && l.photos.length > n) l.photos = l.photos.slice(n);
+  });
   const withPhoto = (l) => l.photos && l.photos.length;
   const RENT = App.LISTINGS.filter((l) => l.dealType === "rent" && l.propertyType === "flat" && withPhoto(l));
   const SALE = App.LISTINGS.filter((l) => l.dealType === "sale" && l.propertyType === "flat" && withPhoto(l));
