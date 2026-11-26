@@ -2,6 +2,11 @@
 .fw .app {
   position: relative;
 }
+/* Экран не прокручивается целиком (иначе фокус в скрытых шторках сдвигает его вверх) */
+.fw .phone-frame__screen,
+.fw .app {
+  overflow: clip;
+}
 
 /* ---------- Таб-бар (по макетам Katya) ---------- */
 .fw-tabbar {

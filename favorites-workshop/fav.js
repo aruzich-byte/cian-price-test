@@ -32,6 +32,7 @@
     { title: "Снять 2-комнатную квартиру в Санкт-Петербурге у метро", kind: "Сохранённый поиск" },
   ];
 
+  // Живое состояние: всё пусто, наполняется действиями в прототипе
   const store = {
     saved: [], // id объявлений («Объявления»)
     searches: [],
@@ -40,32 +41,6 @@
     viewed: [],
     podborki: [], // { id, name, items: [] }
   };
-  let podborkiAudience = "b2c";
-
-  const PRESETS = {
-    empty: () => ({ saved: [], searches: [], zhk: [], compare: [], viewed: [], podborki: [] }),
-    listings: () => ({ ...PRESETS.empty(), saved: ids(RENT, 0, 14) }),
-    partial: () => ({ ...PRESETS.listings(), searches: SEARCHES.slice(), viewed: ids(RENT, 4, 25).concat(ids(SALE, 0, 25)).slice(0, 25) }),
-    full: () => ({
-      ...PRESETS.partial(),
-      zhk: ids(NEWB, 0, 1),
-      compare: ids(SALE, 6, 5),
-      podborki: [
-        { id: "p1", name: "Двушки у метро", items: ids(RENT, 2, 4) },
-        { id: "p2", name: "Снять до лета", items: ids(RENT, 8, 3) },
-      ],
-    }),
-  };
-  const PRESET_LABELS = { empty: "Пусто", listings: "Только объявления", partial: "Часть пустые", full: "Всё заполнено" };
-  const BADGES = { saved: "Цена снизилась", searches: "Есть новое", zhk: "Старт продаж" };
-
-  function applyPreset(name) {
-    Object.assign(store, PRESETS[name]());
-    currentPreset = name;
-    syncResultHearts();
-    rerender();
-  }
-  let currentPreset = "full";
 
   // ---------- Иконки ----------
   const IC = {
@@ -116,17 +91,13 @@
       ["share", "#F5B11F", "Легко делиться с близкими", "Настройте вид и поделитесь на отдельной странице"],
       ["chat", "#1EA3FF", "С обратной связью", "Узнайте, какие объекты понравились: получайте лайки и комментарии"],
     ],
-    b2b: [
-      ["pin", "#FF6A1F", "Объекты в одном месте", "Создайте персональные подборки для клиентов в отдельных папках"],
-      ["share", "#F5B11F", "Легко делиться", "Настройте вид и поделитесь с клиентом на отдельной странице"],
-      ["chat", "#1EA3FF", "С обратной связью", "Узнайте, какие объекты понравились клиенту"],
-    ],
   };
 
   // ---------- Превью плиток ----------
   function collageHtml(list) {
     const p = list.slice(0, 3).map(photo);
     const img = (src) => `<span class="fw-col__img" style="background-image:url('${src}')"></span>`;
+    if (p.length === 0) return `<div class="fw-col fw-col--1"><span class="fw-col__img"></span></div>`;
     if (p.length === 1) return `<div class="fw-col fw-col--1">${img(p[0])}</div>`;
     if (p.length === 2) return `<div class="fw-col fw-col--2">${img(p[0])}${img(p[1])}</div>`;
     return `<div class="fw-col fw-col--3">${img(p[0])}<span class="fw-col__side">${img(p[1])}${img(p[2])}</span></div>`;
@@ -158,7 +129,8 @@
     else if (sec.preview === "stack") preview = stackHtml(list);
     else if (sec.preview === "search") preview = searchPreviewHtml(list);
     else preview = collageHtml(list);
-    const badge = filled && currentPreset !== "empty" && BADGES[sec.key] ? `<span class="fw-badge">${BADGES[sec.key]}</span>` : "";
+    // Бейджи («Цена снизилась», «Есть новое») появятся, когда будет событие; в живом прототипе их пока нет
+    const badge = "";
     const heart = filled && sec.key === "saved" ? `<span class="fw-tile__heart">${IC.heart}</span>` : "";
     return `<button class="fw-tile${filled ? " is-filled" : ""}" type="button" data-section="${sec.key}">
       <span class="fw-tile__preview">${preview}${badge}</span>
@@ -233,7 +205,7 @@
 
   function screenPodborki() {
     if (!store.podborki.length) {
-      const rows = PODBORKI_EMPTY[podborkiAudience]
+      const rows = PODBORKI_EMPTY.b2c
         .map(([ic, color, t, d]) => `<div class="fw-feat"><span class="fw-feat__ic" style="background:${color}">${IC[ic]}</span><span><b>${esc(t)}</b><span>${esc(d)}</span></span></div>`)
         .join("");
       return `<div class="fw-scroll">${headerHtml("Подборки")}
@@ -474,44 +446,18 @@
     $(".app").appendChild(tabbar);
   }
 
-  function buildPanel() {
-    const panel = document.getElementById("prototype-panel");
-    if (!panel) return;
-    const sec = (title, attr, opts, cur) => {
-      const s = document.createElement("div");
-      s.className = "prototype-panel__section";
-      s.innerHTML = `<div class="prototype-panel__section-title">${title}</div><div class="prototype-panel__chips">${Object.entries(opts)
-        .map(([v, l]) => `<button class="proto-chip${v === cur ? " is-active" : ""}" type="button" data-${attr}="${v}">${l}</button>`)
-        .join("")}</div>`;
-      return s;
-    };
-    const header = $(".prototype-panel__header", panel);
-    const a = sec("Состояние Избранного", "fw-preset", PRESET_LABELS, currentPreset);
-    const b = sec("Пустые «Подборки»", "fw-aud", { b2c: "b2c · Поискун", b2b: "b2B · Риелтор" }, podborkiAudience);
-    header.after(a, b);
-    panel.addEventListener("click", (e) => {
-      const p = e.target.closest("[data-fw-preset]");
-      const q = e.target.closest("[data-fw-aud]");
-      if (p) {
-        a.querySelectorAll(".proto-chip").forEach((c) => c.classList.toggle("is-active", c === p));
-        stack.length = 0;
-        applyPreset(p.dataset.fwPreset);
-        setTab("fav");
-      }
-      if (q) {
-        b.querySelectorAll(".proto-chip").forEach((c) => c.classList.toggle("is-active", c === q));
-        podborkiAudience = q.dataset.fwAud;
-        if (!store.podborki.length && stack.some((s) => s.key === "podborki")) rerender();
-        else {
-          // Чтобы сразу увидеть пустые «Подборки»: убираем подборки и открываем раздел
-          store.podborki = [];
-          stack.length = 0;
-          stack.push({ type: "section", key: "podborki" });
-          setTab("fav");
-        }
-      }
-    });
-  }
+  // «Вы смотрели»: тап по сниппету (не по кнопкам) = открыл объявление
+  const CARD_CONTROLS = ".card__btn, .card__gallery-btn, .card__gallery-badge, .card__labels, .n2__control, .n3__control, .asis__extra";
+  document.addEventListener(
+    "click",
+    (e) => {
+      const card = e.target.closest(".card--n4[data-listing-id]");
+      if (!card || e.target.closest(CARD_CONTROLS)) return;
+      const id = card.dataset.listingId;
+      store.viewed = [id].concat(store.viewed.filter((x) => x !== id));
+    },
+    true
+  );
 
   document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("fw");
@@ -524,10 +470,6 @@
     setH();
     window.addEventListener("resize", setH);
     const q = new URLSearchParams(location.search);
-    if (PRESETS[q.get("fav")]) currentPreset = q.get("fav");
-    if (q.get("aud") === "b2b") podborkiAudience = "b2b";
-    Object.assign(store, PRESETS[currentPreset]());
-    buildPanel();
     // Сердца выдачи — по состоянию «Объявлений», в том числе у дорисованных при скролле
     const list = document.getElementById("results-list");
     if (list) new MutationObserver(syncResultHearts).observe(list, { childList: true });
