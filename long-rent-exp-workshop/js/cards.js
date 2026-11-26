@@ -1536,9 +1536,9 @@
       ${new2GalleryHtml(item, { actions: false, toner: true, counter: false, ask: true })}
       <div class="n4__actions">
         <div class="n4__actions-group">
-          <button class="card__gallery-btn n4__btn n4__fav n3__control" type="button" aria-label="В избранное">${ICONS.heart}</button>
-          <button class="n4__btn n3__control" type="button" data-role="share" aria-label="Поделиться">${ICONS.share}</button>
-          <button class="n4__btn n3__control" type="button" data-role="more" aria-label="Ещё">${ICONS.more}</button>
+          <button class="card__gallery-btn n4__btn n4__fav n3__control" type="button" aria-label="В избранное">${ICONS.heart20}</button>
+          <button class="n4__btn n3__control" type="button" data-role="share" aria-label="Поделиться">${ICONS.share20}</button>
+          <button class="n4__btn n3__control" type="button" data-role="more" aria-label="Ещё">${ICONS.more20}</button>
         </div>
         <div class="n4__actions-group n4__actions-group--contact">
           <button class="card__btn card__btn--message n4__btn" type="button" aria-label="Написать">${ICONS.message}</button>
@@ -1567,7 +1567,7 @@
     fav.addEventListener("click", (e) => {
       e.stopPropagation();
       const active = fav.classList.toggle("is-active");
-      fav.innerHTML = active ? ICONS.heartFilled : ICONS.heart;
+      fav.innerHTML = active ? ICONS.heartFilled20 : ICONS.heart20;
       if (active) playFavCharge(fav);
     });
     setupShareAndMore(card, item);
