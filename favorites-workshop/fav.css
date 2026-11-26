@@ -2453,3 +2453,12 @@
   background: transparent;
   text-shadow: none;
 }
+.fw-rpick {
+  left: auto;
+  right: 16px;
+  gap: 4px;
+}
+.fw-rpick button {
+  font-size: 26px;
+  padding: 2px 8px;
+}

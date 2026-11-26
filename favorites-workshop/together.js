@@ -50,7 +50,7 @@
         ],
         [items[1]]: [{ who: "anya", text: "Дороговато, но зато в центре", ts: ago(120) }],
       };
-      p.reactions = { [items[0]]: { "👍": ["anya"] }, [items[2]]: { "🔥": ["anya"] } };
+      p.reactions = { [items[0]]: { "👍": ["anya"] }, [items[2]]: { "👎": ["anya"] } };
       store.podborki.unshift(p);
     }
     return p;
@@ -83,7 +83,8 @@
     return list.map((m) => `<img class="fw-av" src="${PEOPLE[m].img}" alt="${PEOPLE[m].name}" />`).join("");
   }
   // Сниппет на карте — по макету Katya «Card»: звонок и чат справа, внизу заметки и реакции
-  const EMOJI = ["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"];
+  const EMOJI = ["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"]; // вставка в текст заметки
+  const REACTIONS = ["👍", "👎"]; // реакции пока только лайк/дизлайк (решение Katya, совпадает с MVP Ани)
   const notesWord = (n) => `${n} ${plural(n, ["заметка", "заметки", "заметок"])}`;
   function footHtml(p, id) {
     const notes = p.notes[id] || [];
@@ -133,7 +134,13 @@
     const list = (r[emoji] = r[emoji] || []);
     const i = list.indexOf(store.me);
     if (i > -1) list.splice(i, 1);
-    else list.push(store.me);
+    else {
+      // одна оценка на человека: лайк снимает дизлайк и наоборот
+      REACTIONS.forEach((e) => {
+        if (e !== emoji && r[e]) r[e] = r[e].filter((m) => m !== store.me);
+      });
+      list.push(store.me);
+    }
     p.updated = Date.now();
   }
   function refreshFoot(p, id) {
@@ -143,7 +150,7 @@
     document.querySelectorAll(".fw-rpick").forEach((x) => x.remove());
     const pop = document.createElement("div");
     pop.className = "fw-rpick";
-    pop.innerHTML = EMOJI.map((e) => `<button type="button" data-e="${e}">${e}</button>`).join("");
+    pop.innerHTML = REACTIONS.map((e) => `<button type="button" data-e="${e}">${e}</button>`).join("");
     const app = $(".app");
     const a = app.getBoundingClientRect(), r = btn.getBoundingClientRect();
     const scale = a.width / app.offsetWidth || 1;
