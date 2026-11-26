@@ -1541,8 +1541,8 @@
           <button class="n4__btn n3__control" type="button" data-role="more" aria-label="Ещё">${ICONS.more20}</button>
         </div>
         <div class="n4__actions-group n4__actions-group--contact">
-          <button class="card__btn card__btn--message n4__btn" type="button" aria-label="Написать">${ICONS.message}</button>
-          <button class="card__btn card__btn--call n4__btn" type="button" aria-label="Позвонить">${ICONS.phone}</button>
+          <button class="card__btn card__btn--message n4__btn" type="button" aria-label="Написать">${ICONS.message20}</button>
+          <button class="card__btn card__btn--call n4__btn" type="button" aria-label="Позвонить">${ICONS.phone20}</button>
         </div>
       </div>
       <div class="card__info">
