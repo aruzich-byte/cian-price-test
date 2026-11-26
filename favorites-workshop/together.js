@@ -59,6 +59,7 @@
   const PLACE_KINDS = {
     pool: { label: "Бассейн", img: "place-pool.png", hint: "Сюда в бассейн пойдём в субботу вечером" },
     office: { label: "Офис", img: "place-office.png", hint: "Здесь в офис за документами заеду" },
+    museum: { label: "Музей обезьян", img: "place-museum.png", hint: "В воскресенье сходим в музей обезьян" },
   };
   function placesHtml(p) {
     return (p.places || [])
@@ -86,8 +87,10 @@
       p.places = [
         { id: "pl-pool", kind: "pool", x: 19, y: 41, who: "anya" },
         { id: "pl-office", kind: "office", x: 86, y: 34, who: "anya" },
+        { id: "pl-museum", kind: "museum", x: 56, y: 39, who: "anya" },
       ];
       p.notes["pl-pool"] = [{ who: "anya", text: "Сюда в бассейн пойдём в субботу вечером", ts: ago(240) }];
+      p.notes["pl-museum"] = [{ who: "anya", text: "В воскресенье сходим в музей обезьян 🐒", ts: ago(230) }];
       p.notes["pl-office"] = [{ who: "anya", text: "Здесь в офис за документами заеду", ts: ago(235) }];
       store.podborki.unshift(p);
       // в подборке только лайкнутые — сердца внутри горят
