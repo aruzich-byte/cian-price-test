@@ -116,8 +116,8 @@
    вплотную к фото, без облачка — текст прямо на сером */
 [data-seller-head="strip"] .n4__seller {
   align-items: center;
-  padding: 12px; /* по бокам 12px — одна вертикаль с «новое» и счётчиком на фото */
-  background: #f3f5f8;
+  padding: 12px; /* по бокам 12px — одна вертикаль с «новое» и миниатюрами на фото */
+  background: var(--color-white);
 }
 
 [data-seller-head="strip"] .n4__seller-text {
@@ -225,8 +225,20 @@
 }
 
 
-/* Точки под фото не нужны — номер слайда показывает счётчик */
-.card--n4 .card__gallery-dots {
+/* Миниатюры планировки и карты — чуть меньше, чем в «Новом 2» */
+.card--n4 .n2__thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.card--n4 .n2__thumb-pin {
+  width: 22px;
+  height: 22px;
+}
+
+/* Точки внизу фото вместо счётчика «2/12»; на слайде «Спросите продавца» их нет */
+.n2__gallery.is-ask .card__gallery-dots {
   display: none;
 }
 
