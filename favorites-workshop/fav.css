@@ -1,0 +1,664 @@
+/* Избранное и подборки — поверх выдачи long-rent-exp-workshop. Префикс fw- */
+.fw .app {
+  position: relative;
+}
+
+/* ---------- Таб-бар (по макетам Katya) ---------- */
+.fw-tabbar {
+  flex: none;
+  position: relative;
+  z-index: 40;
+  display: flex;
+  justify-content: space-around;
+  padding: 6px 4px calc(28px + env(safe-area-inset-bottom));
+  background: #fff;
+  border-top: 0.5px solid rgba(13, 22, 46, 0.12);
+}
+.fw-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border: 0;
+  background: none;
+  padding: 2px 0;
+  color: #8f9bb6;
+  font: 500 11px/13px var(--font-family);
+  cursor: pointer;
+}
+.fw-tab.is-active {
+  color: #0468ff;
+}
+.fw-tab__ic {
+  position: relative;
+  width: 28px;
+  height: 28px;
+}
+.fw-tab__ic svg {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+.fw-tab__badge {
+  position: absolute;
+  top: -5px;
+  right: -9px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: #c9152a;
+  border: 2px solid #fff;
+  color: #fff;
+  font: 600 12px/16px var(--font-family);
+  text-align: center;
+}
+/* Под таб-баром список выдачи заканчивается выше */
+.fw #results-scroll {
+  padding-bottom: 16px;
+}
+
+/* ---------- Экран Избранного поверх выдачи ---------- */
+.fw-root {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: var(--fw-tabbar-h, 83px);
+  z-index: 35;
+  display: none;
+  background: #fff;
+  color: #14171d;
+  font-family: var(--font-family);
+}
+.fw-on-fav .fw-root {
+  display: block;
+}
+/* На вкладке «Избранное» статусбар белый и над экраном */
+.fw-on-fav .statusbar {
+  z-index: 36;
+  background: transparent;
+}
+.fw-on-fav .prototype-panel-fab {
+  bottom: calc(var(--fw-tabbar-h, 83px) + 12px);
+}
+.fw-scroll {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 44px;
+  background: #fff;
+}
+@media (max-width: 480px) {
+  .fw-scroll {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+.fw-head {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  height: 56px;
+  padding: 0 8px;
+}
+.fw-head__title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fw-head__back {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: none;
+  color: #0468ff;
+  padding: 8px;
+  cursor: pointer;
+}
+.fw-head__back svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* ---------- Главная Избранного ---------- */
+.fw-scroll.fw-home {
+  background: #f3f5f8;
+  padding-top: 0;
+}
+.fw-home__top {
+  background: #fff;
+  border-radius: 0 0 24px 24px;
+  padding-bottom: 24px;
+  padding-top: 44px;
+}
+@media (max-width: 480px) {
+  .fw-home__top {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+.fw-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 8px;
+  padding: 16px 20px 0;
+}
+.fw-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.fw-tile__preview {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+}
+.fw-tile__label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.fw-tile__count {
+  color: #6f7888;
+  font-weight: 500;
+}
+.fw-tile__heart {
+  width: 22px;
+  height: 22px;
+  color: #d9263a;
+}
+.fw-tile__heart svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+/* Бейдж: выступает над плиткой на 8, прижат вправо */
+.fw-badge {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  z-index: 5;
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 13px;
+  background: #2e9b1c;
+  color: #fff;
+  font-size: 15px;
+  line-height: 26px;
+  white-space: nowrap;
+}
+
+/* Коллаж: 1 / 2 / 3 фото */
+.fw-col {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  gap: 2px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+}
+.fw-col__img {
+  flex: 1;
+  background: #e9ecf1 center / cover no-repeat;
+}
+.fw-col__side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Сравнение: стопка до 3 карточек */
+.fw-stack {
+  position: absolute;
+  inset: 0;
+}
+.fw-stack__card {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--i) * 14px);
+  width: calc(100% - var(--n-off, 0px));
+  border: 2px solid #fff;
+  border-radius: 16px;
+  background: #e9ecf1 center / cover no-repeat;
+  box-shadow: 0 0 0 1px rgba(13, 22, 46, 0.06);
+}
+.fw-stack--2 {
+  --n-off: 14px;
+}
+.fw-stack--3 {
+  --n-off: 28px;
+}
+
+/* Мои поиски: карточка поиска на светлом фоне */
+.fw-search {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: #f3f5f8;
+  border: 1px solid #d9dee6;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+}
+.fw-search__card {
+  position: relative;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 10px;
+  box-shadow: 0 2px 8px rgba(13, 22, 46, 0.1);
+}
+.fw-search__card::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -6px;
+  height: 10px;
+  z-index: -1;
+  border-radius: 0 0 10px 10px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(13, 22, 46, 0.08);
+}
+.fw-search__title {
+  font-size: 12.5px;
+  line-height: 15px;
+  font-weight: 600;
+  color: #4a5262;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+.fw-search__kind {
+  margin-top: 3px;
+  font-size: 11.5px;
+  line-height: 14px;
+  color: #7a8396;
+}
+
+/* Пустая плитка: серая папка и иконка раздела */
+.fw-empty-tile {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #e8eaef;
+}
+.fw-empty-tile__folder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #f3f4f7;
+}
+.fw-empty-tile__icon {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #fff;
+  color: #0468ff;
+  padding: 3px;
+}
+.fw-empty-tile__icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+/* «Могут подойти» */
+.fw-home__recs {
+  margin-top: 8px;
+  background: #fff;
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px 24px;
+  min-height: 300px;
+}
+.fw-h2 {
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.fw-recs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 8px;
+}
+.fw-mini {
+  min-width: 0;
+}
+.fw-mini__photo {
+  position: relative;
+  aspect-ratio: 1.36 / 1;
+  border-radius: 12px;
+  background: #e9ecf1 center / cover no-repeat;
+  margin-bottom: 8px;
+}
+.fw-mini__heart {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  border: 0;
+  background: rgba(13, 22, 46, 0.32);
+  color: #fff;
+  padding: 5px;
+  cursor: pointer;
+}
+.fw-mini__heart.is-active {
+  background: #fff;
+  color: #d9263a;
+}
+.fw-mini__heart svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+.fw-mini__price {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 700;
+}
+.fw-mini__params,
+.fw-mini__metro {
+  font-size: 15px;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fw-mini__metro {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #6f7888;
+}
+.fw-mini__metro i {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ---------- Списки ---------- */
+.fw-count {
+  padding: 0 16px 8px;
+  color: #6f7888;
+  font-size: 15px;
+}
+.fw-cards {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 24px;
+}
+
+.fw-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 8px 16px;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-row__thumb {
+  position: relative;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #e9ecf1;
+}
+.fw-row__thumb .fw-col {
+  border-radius: 10px;
+  gap: 1px;
+}
+.fw-row__thumb--plus {
+  display: grid;
+  place-items: center;
+  background: #e6f0ff;
+  color: #0468ff;
+}
+.fw-row__thumb--plus svg {
+  width: 24px;
+  height: 24px;
+}
+.fw-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.fw-row__title {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 500;
+}
+.fw-row__sub {
+  font-size: 14px;
+  line-height: 18px;
+  color: #6f7888;
+}
+.fw-row__more {
+  width: 24px;
+  height: 24px;
+  color: #0468ff;
+}
+.fw-row--new .fw-row__title {
+  color: #0468ff;
+}
+
+/* ---------- Пустые состояния (иллюстрации — PNG из макетов) ---------- */
+.fw-es {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 20px 32px;
+}
+.fw-es__img {
+  width: 335px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.fw-es__h {
+  margin-top: 16px;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  max-width: 300px;
+}
+.fw-es__p {
+  margin-top: 8px;
+  font-size: 17px;
+  line-height: 22px;
+  color: #3b4250;
+  max-width: 310px;
+}
+.fw-es .fw-btn--light {
+  margin-top: 24px;
+}
+.fw-es--podborki {
+  padding-top: 8px;
+}
+.fw-feats {
+  margin: 20px 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  text-align: left;
+}
+.fw-feat {
+  display: flex;
+  gap: 14px;
+}
+.fw-feat__ic {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  padding: 4px;
+}
+.fw-feat__ic svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+.fw-feat b {
+  display: block;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.fw-feat span span {
+  display: block;
+  font-size: 15px;
+  line-height: 20px;
+  color: #6f7888;
+}
+
+.fw-btn {
+  border: 0;
+  border-radius: 8px;
+  font: 600 17px/22px var(--font-family);
+  padding: 15px 24px;
+  cursor: pointer;
+}
+.fw-btn--light {
+  background: #e6f0ff;
+  color: #0468ff;
+  min-width: 210px;
+}
+.fw-btn--primary {
+  width: 100%;
+  background: #0468ff;
+  color: #fff;
+}
+.fw-link {
+  margin-top: 16px;
+  border: 0;
+  background: none;
+  color: #0468ff;
+  font: 500 17px/22px var(--font-family);
+  cursor: pointer;
+}
+
+/* ---------- Тост ---------- */
+.fw-toast {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(var(--fw-tabbar-h, 83px) + 12px);
+  z-index: 60;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #14171d;
+  color: #fff;
+  font: 500 15px/20px var(--font-family);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+.fw-toast.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Шторка «Новая подборка» ---------- */
+.fw-sheet-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+}
+.fw-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 22, 46, 0.4);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.fw-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  padding: 8px 16px calc(34px + env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.25s ease;
+  font-family: var(--font-family);
+}
+.fw-sheet-wrap.is-open .fw-sheet-backdrop {
+  opacity: 1;
+}
+.fw-sheet-wrap.is-open .fw-sheet {
+  transform: none;
+}
+.fw-sheet__handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: #d9dee6;
+  margin: 0 auto 16px;
+}
+.fw-sheet__title {
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.fw-field {
+  display: block;
+  background: #f3f5f8;
+  border-radius: 12px;
+  padding: 8px 14px 10px;
+  margin-bottom: 16px;
+}
+.fw-field span {
+  display: block;
+  font-size: 13px;
+  color: #6f7888;
+}
+.fw-field input {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: 17px/22px var(--font-family);
+  outline: none;
+  padding: 2px 0 0;
+}
