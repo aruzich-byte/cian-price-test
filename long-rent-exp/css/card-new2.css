@@ -299,11 +299,18 @@
 /* Крестик закрытия карты и планировки — тёмный, цвета основного текста, чтобы сильно выделялся */
 .n2__thumb.is-close {
   border-color: var(--text-primary);
+  /* Белый фон миниатюры просвечивал по скруглённым углам обводки — красим и его */
+  background: var(--text-primary);
 }
 
 .n2__thumb.is-close .n2__thumb-close {
   background: var(--text-primary);
   color: var(--color-white);
+}
+
+/* Картинка миниатюры под крестиком тоже давала светлую кромку по скруглению — прячем её */
+.n2__thumb.is-close > :not(.n2__thumb-close) {
+  visibility: hidden;
 }
 
 /* ---------- Настройки «Нового 2» в панели прототипа ---------- */
@@ -380,12 +387,7 @@
   pointer-events: none;
 }
 
-.n2__plan-rooms rect {
-  fill: rgba(4, 104, 255, 0.25);
-  stroke: var(--accent);
-  stroke-width: 2px;
-  vector-effect: non-scaling-stroke;
-}
+/* Стиль фигур комнат — css/plan-highlight.css */
 
 
 /* ---------- Лейблы внахлёст (v2 и v3) ---------- */

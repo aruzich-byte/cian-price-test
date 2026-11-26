@@ -309,7 +309,7 @@
   // fixed — галерея не растёт при свайпе (у «Нового 2» она сразу 1:1);
   // captionOf(index) — своя подпись к фото (у «Нового 2» подписи для продажи квартир свои);
   // onPosition(position) — дополнительная реакция на листание.
-  function setupGallery(card, item, { asis = false, fixed = asis, captionOf = null, onPosition = null } = {}) {
+  function setupGallery(card, item, { asis = false, fixed = asis, captionOf = null, onPosition = null, loop = false } = {}) {
     const track = card.querySelector('[data-role="track"]');
     if (!track) return;
     const gallery = card.querySelector(".card__gallery");
@@ -383,7 +383,70 @@
       { passive: true }
     );
 
-    setupMouseDrag(track);
+    const wrap = loop ? setupGalleryLoop(card, track) : null;
+    setupMouseDrag(track, undefined, wrap);
+  }
+
+  // ---------- Галерея по кругу («Новый 4») ----------
+  // Свайп вправо с первого слайда — на последний, свайп влево с последнего — на первый.
+  // Нативный скролл дальше краёв не пускает, поэтому ловим «упор» в край сами: палец/мышь
+  // ушли за край больше чем на EDGE_SWIPE px — мгновенно переставляем ленту и даём слайду
+  // «въехать» с той стороны, откуда тянули.
+  const EDGE_SWIPE = 40;
+
+  function setupGalleryLoop(card, track) {
+    const last = () => track.children.length - 1;
+    const atStart = () => track.scrollLeft <= 1;
+    const atEnd = () => track.scrollLeft >= track.scrollWidth - track.clientWidth - 1;
+
+    function wrapTo(index, fromLeft) {
+      track.style.scrollSnapType = "none";
+      track.style.scrollBehavior = "auto";
+      track.scrollLeft = index * track.clientWidth;
+      track.classList.remove("is-wrap-left", "is-wrap-right");
+      void track.offsetWidth;
+      track.classList.add(fromLeft ? "is-wrap-left" : "is-wrap-right");
+      setTimeout(() => {
+        track.classList.remove("is-wrap-left", "is-wrap-right");
+        track.style.scrollSnapType = "";
+        track.style.scrollBehavior = "";
+      }, 320);
+      if (window.App.track) window.App.track("Галерея по кругу", { value: index === 0 ? "с последнего на первое" : "с первого на последнее" });
+    }
+
+    // dx > 0 — тянули вправо (хотят предыдущий слайд), dx < 0 — влево (следующий)
+    function onEdgeSwipe(startedAtStart, startedAtEnd, dx) {
+      if (startedAtStart && dx > EDGE_SWIPE) wrapTo(last(), true);
+      else if (startedAtEnd && dx < -EDGE_SWIPE) wrapTo(0, false);
+      else return false;
+      return true;
+    }
+
+    let touch = null;
+    track.addEventListener(
+      "touchstart",
+      (e) => {
+        if (e.touches.length !== 1) return (touch = null);
+        const t = e.touches[0];
+        touch = { x: t.clientX, y: t.clientY, dx: 0, dy: 0, start: atStart(), end: atEnd() };
+      },
+      { passive: true }
+    );
+    track.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!touch || e.touches.length !== 1) return (touch = null);
+        touch.dx = e.touches[0].clientX - touch.x;
+        touch.dy = e.touches[0].clientY - touch.y;
+      },
+      { passive: true }
+    );
+    track.addEventListener("touchend", () => {
+      if (touch && Math.abs(touch.dx) > Math.abs(touch.dy)) onEdgeSwipe(touch.start, touch.end, touch.dx);
+      touch = null;
+    });
+
+    return { atStart, atEnd, onEdgeSwipe };
   }
 
   // ---------- Перетаскивание галереи мышью ----------
@@ -393,15 +456,18 @@
   const FLICK_VELOCITY = 0.4; // px/мс
 
   // step() — шаг между фото в px (по умолчанию ширина ленты: одно фото на экран)
-  function setupMouseDrag(track, step = () => track.clientWidth) {
+  function setupMouseDrag(track, step = () => track.clientWidth, wrap = null) {
     let drag = null;
 
     track.addEventListener("pointerdown", (e) => {
       if (e.pointerType !== "mouse" || e.button !== 0) return;
       drag = { startX: e.clientX, startLeft: track.scrollLeft, lastX: e.clientX, lastT: e.timeStamp, velocity: 0, moved: false };
+      if (wrap) Object.assign(drag, { atStart: wrap.atStart(), atEnd: wrap.atEnd() });
       track.style.scrollSnapType = "none";
       track.style.scrollBehavior = "auto";
-      track.setPointerCapture(e.pointerId);
+      // Указатель захватываем только когда начали тянуть: иначе клик по кнопке внутри ленты
+      // (бабблы «Спросите продавца») уходит ленте, а не кнопке
+      drag.pointerId = e.pointerId;
       track.classList.add("is-dragging");
     });
 
@@ -411,7 +477,10 @@
       if (dt > 0) drag.velocity = (e.clientX - drag.lastX) / dt;
       drag.lastX = e.clientX;
       drag.lastT = e.timeStamp;
-      if (Math.abs(e.clientX - drag.startX) > 3) drag.moved = true;
+      if (Math.abs(e.clientX - drag.startX) > 3 && !drag.moved) {
+        drag.moved = true;
+        track.setPointerCapture(drag.pointerId);
+      }
       track.scrollLeft = drag.startLeft - (e.clientX - drag.startX);
     });
 
@@ -427,6 +496,12 @@
       if (drag.moved) {
         track.dataset.justDragged = "1";
         setTimeout(() => delete track.dataset.justDragged, 0);
+      }
+      // По кругу: потянули за край ленты — перескок на противоположный край
+      if (wrap && wrap.onEdgeSwipe(drag.atStart, drag.atEnd, drag.lastX - drag.startX)) {
+        drag = null;
+        track.classList.remove("is-dragging");
+        return;
       }
       drag = null;
       track.classList.remove("is-dragging");
@@ -726,7 +801,7 @@
     return own || item.photos[index].caption;
   }
 
-  function new2GalleryHtml(item, { actions = true, toner = false, counter = false } = {}) {
+  function new2GalleryHtml(item, { actions = true, toner = false, counter = false, ask = false } = {}) {
     const total = item.photos.length;
     const dots = Math.min(total, MAX_DOTS);
     const layout = layoutPhoto(item);
@@ -739,8 +814,9 @@
       <div class="card__gallery n2__gallery">
         <div class="card__gallery-track" data-role="track">${item.photos
           .map((photo, i) => `<img src="${encodeURI(photo.src)}" alt=""${layout && i === layout.index ? ' class="is-layout"' : ""}${i > 0 ? ' loading="lazy"' : ""} />`)
-          .join("")}</div>
+          .join("")}${ask ? new4AskSlideHtml(item) : ""}</div>
         ${toner ? '<div class="n4__toner"></div>' : ""}
+        ${ask ? '<img class="n4__new" data-role="new" src="icons/label-new.svg" alt="Новое" />' : ""}
         <div class="n2__overlay n2__control" data-role="overlay" hidden></div>
         <span class="n2__caption" data-role="caption"></span>
         ${counter && total > 1 ? `<span class="n4__counter" data-role="counter">1/${total}</span>` : ""}
@@ -939,7 +1015,9 @@
     const rects = keys
       .map((key) => {
         const [x1, y1, x2, y2] = plan.rooms[key];
-        return `<rect x="${x1}" y="${y1}" width="${x2 - x1}" height="${y2 - y1}" />`;
+        // Три фигуры одной формы: слои аберрации и сама комната — стиль в css/plan-highlight.css
+        const r = `x="${x1}" y="${y1}" width="${x2 - x1}" height="${y2 - y1}"`;
+        return `<rect class="plan-room__far" ${r} /><rect class="plan-room__near" ${r} /><rect class="plan-room" ${r} />`;
       })
       .join("");
     return `<svg class="n2__plan-rooms" viewBox="0 0 100 100" preserveAspectRatio="none">${rects}</svg>`;
@@ -968,6 +1046,7 @@
     const thumbs = card.querySelectorAll(".n2__thumb");
     const layoutThumb = card.querySelector('[data-thumb="layout"]');
     const counter = card.querySelector('[data-role="counter"]');
+    const newLabel = card.querySelector('[data-role="new"]');
     const layout = layoutPhoto(item);
     const { track } = window.App;
     let mode = null; // null | "layout" | "map"
@@ -1057,10 +1136,18 @@
 
     setupGallery(card, item, {
       fixed: true,
+      loop: card.classList.contains("card--n4"),
       captionOf: (index) => new2Caption(item, index),
       onPosition: (position) => {
         // Счётчик слайдов «2/12» («Новый 4»)
         if (counter) counter.textContent = `${clamp(Math.round(position), 0, item.photos.length - 1) + 1}/${item.photos.length}`;
+        // Последний слайд «Спросите продавца» («Новый 4») — без счётчика, затемнения и миниатюр
+        gallery.classList.toggle("is-ask", Math.round(position) >= item.photos.length);
+        // Лейбл «Новое» живёт на первом фото: уезжает вместе с ним, гаснет к середине свайпа
+        if (newLabel) {
+          newLabel.style.transform = `translateX(${-position * gallery.clientWidth}px)`;
+          newLabel.style.opacity = String(Math.max(0, 1 - Math.abs(position) * 1.5));
+        }
         const now = Boolean(layout) && Math.round(position) === layout.index;
         if (now !== onLayoutSlide) {
           onLayoutSlide = now;
@@ -1312,6 +1399,132 @@
     `;
   }
 
+  // Бренд-код «заряд аберрации» на избранном — повторяет аберрацию пина с наброска «Пины и кластеры»
+  // воркшопа «Бренд-коды в продукте»: за элементом два слоя его же формы с равным шагом отступа,
+  // чёткие края, внутренний плотнее, внешний прозрачнее. Слои — обводка контура сердца
+  // (stroke растёт от 0), поэтому отступ одинаковый по всему контуру, как у пина.
+  // Нажали: сердце чуть подрастает, слои расходятся один раз и гаснут, сердце возвращается залитым.
+  // Снятие из избранного — без анимации. Тайминги, шаг и прозрачность — в css/card-new4.css (.n4__fav-aura).
+  const HEART_PATH = "M8 14.86S0 10.6 0 5.86C0 3.17 2.21 1 4.93 1c1.16 0 2.23.4 3.07 1.06A4.95 4.95 0 0 1 11.07 1C13.79 1 16 3.17 16 5.86 16 10.6 8 14.86 8 14.86Z";
+
+  function playFavCharge(btn) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    btn.classList.remove("is-charging");
+    btn.querySelectorAll(".n4__fav-aura").forEach((el) => el.remove());
+    void btn.offsetWidth; // перезапуск анимации при быстрых повторных нажатиях
+    const aura = document.createElement("span");
+    aura.className = "n4__fav-aura";
+    aura.setAttribute("aria-hidden", "true");
+    aura.innerHTML = `<svg viewBox="-8 -8 32 32"><path class="n4__fav-aura-outer" d="${HEART_PATH}"/><path class="n4__fav-aura-inner" d="${HEART_PATH}"/></svg>`;
+    btn.prepend(aura);
+    btn.classList.add("is-charging");
+    clearTimeout(btn._chargeTimer);
+    btn._chargeTimer = setTimeout(() => {
+      btn.classList.remove("is-charging");
+      aura.remove();
+    }, 800);
+  }
+
+  // ---------- Последний слайд галереи «Спросите продавца» («Новый 4») ----------
+  // Готовые сообщения в чат. Сначала — вопросы о том, чего в объявлении нет (по полям модели),
+  // потом общие («Можно посмотреть?»), всего до 4. Объявление заполнено полностью — только общие.
+  // Тексты короткие, как кнопка: до ~20 знаков. Тап по баблу — переход в чат с этим сообщением.
+  const ASK_MAX = 3;
+  const ASK_MISSING_MAX = 2;
+
+  function new4MissingQuestions(item) {
+    const q = [];
+    const has = (label) => item.labels.includes(label);
+    const isHouse = item.propertyType === "house";
+    if (item.dealType === "rent" || item.dealType === "daily") {
+      if (!has("Можно с животными")) q.push("Можно с животными?");
+      if (!has("Можно с детьми")) q.push("Можно с детьми?");
+    }
+    if (item.dealType === "rent") {
+      if (item.deposit == null) q.push("Какой залог?");
+      if (!item.utilitiesIncluded && !item.utilitiesPrice) q.push("Сколько за ЖКУ?");
+      if (item.metersExtra) q.push("Сколько по счётчикам?");
+      if (isHouse && item.water == null) q.push("Какая в доме вода?");
+      if (isHouse && item.toiletInside == null) q.push("Туалет в доме?");
+    }
+    if (item.dealType === "sale" && !isHouse) {
+      if (item.isNewbuilding) {
+        if (!item.deadline) q.push("Когда сдача дома?");
+      } else {
+        if (!item.repairYear) q.push("Когда делали ремонт?");
+        // Числа собственников в модели нет вовсе — у вторички спрашиваем всегда
+        q.push("Сколько собственников?");
+        if (!item.isRosreestrChecked) q.push("Пришлёте выписку ЕГРН?");
+      }
+    }
+    if (item.dealType === "sale" && isHouse) {
+      if (!item.buildYear) q.push("Какой год постройки?");
+      if (!item.gas) q.push("Есть ли газ?");
+      if (!item.heating) q.push("Какое отопление?");
+      if (!item.sewer) q.push("Какая канализация?");
+    }
+    if (!item.hasLayout && item.dealType !== "daily") q.push("Пришлите планировку");
+    return q.slice(0, ASK_MISSING_MAX);
+  }
+
+  function new4GeneralQuestions(item) {
+    if (item.dealType === "daily") return ["Свободно на мои даты?", "Можно заселиться раньше?", "Ещё актуально?"];
+    if (item.dealType === "sale") return ["Можно посмотреть?", "Ещё актуально?", "Возможен торг?"];
+    return ["Можно посмотреть?", "Когда можно въехать?", "Ещё актуально?"];
+  }
+
+  function new4AskQuestions(item) {
+    const missing = new4MissingQuestions(item);
+    const general = new4GeneralQuestions(item).filter((t) => !missing.includes(t));
+    return { missing, list: [...missing, ...general].slice(0, ASK_MAX) };
+  }
+
+  // Иконка чата — синий скруглённый квадрат, за ним сдвинутые вправо слои фирменных
+  // оранжевого и жёлтого (аберрация в цветах бренда), как в макете слайда
+  const ASK_CHAT_ICON = `<svg viewBox="0 0 20 20" fill="none"><path d="M8.5 2.5C4.9 2.5 2 4.9 2 7.9c0 1.4.6 2.6 1.6 3.6L3 14l2.9-1.3c.8.3 1.7.4 2.6.4 3.6 0 6.5-2.4 6.5-5.3S12.1 2.5 8.5 2.5Z" fill="currentColor"/><path d="M16.2 8.6c.1.3.1.6.1 1 0 3.6-3.3 6.4-7.4 6.6.9 1.4 2.7 2.3 4.7 2.3.7 0 1.3-.1 1.9-.3L18 19l-.5-2.2c.9-.8 1.5-1.9 1.5-3.1 0-2-1.2-3.8-2.8-5.1Z" fill="currentColor"/></svg>`;
+
+  function new4AskSlideHtml(item) {
+    const { list } = new4AskQuestions(item);
+    return `
+      <div class="n4__ask" data-role="ask">
+        <div class="n4__ask-body">
+          <div class="n4__ask-icon" aria-hidden="true">
+            <span class="n4__ask-icon-layer n4__ask-icon-layer--yellow"></span>
+            <span class="n4__ask-icon-layer n4__ask-icon-layer--orange"></span>
+            <span class="n4__ask-icon-layer n4__ask-icon-layer--blue">${ASK_CHAT_ICON}</span>
+          </div>
+          <div class="n4__ask-title">Спросите у продавца в чате</div>
+          <div class="n4__ask-bubbles">
+            ${list.map((t) => `<button class="n4__ask-bubble n3__control" type="button" data-text="${t}">${t}</button>`).join("")}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function setupNew4Ask(card, item) {
+    const { track, openInfoStub } = window.App;
+    card.querySelectorAll(".n4__ask-bubble").forEach((bubble) => {
+      bubble.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const text = bubble.dataset.text;
+        if (track) track("Вопрос продавцу с фото", { item, value: text });
+        // Чата в прототипе нет — заглушка с уже отправленным сообщением
+        const openChat = () => openInfoStub && openInfoStub({ title: "Чат с продавцом", text: `Ваше сообщение «${text}» отправлено. Продавец ответит здесь же, в чате.` });
+        const ask = bubble.closest(".n4__ask");
+        if (window.App.motion && !window.App.motion.reduce && ask) {
+          // Баббл «улетает» как отправленное сообщение, потом открывается чат (css/motion.css, п. 6)
+          ask.classList.add("is-sending");
+          bubble.classList.add("is-sent");
+          setTimeout(openChat, 340);
+          setTimeout(() => {
+            ask.classList.remove("is-sending");
+            bubble.classList.remove("is-sent");
+          }, 900);
+        } else openChat();
+      });
+    });
+  }
+
   function createNew4CardEl(item) {
     const card = document.createElement("article");
     card.className = "card card--n2 card--n4";
@@ -1320,7 +1533,7 @@
 
     card.innerHTML = `
       ${new4HeaderHtml(item)}
-      ${new2GalleryHtml(item, { actions: false, toner: true, counter: true })}
+      ${new2GalleryHtml(item, { actions: false, toner: true, counter: false, ask: true })}
       <div class="n4__actions">
         <div class="n4__actions-group">
           <button class="card__gallery-btn n4__btn n4__fav n3__control" type="button" aria-label="В избранное">${ICONS.heart}</button>
@@ -1349,11 +1562,13 @@
       ${new2LabelsHtml({ ...item, promoLabel: null })}
     `;
     setupNew2Gallery(card, item);
+    setupNew4Ask(card, item);
     const fav = card.querySelector(".n4__fav");
     fav.addEventListener("click", (e) => {
       e.stopPropagation();
       const active = fav.classList.toggle("is-active");
       fav.innerHTML = active ? ICONS.heartFilled : ICONS.heart;
+      if (active) playFavCharge(fav);
     });
     setupShareAndMore(card, item);
     setupCardTracking(card, item);
@@ -1399,6 +1614,18 @@
     `;
     container.appendChild(empty);
   }
+
+  // Лейбл «Новое» («Новый 4») — только у первых NEW_LABEL_COUNT сниппетов выдачи, в любом порядке
+  // и после любых фильтров: следим за списком и помечаем первые карточки классом is-new.
+  const NEW_LABEL_COUNT = 2;
+  document.addEventListener("DOMContentLoaded", () => {
+    const list = document.getElementById("results-list");
+    if (!list) return;
+    const mark = () =>
+      list.querySelectorAll(".card--n4").forEach((card, i) => card.classList.toggle("is-new", i < NEW_LABEL_COUNT));
+    new MutationObserver(mark).observe(list, { childList: true });
+    mark();
+  });
 
   window.App = window.App || {};
   Object.assign(window.App, { createCarouselCardEl, createMixCarouselEl, createCardEl, renderEmptyState });

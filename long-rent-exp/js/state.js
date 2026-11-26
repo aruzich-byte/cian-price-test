@@ -37,7 +37,7 @@
   const ui = {
     mixMode: typeof MIX_MODE !== "undefined" ? MIX_MODE : "inline",
     priceVariant: "histogram", // 'histogram' | 'presets'
-    histogramShape: "curve", // 'bars' | 'curve'
+    histogramShape: "bars", // 'bars' | 'curve'
     // Если true — гистограмма строится не по всем LISTINGS, а по объектам,
     // которые проходят остальные применённые фильтры (площадь, этаж, класс) —
     // см. getBaseFiltered()/getAdaptiveBase в price-widget.js. Плейсхолдеры
@@ -68,10 +68,10 @@
   const session = {
     task: params.get("task") || "",
     pid: params.get("pid") || "",
-    variant: params.get("variant") || "new",
+    variant: "new4", // версия воркшопа: всегда v4 (выбор варианта убран из панели)
     gallery: params.get("gallery") === "4x3" ? "4x3" : "1x1",
     // Кнопки и подпись поверх фото в «Новом 2»: light — белые (по макету), dark — как в «Новом»
-    photoUi: params.get("photoui") === "light" ? "light" : "dark", // по умолчанию — Overlay
+    photoUi: "dark", // версия воркшопа: только Overlay (выбор убран из панели)
   };
   // Лента галереи в CSS должна совпадать с раскрытой пропорцией (см. .card__gallery-track)
   if (session.gallery === "4x3") document.documentElement.classList.add("gallery-4x3");
@@ -79,6 +79,13 @@
   // отличия задаём CSS через .variant-new2 и проверками session.variant === "new2" в cards.js
   if (session.variant === "new2") document.documentElement.classList.add("variant-new2");
   if (session.variant === "new3") document.documentElement.classList.add("variant-new3");
+  // В «Новом 4» шапка с поиском и быстрыми фильтрами скрыта (класс no-search на <body>, как в остальных вариантах).
+  // Код фильтров и бренд-импульс чипа остаются (css/brand-chips.css, js/brand-chips.js) —
+  // чтобы вернуть шапку, раскомментируйте строку ниже.
+  if (session.variant === "new4") {
+    document.documentElement.classList.add("variant-new4");
+    // document.body.classList.remove("no-search");
+  }
   if ((session.variant === "new2" || session.variant === "new4") && session.photoUi === "dark") document.documentElement.classList.add("n2-photo-dark");
 
   Object.assign(window.App, { state, ui, session });

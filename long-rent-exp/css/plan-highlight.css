@@ -1,0 +1,110 @@
+/* ---------- Подсветка комнаты на планировке: стиль отдельно, для экспериментов с брендом ---------- */
+/* Фигуры рисует planRoomsSvg в cards.js: на каждую комнату три <rect> одной формы —
+   .plan-room__far и .plan-room__near (слои аберрации, по умолчанию скрыты) и сама .plan-room.
+   Пресет выбирается атрибутом data-room-hl на <html> (панель «Настройка прототипа» →
+   «Подсветка комнаты» или ?roomhl=…), всё остальное — токены ниже. */
+:root {
+  --plan-room-fill: #0468ff;          /* заливка комнаты */
+  --plan-room-fill-opacity: 0.25;
+  --plan-room-stroke: #0468ff;        /* обводка комнаты */
+  --plan-room-stroke-width: 2px;
+  --plan-room-radius: 0;              /* скругление углов фигуры, в единицах плана (0–100) */
+  --plan-room-aura: #0468ff;          /* цвет слоёв аберрации */
+  --plan-room-aura-near: 0;           /* прозрачность ближнего слоя (шаг 3px) */
+  --plan-room-aura-far: 0;            /* прозрачность дальнего слоя (шаг 6px) */
+  --plan-room-anim: none;             /* анимация появления */
+}
+
+/* «Аберрация» — как у пина на тёмной карте, у чипов фильтров и у избранного:
+   два слоя той же формы с шагом 3 и 6 px, чёткие края, 30% и 14%, один импульс */
+:root[data-room-hl="aberration"] {
+  --plan-room-fill-opacity: 0.12;
+  --plan-room-stroke-width: 2px;
+  --plan-room-aura-near: 0.3;
+  --plan-room-aura-far: 0.14;
+  --plan-room-anim: plan-room-pulse 720ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* «Оранжевая» — в цвет избранного */
+:root[data-room-hl="orange"] {
+  --plan-room-fill: #e85810;
+  --plan-room-stroke: #e85810;
+  --plan-room-aura: #e85810;
+  --plan-room-fill-opacity: 0.18;
+  --plan-room-aura-near: 0.3;
+  --plan-room-aura-far: 0.14;
+  --plan-room-anim: plan-room-pulse 720ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* «Только контур» — без заливки, толстая обводка */
+:root[data-room-hl="outline"] {
+  --plan-room-fill-opacity: 0;
+  --plan-room-stroke-width: 3px;
+}
+
+.plan-room,
+.plan-room__near,
+.plan-room__far {
+  rx: var(--plan-room-radius);
+  vector-effect: non-scaling-stroke;
+}
+
+.plan-room {
+  fill: var(--plan-room-fill);
+  fill-opacity: var(--plan-room-fill-opacity);
+  stroke: var(--plan-room-stroke);
+  stroke-width: var(--plan-room-stroke-width);
+}
+
+/* Обводка рисуется по центру контура, поэтому ширина = 2 × шаг: 6px → 3px наружу, 12px → 6px */
+.plan-room__near,
+.plan-room__far {
+  fill: none;
+  stroke: var(--plan-room-aura);
+  stroke-linejoin: round;
+}
+
+.plan-room__near {
+  stroke-width: 6px;
+  stroke-opacity: var(--plan-room-aura-near);
+}
+
+.plan-room__far {
+  stroke-width: 12px;
+  stroke-opacity: var(--plan-room-aura-far);
+}
+
+.n2__plan-rooms {
+  animation: var(--plan-room-anim);
+}
+
+/* Слои проступают один раз и гаснут, комната остаётся подсвеченной */
+@keyframes plan-room-pulse {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.n2__plan-rooms .plan-room__near,
+.n2__plan-rooms .plan-room__far {
+  animation: plan-room-aura 1100ms ease-out both;
+}
+
+@keyframes plan-room-aura {
+  0%, 15% { opacity: 0; }
+  35%, 65% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .n2__plan-rooms,
+  .n2__plan-rooms .plan-room__near,
+  .n2__plan-rooms .plan-room__far {
+    animation: none;
+  }
+}
+
+/* Чипы пресетов в панели прототипа — в несколько строк */
+[data-room-hl-chips] {
+  flex-wrap: wrap;
+}
