@@ -2543,3 +2543,32 @@
   height: auto;
   overflow: visible;
 }
+
+/* Пины на карте подборки — как .map-pin__bubble на выдаче с картой (long-rent-exp/css/map.css) */
+.fw-pins {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  aspect-ratio: 786 / 1704;
+}
+.fw-mpin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 4px 8px;
+  border: 1px solid #e6f0ff;
+  border-radius: 16px;
+  background: #fff;
+  color: #152242;
+  font: 500 14px/20px var(--font-family);
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.fw-mpin.is-active {
+  background: #0468ff;
+  border-color: #0468ff;
+  color: #fff;
+  z-index: 1;
+}

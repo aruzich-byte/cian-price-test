@@ -36,10 +36,31 @@
   // ---------- Данные ----------
   const DAILY = App.LISTINGS.filter((l) => l.dealType === "daily" && l.propertyType === "flat" && withPhoto(l));
   const PRESET_ID = "p-spb";
+  // Карта — картинка из макета Katya (786×1704 при 2x). Привязка по Финляндскому
+  // и Московскому вокзалам и Петропавловской крепости: px = 640 + 5316·(lon − 30.3561),
+  // py = 622 − 9808·(lat − 59.9557).
+  const MAP_W = 786, MAP_H = 1704;
+  const mapXY = (l) => (l.lat && l.lon ? [640 + 5316 * (l.lon - 30.3561), 622 - 9808 * (l.lat - 59.9557)] : null);
+  const onMap = (l) => {
+    const xy = mapXY(l);
+    return xy && xy[0] > 40 && xy[0] < MAP_W - 40 && xy[1] > 330 && xy[1] < 900;
+  };
+  const pinLabel = (l) => l.price.toLocaleString("ru-RU").replace(/[ ,]/g, " ") + " ₽";
+  function pinsHtml(items) {
+    return `<div class="fw-pins">${items
+      .map((l) => {
+        const xy = mapXY(l);
+        if (!xy || xy[0] < 0 || xy[0] > MAP_W) return "";
+        return `<button class="fw-mpin" type="button" data-tg="pin" data-id="${l.id}" style="left:${((xy[0] / MAP_W) * 100).toFixed(2)}%;top:${((xy[1] / MAP_H) * 100).toFixed(2)}%">${pinLabel(l)}</button>`;
+      })
+      .join("")}</div>`;
+  }
   function presetPodborka() {
     let p = store.podborki.find((x) => x.id === PRESET_ID);
     if (!p) {
-      const items = DAILY.filter((l) => l.rating).slice(0, 10).map((l) => l.id);
+      // сначала объявления, которые попадают на видимую часть карты
+      const vis = DAILY.filter((l) => l.rating && onMap(l));
+      const items = vis.concat(DAILY.filter((l) => l.rating && !vis.includes(l))).slice(0, 10).map((l) => l.id);
       p = { id: PRESET_ID, name: "Выходные в СПб", items, cover: items[0], type: "daily", dates: 0, guests: 2, members: ["anya"], creator: "anya", sort: "added" };
       const ago = (m) => Date.now() - m * 60000;
       p.notes = {
@@ -231,7 +252,7 @@
     const expanded = empty || top.expanded;
     const chip = p.type === "daily" ? `<button class="fw-pb__chip" type="button" data-tg="dates">${DATES[p.dates].short} · ${p.guests} ${plural(p.guests, ["гость", "гостя", "гостей"])}</button>` : "";
     return `<div class="fw-pb${expanded ? " is-expanded" : ""}">
-      <div class="fw-pb__map"></div>
+      <div class="fw-pb__map">${pinsHtml(items)}</div>
       <div class="fw-pb__head">
         <div class="fw-pb__bar">
           <button class="fw-pb__icon" type="button" data-act="back" aria-label="Назад">${IC.back}</button>
@@ -560,6 +581,12 @@
           pb.classList.toggle("is-expanded", top.expanded);
           $(".fw-pb__sheet", pb).scrollTop = 0;
         }
+      } else if (a === "pin" && p) {
+        // пин → карточка в карусели, активный пин синий
+        FW.root.querySelectorAll(".fw-mpin").forEach((x) => x.classList.toggle("is-active", x === t));
+        const car = $(".fw-pb__carousel", FW.root);
+        const card = car && car.querySelector(`[data-open-card="${t.dataset.id}"]`);
+        if (card) car.scrollTo({ left: card.offsetLeft - 24, behavior: "smooth" });
       } else if (a === "notes" && p) openNotes(p, t.dataset.id);
       else if (a === "react" && p) {
         toggleReaction(p, t.dataset.id, t.dataset.emoji);
