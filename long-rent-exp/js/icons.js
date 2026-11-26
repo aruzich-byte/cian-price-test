@@ -30,6 +30,12 @@ const ICONS = {
   crownNew2: '<svg viewBox="0 0 16 16" fill="none"><path d="M8 1C7.17157 1 6.5 1.67157 6.5 2.5C6.5 3.32843 7.17157 4 8 4L5.75 9.92754L1 5.30435L3.25 15L12.75 15L15 5.30435L10.25 9.92754L8 4C8.82843 4 9.5 3.32843 9.5 2.5C9.5 1.67157 8.82843 1 8 1Z" fill="currentColor"/></svg>',
   crown: '<svg viewBox="0 0 16 16" fill="none"><path d="M1 4.5 4.5 8 8 2.5 11.5 8 15 4.5 13.5 12.5h-11L1 4.5Z" fill="currentColor"/><path d="M2.5 14h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
   car: '<svg viewBox="0 0 16 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M3.6 3.2A1.5 1.5 0 0 1 5 2h6a1.5 1.5 0 0 1 1.4 1.2l.8 3.3A1.5 1.5 0 0 1 14 8v4a1 1 0 0 1-1 1v1h-2v-1H5v1H3v-1a1 1 0 0 1-1-1V8a1.5 1.5 0 0 1 .8-1.5l.8-3.3ZM4.9 6.5h6.2l-.6-2.5h-5l-.6 2.5Zm-.4 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm7 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="currentColor"/></svg>',
+  // Иконки действий под фото «Нового 4» — 20px с линией 2px (у 16px-иконок выше линия при увеличении растёт до 2,5px).
+  // Сердце — тот же контур, что у ауры (HEART_PATH в cards.js), обводкой 2px без масштабирования.
+  heart20: '<svg viewBox="0 0 20 20" fill="none"><path d="M8 14.86S0 10.6 0 5.86C0 3.17 2.21 1 4.93 1c1.16 0 2.23.4 3.07 1.06A4.95 4.95 0 0 1 11.07 1C13.79 1 16 3.17 16 5.86 16 10.6 8 14.86 8 14.86Z" transform="translate(1 1.07) scale(1.125)" stroke="currentColor" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>',
+  heartFilled20: '<svg viewBox="0 0 20 20" fill="none"><path d="M8 14.86S0 10.6 0 5.86C0 3.17 2.21 1 4.93 1c1.16 0 2.23.4 3.07 1.06A4.95 4.95 0 0 1 11.07 1C13.79 1 16 3.17 16 5.86 16 10.6 8 14.86 8 14.86Z" transform="translate(1 1.07) scale(1.125)" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>',
+  share20: '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13.7V1.8M5.6 5.4 10 1.7l4.4 3.7"/><path d="M6.25 8.46h-2.5a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h12.5a1.5 1.5 0 0 0 1.5-1.5v-7.5a1.5 1.5 0 0 0-1.5-1.5h-2.5"/></svg>',
+  more20: '<svg viewBox="0 0 20 20" fill="none"><circle cx="3.125" cy="10" r="1.75" fill="currentColor"/><circle cx="10" cy="10" r="1.75" fill="currentColor"/><circle cx="16.875" cy="10" r="1.75" fill="currentColor"/></svg>',
 };
 
 window.App = window.App || {};
