@@ -1436,7 +1436,7 @@
   right: 0;
   top: 0;
   padding: 44px 8px 14px;
-  background: #0468ff;
+  background: #0054fd;
   border-radius: 0 0 24px 24px;
   color: #fff;
 }
@@ -1469,9 +1469,9 @@
   flex: 1;
   min-width: 0;
   padding-left: 6px;
-  font-size: 20px;
-  line-height: 26px;
-  font-weight: 600;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1481,6 +1481,8 @@
   gap: 8px;
   padding: 4px 8px 0;
 }
+/* Цвета и отступы — по макету Katya (Group 4): шапка #0054FD, пилюли #0095FF,
+   подложка аватаров #74D6FD с отступом 3, аватары 30 с просветом 1, «+» 12×12 линия 2 */
 .fw-pb__chip,
 .fw-pb__members {
   display: flex;
@@ -1488,7 +1490,7 @@
   height: 44px;
   border: 0;
   border-radius: 22px;
-  background: #2b8bff;
+  background: #0095ff;
   color: #fff;
   font: 500 15px/20px var(--font-family);
   cursor: pointer;
@@ -1498,26 +1500,28 @@
   padding: 0 14px;
 }
 .fw-pb__members {
-  padding: 0 12px 0 4px;
-  gap: 0;
+  padding: 3px 14px 3px 3px;
 }
-.fw-pb__members .fw-av {
-  width: 34px;
-  height: 34px;
-  border: 2px solid #79d3ff;
-  box-sizing: border-box;
+.fw-pb__avs {
+  display: flex;
+  gap: 1px;
+  height: 38px;
+  padding: 4px;
+  border-radius: 19px;
+  background: #74d6fd;
 }
-.fw-pb__members .fw-av + .fw-av {
-  margin-left: -6px;
+.fw-pb__avs .fw-av {
+  width: 30px;
+  height: 30px;
 }
 .fw-pb__plus {
-  width: 24px;
-  height: 24px;
+  width: 12px;
+  height: 12px;
   margin-left: 10px;
 }
 .fw-pb__plus svg {
-  width: 24px;
-  height: 24px;
+  width: 12px;
+  height: 12px;
   display: block;
 }
 .fw-pb__carousel {
@@ -2094,4 +2098,81 @@
   text-align: center;
   font-size: 13px;
   color: #8f9bb6;
+}
+
+/* «Сохранить в подборку» (2A Ани) */
+.fw-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+  margin: 0 -16px 16px;
+  padding: 0 16px;
+}
+.fw-pick__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+  color: #14171d;
+  cursor: pointer;
+}
+.fw-pick__row:disabled {
+  cursor: default;
+}
+.fw-pick__thumb {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: #f3f5f8 center / cover no-repeat;
+  display: grid;
+  place-items: center;
+  color: #0468ff;
+}
+.fw-pick__thumb--plus svg {
+  width: 24px;
+  height: 24px;
+}
+.fw-pick__body {
+  flex: 1;
+  min-width: 0;
+}
+.fw-pick__body b {
+  display: block;
+  font-size: 16px;
+  line-height: 21px;
+  font-weight: 600;
+}
+.fw-pick__body span {
+  font-size: 14px;
+  color: #6f7888;
+}
+.fw-pick__avs {
+  display: flex;
+}
+.fw-pick__avs .fw-av {
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid #fff;
+}
+.fw-pick__avs .fw-av + .fw-av {
+  margin-left: -6px;
+}
+.fw-pick__check {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px #c4cad4;
+}
+.fw-pick__check.is-on {
+  box-shadow: none;
+  background: #0468ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m7 12.5 3.2 3.2L17 9' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 20px no-repeat;
 }

@@ -330,6 +330,11 @@
     toastTimer = setTimeout(() => t.classList.remove("is-on"), action ? 4500 : 2200);
   }
 
+  // Сердце сохраняет сразу (принцип 1), подборка — опционально через снек (1A → 2A Ани)
+  function notifySaved(id) {
+    if (window.FWT) toast("Сохранено в избранное", { label: "В подборку", run: () => window.FWT.openPick(id) });
+  }
+
   // ---------- Сердце на сниппетах new4 ↔ «Объявления» ----------
   function syncCardHeart(card) {
     const fav = card.querySelector(".n4__fav");
@@ -354,6 +359,7 @@
         const on = fav.classList.contains("is-active");
         store.saved = store.saved.filter((x) => x !== id);
         if (on) store.saved.unshift(id);
+        if (on) notifySaved(id);
       }, 0);
     },
     true
@@ -373,6 +379,7 @@
       mini.classList.toggle("is-active", on);
       mini.innerHTML = on ? IC.heart : IC.heartLine;
       if (on && App.playFavCharge) App.playFavCharge(mini);
+      if (on) notifySaved(id);
       clearTimeout(onRootClick.t);
       onRootClick.t = setTimeout(() => {
         // Обновляем плитки, не трогая блок «Могут подойти»
@@ -803,6 +810,7 @@
         h.innerHTML = on ? App.ICONS.heartFilled20 : App.ICONS.heart20;
         if (on) favCharge(h);
       });
+      if (on) notifySaved(id);
     } else if (a === "layout") {
       const track = $(".fw-cd__track", cardEl);
       const slide = track.children[+b.dataset.idx];
@@ -836,7 +844,7 @@
   // API для модуля совместных подборок (together.js)
   window.FW = {
     App, store, stack, IC, ASSETS, $, esc, plural, priceStr, byId, photo, withPhoto, collageHtml, emptyStateHtml, EMPTY, RENT,
-    push, rerender, toast, setTab, openCard, favCharge, setSaved, syncCardHeart, CI,
+    push, rerender, toast, setTab, notifySaved, closeCards, openCard, favCharge, setSaved, syncCardHeart, CI,
     get tab() { return tab; },
     get root() { return root; },
   };

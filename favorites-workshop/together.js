@@ -108,7 +108,7 @@
         </div>
         <div class="fw-pb__row">
           ${chip}
-          <button class="fw-pb__members" type="button" data-tg="share" aria-label="Позвать в подборку">${avatars(p)}<span class="fw-pb__plus">${IC.plus}</span></button>
+          <button class="fw-pb__members" type="button" data-tg="share" aria-label="Позвать в подборку"><span class="fw-pb__avs">${avatars(p)}</span><span class="fw-pb__plus"><svg viewBox="0 0 12 12"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="2"/></svg></span></button>
         </div>
       </div>
       ${empty ? "" : `<div class="fw-pb__carousel">${items.map(mapCardHtml).join("")}</div>`}
@@ -162,8 +162,8 @@
   }
 
   // 2B Ани: название с подсказками, обложка, «Выбирать вместе»
-  function openCreate() {
-    const daily = dealNow() === "daily";
+  function openCreate(listingId, dailyHint) {
+    const daily = dailyHint !== undefined ? dailyHint : dealNow() === "daily";
     const names = daily ? ["Выходные в СПб", "Поездка с друзьями", "Отпуск"] : ["Квартира для нас", "Двушки у метро", "Рядом с работой"];
     const pool = (store.saved.length ? store.saved : (daily ? DAILY : FW.RENT).slice(0, 6).map((l) => l.id)).slice(0, 6);
     let cover = null;
@@ -200,15 +200,74 @@
       }
       const go = e.target.closest("[data-create]");
       if (!go) return;
-      const p = ensure({ id: "p" + Date.now(), name: input.value.trim() || names[0], items: [], cover, type: daily ? "daily" : "long", dates: 0, guests: 2, members: [store.me], creator: store.me });
+      const p = ensure({ id: "p" + Date.now(), name: input.value.trim() || names[0], items: listingId ? [listingId] : [], cover, type: daily ? "daily" : "long", dates: 0, guests: 2, members: [store.me], creator: store.me });
       store.podborki.unshift(p);
       close();
+      if (listingId && go.dataset.create === "solo") {
+        FW.toast(`Подборка «${p.name}» создана`);
+        if (FW.tab === "fav") FW.rerender();
+        return;
+      }
+      if (listingId && document.body.classList.contains("fw-card-open")) FW.closeCards();
       stack.length = 0;
       stack.push({ type: "section", key: "podborki" });
       if (FW.tab !== "fav") FW.setTab("fav");
       FW.push({ type: "podborka", id: p.id });
       if (go.dataset.create === "together") setTimeout(() => openShare(p), 260);
       else FW.toast(`Подборка «${p.name}» создана`);
+    });
+  }
+
+  // 2A Ани: «Сохранить в подборку» — список подборок, отметки, «Новая подборка»
+  function openPick(id) {
+    const l = byId(id);
+    const daily = l && l.dealType === "daily";
+    const picked = new Set();
+    const rows = store.podborki
+      .map((p) => {
+        ensure(p);
+        const has = p.items.includes(id);
+        const cov = p.cover || p.items[0];
+        const n = p.items.length;
+        return `<button class="fw-pick__row" type="button" data-pick="${p.id}"${has ? " disabled" : ""}>
+          <span class="fw-pick__thumb"${cov ? ` style="background-image:url('${photo(cov)}')"` : ""}></span>
+          <span class="fw-pick__body"><b>${esc(p.name)}</b><span>${n} ${plural(n, ["объявление", "объявления", "объявлений"])}</span></span>
+          ${p.members.length > 1 ? `<span class="fw-pick__avs">${avatars(p)}</span>` : ""}
+          <span class="fw-pick__check${has ? " is-on" : ""}"></span>
+        </button>`;
+      })
+      .join("");
+    const { wrap, close } = sheet(`
+      <div class="fw-sheet__title">Сохранить в подборку</div>
+      <div class="fw-pick">
+        ${rows}
+        <button class="fw-pick__row" type="button" data-pick-new>
+          <span class="fw-pick__thumb fw-pick__thumb--plus">${IC.plus}</span>
+          <span class="fw-pick__body"><b>Новая подборка</b><span>Можно позвать близкого</span></span>
+        </button>
+      </div>
+      <button class="fw-btn fw-btn--primary" type="button" data-pick-done>Готово</button>`);
+    wrap.addEventListener("click", (e) => {
+      const r = e.target.closest("[data-pick]");
+      if (r) {
+        const pid = r.dataset.pick;
+        if (picked.has(pid)) picked.delete(pid);
+        else picked.add(pid);
+        $(".fw-pick__check", r).classList.toggle("is-on", picked.has(pid));
+        return;
+      }
+      if (e.target.closest("[data-pick-new]")) {
+        close();
+        setTimeout(() => openCreate(id, daily), 260);
+        return;
+      }
+      if (e.target.closest("[data-pick-done]")) {
+        close();
+        const list = store.podborki.filter((p) => picked.has(p.id));
+        list.forEach((p) => p.items.unshift(id));
+        if (list.length) FW.toast(`Добавлено в ${list.map((p) => `«${p.name}»`).join(", ")}`);
+        if (FW.tab === "fav") FW.rerender();
+      }
     });
   }
 
@@ -340,6 +399,7 @@
         t.classList.toggle("is-active", on);
         t.innerHTML = on ? App.ICONS.heartFilled20 : App.ICONS.heart20;
         if (on) FW.favCharge(t);
+        if (on) FW.notifySaved(id);
         document.querySelectorAll(`.fw-root .card--n4[data-listing-id="${id}"]`).forEach(FW.syncCardHeart);
       } else if (a === "sort" && p) {
         p.sort = p.sort === "price" ? "added" : "price";
@@ -402,6 +462,7 @@
     after,
     sorter,
     openCreate,
+    openPick,
   };
 
   document.addEventListener("DOMContentLoaded", () => {
