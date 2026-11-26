@@ -2818,3 +2818,13 @@
 .fw-pb.is-map .fw-pb__sort {
   display: none;
 }
+
+/* На десктопе панель «Настройка прототипа» скрыта (Katya 26.11), на мобильном остаётся кнопкой */
+@media (min-width: 481px) {
+  .prototype-panel {
+    display: none !important;
+  }
+  .viewport-stage {
+    padding-left: 16px;
+  }
+}
