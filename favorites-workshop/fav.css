@@ -138,7 +138,7 @@
 .fw-home__top {
   background: #fff;
   border-radius: 0 0 24px 24px;
-  padding-bottom: 24px;
+  padding-bottom: 16px;
   padding-top: 44px;
 }
 @media (max-width: 480px) {
@@ -420,7 +420,7 @@
 .fw-cards {
   display: flex;
   flex-direction: column;
-  padding-bottom: 24px;
+  padding-bottom: 16px;
 }
 
 .fw-row {
@@ -2785,4 +2785,9 @@
 /* Информация о продавце на сниппетах скрыта (Katya 26.11) — только скрыта, разметка в cards.js остаётся */
 .n4__seller {
   display: none !important;
+}
+
+/* Отступ между сниппетами в списках Избранного поменьше (Katya 26.11): было 40px */
+.fw-root .card--n4 {
+  padding-bottom: 16px;
 }
