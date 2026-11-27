@@ -3349,15 +3349,11 @@
 .card[data-fw-deal="daily"] .n4__actions-group--contact {
   display: none !important;
 }
-/* Итог Katya 27.11: панель «Настройка прототипа» скрыта везде (и кнопка на мобильном), телефон по центру */
-.prototype-panel,
-.prototype-panel-fab {
+/* Панель «Настройка прототипа» вернулась (Katya 27.11): в ней только вид подборки и сценарии Ани/Димы.
+   Сниппет (только v1), сделка (только посуточно) и тип недвижимости скрыты */
+.prototype-panel__section:has([data-proto-param]),
+.fw-variants {
   display: none !important;
-}
-@media (min-width: 481px) {
-  .viewport-stage {
-    padding-left: 16px;
-  }
 }
 /* Посуточно: блок продавца скрыт целиком, вместе с ролью (Katya 27.11) — только CSS */
 .card[data-fw-deal="daily"] .card__seller,

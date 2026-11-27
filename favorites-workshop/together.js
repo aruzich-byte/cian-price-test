@@ -431,7 +431,7 @@
 
   // ---------- Версия 2 подборки: по умолчанию список 2 в ряд, карта — по кнопке (Katya 27.11, Figma 344:61022) ----------
   // Включается параметром ?pb=list. Шапка с фоном под синим градиентом, фон выбирается в настройках (карандаш).
-  const PB_LIST = new URLSearchParams(location.search).get("pb") === "list";
+  let PB_LIST = new URLSearchParams(location.search).get("pb") === "list";
   const BGS = ["fold-1", "warp-1", "warp-2", "warp-3", "fold-2"].map((k) => ({ k, src: `${ASSETS}bg/${k}.jpg` }));
   const BG_DEFAULT = "fold-2"; // по умолчанию последний из присланных Katya
   const bgSrc = (p) => {
@@ -1228,6 +1228,28 @@
       if (close && window.matchMedia("(max-width: 480px)").matches) close.click();
     });
     panel.appendChild(sec);
+    // Вид подборки: гибрид (карта + шторка) или список 2 в ряд (Katya 27.11)
+    const vs = document.createElement("div");
+    vs.className = "prototype-panel__section";
+    const chips = () => [["hybrid", "Карта + список"], ["list", "Список"]].map(([v, l]) => `<button class="proto-chip${(v === "list") === PB_LIST ? " is-active" : ""}" type="button" data-pbv="${v}">${l}</button>`).join("");
+    vs.innerHTML = `<div class="prototype-panel__section-title">Вид подборки</div><div class="prototype-panel__chips">${chips()}</div>`;
+    vs.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-pbv]");
+      if (!b) return;
+      e.stopPropagation();
+      PB_LIST = b.dataset.pbv === "list";
+      $(".prototype-panel__chips", vs).innerHTML = chips();
+      const url = new URL(location.href);
+      if (PB_LIST) url.searchParams.set("pb", "list");
+      else url.searchParams.delete("pb");
+      history.replaceState(null, "", url);
+      stack.forEach((t) => t.type === "podborka" && ((t.view = null), (t.active = null)));
+      if (!stack.some((t) => t.type === "podborka")) runScene("anya");
+      else FW.rerender();
+      const close = document.getElementById("prototype-panel-close");
+      if (close && window.matchMedia("(max-width: 480px)").matches) close.click();
+    });
+    sec.after(vs);
   }
   function runScene(s) {
     closeInvite();
