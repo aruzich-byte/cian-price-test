@@ -3836,3 +3836,25 @@
 .fw-menu__ic--bg {
   background: center / cover no-repeat;
 }
+/* Ряд реакций в сетке — белые пилюли с тенью, иконки «добавить реакцию» и «ручка» одного стиля #282D36 (Katya 27.11) */
+.fw-gc__reacts {
+  gap: 6px;
+  padding: 2px 2px 4px;
+}
+.fw-gc__reacts .fw-react,
+.fw-gc__reacts .fw-react--add {
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(13, 22, 46, 0.1), 0 0 0 1px rgba(13, 22, 46, 0.03);
+  color: #14171d;
+}
+.fw-gc__reacts .fw-react.is-mine {
+  background: #0468ff;
+  color: #fff;
+}
+.fw-gc__reacts .fw-react--add svg,
+.fw-gc__write svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  color: #282d36;
+}

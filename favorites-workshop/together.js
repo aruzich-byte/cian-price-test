@@ -239,7 +239,7 @@
   // Пасхалка (Katya 27.11): в заметках к первой квартире подборки вместо эмодзи можно отправить стикер
   // из набора «Цианыч» (t.me/addstickers/cianich). Файлы — img/stickers/, список — ниже.
   const STICKERS = window.FW_STICKERS || [1, 2, 3, 4, 5, 6, 7, 8].map((n) => `${ASSETS}stickers/cianich-${n}.webp`);
-  const REACTIONS = ["🔥", "👍", "👎"]; // реакции: огонь/лайк/дизлайк, одна оценка на человека (решения Katya)
+  const REACTIONS = ["🔥", "👍", "👎", "💩"]; // реакции: огонь/лайк/дизлайк/какашка (Katya 27.11), одна оценка на человека
   const notesWord = (n) => `${n} ${plural(n, ["заметка", "заметки", "заметок"])}`;
   function footHtml(p, id) {
     const notes = p.notes[id] || [];
@@ -444,7 +444,8 @@
     pin: '<svg viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M8 16s7-4 7-9.33C15 2.98 11.87 0 8 0S1 2.98 1 6.67C1 12 8 16 8 16Zm0-7.43a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>',
     list: '<svg viewBox="0 0 16 16"><path d="M5.5 3.5h9M5.5 8h9M5.5 12.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="2" cy="3.5" r="1.1" fill="currentColor"/><circle cx="2" cy="8" r="1.1" fill="currentColor"/><circle cx="2" cy="12.5" r="1.1" fill="currentColor"/></svg>',
     edit: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M11.97 1.28a.97.97 0 0 0-1.37 0L9.23 2.66l4.11 4.11 1.37-1.37a.97.97 0 0 0 0-1.37l-2.74-2.75ZM11.97 8.14 7.86 4.03 1 10.89V15h4.11l6.86-6.86Z"/></svg>',
-    note: '<svg viewBox="0 0 17 17"><path fill="currentColor" d="M14.08 1.42a1.43 1.43 0 0 0-2.01 0l-1.01 1 2.01 2.02 1.01-1a1.43 1.43 0 0 0 0-2.02Z"/><path fill="currentColor" d="m11.56 6.96 1.01 1-2.52 2.52 1.01 1.01 2.1-2.1a2 2 0 0 0 0-2.85L9.55 2.93 2.5 9.71V13h3.02l6.04-6.04Z"/></svg>',
+    note: '<svg viewBox="0 0 17 17" fill="none"><path d="M14.0828 1.4172C13.5265 0.860927 12.6246 0.860933 12.0684 1.41722L11.0612 2.42443L13.0756 4.43896L14.0828 3.43159C14.6391 2.87531 14.639 1.97346 14.0828 1.4172Z" fill="currentColor"/><path d="M11.5648 6.95678L12.572 7.96398L10.054 10.482L11.0612 11.4892L13.162 9.38838C13.9486 8.60171 13.9486 7.32626 13.162 6.53959L9.55038 2.92798L2.5 9.70927V13H5.52159L11.5648 6.95678Z" fill="currentColor"/></svg>',
+    react: '<svg viewBox="0 0 17 18" fill="none"><circle cx="9.87" cy="6.37" r="1.2" fill="currentColor"/><circle cx="6.28" cy="6.37" r="1.2" fill="currentColor"/><path d="M5.06 9.25h5.99c-.2.8-1.08 2.39-2.99 2.39S5.26 10.05 5.06 9.25Z" fill="currentColor"/><path d="M14.5254 0V1.99219H16.5176V3.99219H14.5254V5.98438H12.5234V3.99219H10.5312V1.99219H12.5234V0H14.5254Z" fill="currentColor"/><path d="M0.492188 8.38867C0.492334 4.20076 3.88728 0.805811 8.0752 0.805664V2.80566C4.99185 2.80581 2.49233 5.30533 2.49219 8.38867C2.49219 11.4721 4.99176 13.9725 8.0752 13.9727C11.1588 13.9727 13.6592 11.4722 13.6592 8.38867H15.6592C15.6592 12.5768 12.2633 15.9727 8.0752 15.9727C3.88719 15.9725 0.492188 12.5767 0.492188 8.38867Z" fill="currentColor"/></svg>',
     plus: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M0 7h16v2H0z"/><path fill="currentColor" d="M7 0h2v16H7z"/></svg>',
     more: '<svg viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></g></svg>',
   };
@@ -457,7 +458,7 @@
     return `<div class="fw-gc__foot" data-foot="${id}">
       <span class="fw-gc__reacts">
         ${reacts.map(([e, list]) => `<button class="fw-react${list.includes(store.me) ? " is-mine" : ""}" type="button" data-tg="react" data-id="${id}" data-emoji="${e}">${e}<b>${list.length}</b></button>`).join("")}
-        <button class="fw-react fw-react--add" type="button" data-tg="react-add" data-id="${id}" aria-label="Добавить реакцию"><img src="${ASSETS}together/add-reaction.svg" alt="" /></button>
+        <button class="fw-react fw-react--add" type="button" data-tg="react-add" data-id="${id}" aria-label="Добавить реакцию">${LI.react}</button>
         ${notes.length ? "" : `<button class="fw-react fw-react--add fw-gc__write" type="button" data-tg="notes" data-id="${id}" aria-label="Добавить заметку">${LI.note}</button>`}
       </span>
       ${notes.length ? `<button class="fw-mc__notes fw-gc__notes" type="button" data-tg="notes" data-id="${id}"><span class="fw-mc__avs">${who.map((m) => `<img class="fw-av" src="${PEOPLE[m].img}" alt="${PEOPLE[m].name}" />`).join("")}</span>${notesWord(notes.length)}</button>` : ""}
