@@ -315,6 +315,11 @@
     const scale = a.width / app.offsetWidth || 1;
     pop.style.top = (r.top - a.top) / scale - 52 + "px";
     app.appendChild(pop);
+    // бабл — над нажатой кнопкой, по центру неё, не вылезая за края экрана (Katya 27.11)
+    const cx = (r.left + r.width / 2 - a.left) / scale;
+    const w = pop.offsetWidth;
+    pop.style.right = "auto";
+    pop.style.left = Math.max(8, Math.min(app.offsetWidth - w - 8, cx - w / 2)) + "px";
     const off = (e) => {
       if (pop.contains(e.target)) return;
       pop.remove();
