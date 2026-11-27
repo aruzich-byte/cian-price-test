@@ -212,7 +212,7 @@
 
   function emptyStateHtml(e) {
     return `<div class="fw-es">
-      <img class="fw-es__img" src="${ASSETS}empty/${e.img}.png" alt="" />
+      <!-- иллюстрацию убрали (Katya 27.11): только заголовок, текст и кнопка -->
       <div class="fw-es__h">${esc(e.h)}</div>
       <div class="fw-es__p">${esc(e.p)}</div>
       <button class="fw-btn fw-btn--light" type="button" data-act="${e.act}">${esc(e.btn)}</button>

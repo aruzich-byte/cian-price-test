@@ -4146,3 +4146,11 @@
   height: 16px;
 }
 
+
+/* Пустые состояния без иллюстрации (Katya 27.11) */
+.fw-es {
+  padding-top: 56px;
+}
+.fw-es__h {
+  margin-top: 0;
+}
