@@ -495,7 +495,7 @@
         </div>
         <div class="fw-hero__strip">
           <button class="fw-hero__dates" type="button" data-tg="${p.type === "daily" ? "dates" : "settings"}">${strip}</button>
-          <button class="fw-hero__edit" type="button" data-tg="settings" aria-label="Настройки подборки">${LI.edit}</button>
+          <button class="fw-hero__edit" type="button" data-tg="${p.type === "daily" ? "dates" : "settings"}" aria-label="Даты и гости">${LI.edit}</button>
         </div>
       </div>
       <button class="fw-lv__tolist" type="button" data-tg="pbview" data-v="list">${LI.list}Список</button>
@@ -539,9 +539,8 @@
       (own() ? `<button class="fw-bgpick__opt${own() === bg ? " is-on" : ""}" type="button" data-bg="${own()}" style="background-image:url('${own()}')" aria-label="Своё фото"></button>` : "") +
       `<label class="fw-bgpick__opt fw-bgpick__own"><input type="file" accept="image/*" hidden />${IC.plus}<span>Своё фото</span></label>`;
     const { wrap, close } = sheet(`
-      <div class="fw-sheet__title">Настройки подборки</div>
+      <div class="fw-sheet__title">Название и фон</div>
       <label class="fw-field"><span>Название</span><input type="text" data-name value="${esc(p.name)}" maxlength="40" /></label>
-      ${p.type === "daily" ? `<button class="fw-set__row" type="button" data-s="dates"><span>Даты и гости</span><b>${DATES[p.dates].short} · ${p.guests} ${plural(p.guests, ["гость", "гостя", "гостей"])}</b></button>` : ""}
       <div class="fw-set__label">Фон шапки</div>
       <div class="fw-bgpick">${tiles()}</div>
       <div class="fw-dates__note">Фон увидят все участники подборки</div>
@@ -995,13 +994,14 @@
     const { wrap, close } = sheet(`
       <div class="fw-menu">
         <button class="fw-menu__row" type="button" data-m="place"><span class="fw-menu__ic"><img src="${ASSETS}together/place-pool.png" alt="" /></span><span><b>Добавить моё место</b><span>Работа, бассейн, родители — увидите, что рядом</span></span></button>
+        ${PB_LIST ? `<button class="fw-menu__row" type="button" data-m="look"><span class="fw-menu__ic fw-menu__ic--bg" style="background-image:url('${bgSrc(p)}')"></span><span><b>Название и фон</b><span>Переименовать подборку, сменить картинку в шапке</span></span></button>` : ""}
         <button class="fw-menu__row" type="button" data-m="share"><span class="fw-menu__ic fw-menu__ic--blue">${IC.plus}</span><span><b>Позвать в подборку</b></span></button>
       </div>`);
     wrap.addEventListener("click", (e) => {
       const m = e.target.closest("[data-m]");
       if (!m) return;
       close();
-      setTimeout(() => (m.dataset.m === "place" ? openAddPlace(p) : openShare(p)), 260);
+      setTimeout(() => (m.dataset.m === "place" ? openAddPlace(p) : m.dataset.m === "look" ? openSettings(p) : openShare(p)), 260);
     });
   }
   function openAddPlace(p) {

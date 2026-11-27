@@ -3833,3 +3833,6 @@
 .fw-hero__bar {
   z-index: 2;
 }
+.fw-menu__ic--bg {
+  background: center / cover no-repeat;
+}
