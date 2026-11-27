@@ -1084,5 +1084,27 @@
     const list = document.getElementById("results-list");
     if (list) new MutationObserver(syncResultHearts).observe(list, { childList: true });
     setTab(q.get("tab") === "fav" ? "fav" : "search");
+    syncStatusBar();
   });
+
+  // Статус-бар iPhone на экране «Домой» (status-bar-style default): цвет — из theme-color.
+  // В шапке подборки — её синий, на остальных экранах — белый с тёмными часами (Katya 27.11).
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  function topColor() {
+    const el = document.elementFromPoint(window.innerWidth / 2, 2);
+    const hero = el && el.closest(".fw-hero");
+    if (hero) return "#1f5ff5";
+    const head = el && el.closest(".fw-pb__head");
+    if (head) {
+      const c = getComputedStyle(head).backgroundColor;
+      return c && c !== "rgba(0, 0, 0, 0)" ? c : "#0054fd";
+    }
+    return "#ffffff";
+  }
+  function syncStatusBar() {
+    if (!themeMeta) return;
+    const c = topColor();
+    if (themeMeta.content !== c) themeMeta.content = c;
+  }
+  setInterval(syncStatusBar, 300);
 })();
