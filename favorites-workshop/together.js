@@ -300,6 +300,7 @@
   }
   function refreshFoot(p, id) {
     document.querySelectorAll(`[data-foot="${id}"]`).forEach((f) => {
+      if (f.classList.contains("fw-gc__foot")) return void (f.outerHTML = gridFootHtml(p, id));
       const n4 = f.classList.contains("fw-mc__foot--n4");
       f.outerHTML = footHtml(p, id).replace('class="fw-mc__foot"', `class="fw-mc__foot${n4 ? " fw-mc__foot--n4" : ""}"`);
     });
@@ -394,6 +395,7 @@
     ensure(p);
     const top = stack[stack.length - 1] || {};
     const items = orderedItems(p).map(byId).filter(Boolean);
+    if (PB_LIST) return screenPodborkaList(p, top, items);
     const empty = !items.length;
     // Состояния экрана (Katya 26.11): half — полкарты без выбранных пинов + полшторки списка (старт),
     // card — выбран пин: карусель карточек, шторка свёрнута; full — список на весь экран
@@ -427,16 +429,153 @@
     </div>`;
   }
 
+  // ---------- Версия 2 подборки: по умолчанию список 2 в ряд, карта — по кнопке (Katya 27.11, Figma 344:61022) ----------
+  // Включается параметром ?pb=list. Шапка с фоном под синим градиентом, фон выбирается в настройках (карандаш).
+  const PB_LIST = new URLSearchParams(location.search).get("pb") === "list";
+  const BGS = ["fold-1", "warp-1", "warp-2", "warp-3", "fold-2"].map((k) => ({ k, src: `${ASSETS}bg/${k}.jpg` }));
+  const BG_DEFAULT = "fold-2"; // по умолчанию последний из присланных Katya
+  const bgSrc = (p) => {
+    const b = p.bg || BG_DEFAULT;
+    const pre = BGS.find((x) => x.k === b);
+    return pre ? pre.src : b; // своё фото хранится как data:/blob: URL
+  };
+  const LI = {
+    pin: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 1a5.5 5.5 0 0 0-5.5 5.5C2.5 10.6 8 15 8 15s5.5-4.4 5.5-8.5A5.5 5.5 0 0 0 8 1Zm0 7.5a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg>',
+    list: '<svg viewBox="0 0 16 16"><path d="M5.5 3.5h9M5.5 8h9M5.5 12.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="2" cy="3.5" r="1.1" fill="currentColor"/><circle cx="2" cy="8" r="1.1" fill="currentColor"/><circle cx="2" cy="12.5" r="1.1" fill="currentColor"/></svg>',
+    edit: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M10.9 1.9a1.5 1.5 0 0 1 2.1 0l1.1 1.1a1.5 1.5 0 0 1 0 2.1l-1.3 1.3-3.2-3.2 1.3-1.3ZM8.6 4.2l3.2 3.2-6.6 6.6-3.7.5.5-3.7 6.6-6.6Z"/></svg>',
+    note: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M10.9 1.9a1.5 1.5 0 0 1 2.1 0l1.1 1.1a1.5 1.5 0 0 1 0 2.1l-1.3 1.3-3.2-3.2 1.3-1.3ZM8.6 4.2l3.2 3.2-6.6 6.6-3.7.5.5-3.7 6.6-6.6Z"/></svg>',
+  };
+  // «Новое» — то, что я ещё не оценил и не обсуждал
+  const isFresh = (p, id) => !Object.values(p.reactions[id] || {}).some((l) => l.includes(store.me)) && !(p.notes[id] || []).some((n) => n.who === store.me);
+  function gridFootHtml(p, id) {
+    const notes = p.notes[id] || [];
+    const who = [...new Set(notes.map((n) => n.who))];
+    const reacts = Object.entries(p.reactions[id] || {}).filter(([, list]) => list.length);
+    return `<div class="fw-gc__foot" data-foot="${id}">
+      <span class="fw-gc__reacts">
+        ${reacts.map(([e, list]) => `<button class="fw-react${list.includes(store.me) ? " is-mine" : ""}" type="button" data-tg="react" data-id="${id}" data-emoji="${e}">${e}<b>${list.length}</b></button>`).join("")}
+        <button class="fw-react fw-react--add" type="button" data-tg="react-add" data-id="${id}" aria-label="Добавить реакцию"><img src="${ASSETS}together/add-reaction.svg" alt="" /></button>
+        ${notes.length ? "" : `<button class="fw-react fw-react--add fw-gc__write" type="button" data-tg="notes" data-id="${id}" aria-label="Добавить заметку">${LI.note}</button>`}
+      </span>
+      ${notes.length ? `<button class="fw-mc__notes fw-gc__notes" type="button" data-tg="notes" data-id="${id}"><span class="fw-mc__avs">${who.map((m) => `<img class="fw-av" src="${PEOPLE[m].img}" alt="${PEOPLE[m].name}" />`).join("")}</span>${notesWord(notes.length)}</button>` : ""}
+    </div>`;
+  }
+  function gridCardHtml(l, p) {
+    const params = [l.rooms ? `${l.rooms}-к. кв.` : "Студия", `${String(l.area).replace(".", ",")} м²`, `${l.floor}/${l.floorsTotal} эт.`].join(" · ");
+    const on = store.saved.includes(l.id);
+    return `<div class="fw-gc" data-open-card="${l.id}">
+      <div class="fw-gc__photo" style="background-image:url('${photo(l.id)}')">
+        <button class="fw-gc__fav${on ? " is-active" : ""}" type="button" data-tg="fav" data-id="${l.id}" aria-label="В избранное">${on ? App.ICONS.heartFilled20 : App.ICONS.heart20}</button>
+      </div>
+      <div class="fw-gc__price">${priceStr(l)}</div>
+      <div class="fw-gc__params">${params}</div>
+      ${l.metro ? `<div class="fw-gc__metro"><i style="color:#${l.metroColor || "0468FF"}">M</i>${esc(l.metro)}</div>` : ""}
+      ${gridFootHtml(p, l.id)}
+    </div>`;
+  }
+  function screenPodborkaList(p, top, items) {
+    const empty = !items.length;
+    const view = top.view && top.view !== "half" && top.view !== "full" ? top.view : "list";
+    top.view = view;
+    const filter = top.filter || "all";
+    const shown = filter === "new" ? items.filter((l) => isFresh(p, l.id)) : items;
+    const strip = p.type === "daily" ? `${DATES[p.dates].short}<i>·</i>${p.guests} ${plural(p.guests, ["гость", "гостя", "гостей"])}` : variants(items.length);
+    return `<div class="fw-pb fw-pb--list is-${view}">
+      <div class="fw-pb__map" data-tg="map">${pinsHtml(items).replace(/<\/div>$/, placesHtml(p) + "</div>")}</div>
+      <div class="fw-pb__head fw-hero">
+        <div class="fw-hero__img" style="background-image:url('${bgSrc(p)}')"></div>
+        <div class="fw-pb__bar fw-hero__bar">
+          <button class="fw-pb__icon" type="button" data-act="back" aria-label="Назад">${IC.back}</button>
+          <div class="fw-pb__title">${esc(p.name)}</div>
+          <button class="fw-hero__members" type="button" data-tg="share" aria-label="Позвать в подборку"><span class="fw-hero__avs">${avatars(p)}</span><span class="fw-hero__plus">${IC.plus}</span></button>
+          <button class="fw-hero__more" type="button" data-tg="more" aria-label="Ещё">${IC.more}</button>
+        </div>
+        <div class="fw-hero__strip">
+          <button class="fw-hero__dates" type="button" data-tg="${p.type === "daily" ? "dates" : "settings"}">${strip}</button>
+          <button class="fw-hero__edit" type="button" data-tg="settings" aria-label="Настройки подборки">${LI.edit}</button>
+        </div>
+      </div>
+      <button class="fw-lv__tolist" type="button" data-tg="pbview" data-v="list">${LI.list}Список</button>
+      ${empty ? "" : `<div class="fw-pb__carousel">${items.map((l) => mapCardHtml(l, p)).join("")}</div>`}
+      <div class="fw-lv">
+        <div class="fw-lv__chips">
+          <button class="fw-lv__chip${filter === "all" ? " is-on" : ""}" type="button" data-tg="pbfilter" data-f="all">Все ${items.length}</button>
+          <button class="fw-lv__chip${filter === "new" ? " is-on" : ""}" type="button" data-tg="pbfilter" data-f="new">Новое</button>
+          <button class="fw-lv__chip fw-lv__chip--map" type="button" data-tg="pbview" data-v="map">${LI.pin}На карте</button>
+        </div>
+        ${empty ? FW.emptyStateHtml(FW.EMPTY.newPodborka) : shown.length ? `<div class="fw-gc-grid">${shown.map((l) => gridCardHtml(l, p)).join("")}</div>` : `<div class="fw-lv__none">Всё новое вы уже посмотрели</div>`}
+      </div>
+    </div>`;
+  }
+  function openSettings(p) {
+    let bg = p.bg || BG_DEFAULT;
+    const own = () => (BGS.some((x) => x.k === bg) ? (p.bgOwn || null) : bg);
+    const tiles = () =>
+      BGS.map((x) => `<button class="fw-bgpick__opt${x.k === bg ? " is-on" : ""}" type="button" data-bg="${x.k}" style="background-image:url('${x.src}')" aria-label="Фон"></button>`).join("") +
+      (own() ? `<button class="fw-bgpick__opt${own() === bg ? " is-on" : ""}" type="button" data-bg="${own()}" style="background-image:url('${own()}')" aria-label="Своё фото"></button>` : "") +
+      `<label class="fw-bgpick__opt fw-bgpick__own"><input type="file" accept="image/*" hidden />${IC.plus}<span>Своё фото</span></label>`;
+    const { wrap, close } = sheet(`
+      <div class="fw-sheet__title">Настройки подборки</div>
+      <label class="fw-field"><span>Название</span><input type="text" data-name value="${esc(p.name)}" maxlength="40" /></label>
+      ${p.type === "daily" ? `<button class="fw-set__row" type="button" data-s="dates"><span>Даты и гости</span><b>${DATES[p.dates].short} · ${p.guests} ${plural(p.guests, ["гость", "гостя", "гостей"])}</b></button>` : ""}
+      <div class="fw-set__label">Фон шапки</div>
+      <div class="fw-bgpick">${tiles()}</div>
+      <div class="fw-dates__note">Фон увидят все участники подборки</div>
+      <button class="fw-btn fw-btn--primary" type="button" data-ok>Готово</button>`, "fw-sheet--settings");
+    const preview = () => {
+      const img = $(".fw-hero__img", FW.root);
+      if (img) img.style.backgroundImage = `url('${bg.includes(":") ? bg : BGS.find((x) => x.k === bg).src}')`;
+      $(".fw-bgpick", wrap).innerHTML = tiles();
+    };
+    wrap.addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = () => {
+        bg = p.bgOwn = r.result;
+        preview();
+      };
+      r.readAsDataURL(f);
+    });
+    wrap.addEventListener("click", (e) => {
+      const t = e.target.closest("[data-bg]");
+      if (t) {
+        bg = t.dataset.bg;
+        preview();
+        return;
+      }
+      if (e.target.closest('[data-s="dates"]')) {
+        close();
+        setTimeout(() => openDates(p), 260);
+        return;
+      }
+      if (e.target.closest("[data-ok]")) {
+        const name = $("[data-name]", wrap).value.trim();
+        if (name) p.name = name;
+        p.bg = bg;
+        p.updated = Date.now();
+        close();
+        FW.rerender();
+      }
+    });
+    // закрыли шторку без «Готово» — вернуть прежний фон
+    $(".fw-sheet-backdrop", wrap).addEventListener("click", () => {
+      const img = $(".fw-hero__img", FW.root);
+      if (img) img.style.backgroundImage = `url('${bgSrc(p)}')`;
+    });
+  }
+
   function setView(v) {
     const top = stack[stack.length - 1] || {};
     top.view = v;
     if (v !== "card") top.active = null;
     const pb = $(".fw-pb", FW.root);
     if (!pb) return;
-    pb.classList.remove("is-half", "is-card", "is-full", "is-map");
+    pb.classList.remove("is-half", "is-card", "is-full", "is-map", "is-list");
     pb.classList.add("is-" + v);
     pb.classList.toggle("is-expanded", v === "full");
-    $(".fw-pb__sheet", pb).scrollTop = 0;
+    const sh = $(".fw-pb__sheet", pb);
+    if (sh) sh.scrollTop = 0;
     const list = $(".fw-pb__list", pb);
     if (list) list.scrollTop = 0;
     markPin(top.active);
@@ -869,6 +1008,7 @@
   function placeOnMap(p, kind, text) {
     const pb = $(".fw-pb", FW.root);
     if (!pb) return;
+    if (pb.classList.contains("is-list")) setView("map"); // версия «список»: место ставим на карте
     pb.classList.add("is-placing");
     const hint = document.createElement("div");
     hint.className = "fw-place-hint";
@@ -1011,6 +1151,8 @@
   // ---------- События ----------
   function onClick(e) {
     if (e.target.closest(".fw-ymap")) return;
+    // режим «отметить место»: тап по пину тоже ставит место, а не открывает карточку
+    if (e.target.closest(".is-placing .fw-pb__map")) return;
     const t = e.target.closest("[data-tg]");
     const top = stack[stack.length - 1] || {};
     const p = top.type === "podborka" && store.podborki.find((x) => x.id === top.id);
@@ -1045,6 +1187,12 @@
       else if (a === "dates" && p) openDates(p);
       else if (a === "share" && p) openShare(p);
       else if (a === "more" && p) openMore(p);
+      else if (a === "settings" && p) openSettings(p);
+      else if (a === "pbview" && p) setView(t.dataset.v);
+      else if (a === "pbfilter" && p) {
+        top.filter = t.dataset.f;
+        FW.rerender();
+      }
       else if (a === "place" && p) {
         const pl = p.places.find((x) => x.id === t.dataset.id);
         if (pl) openNotes(p, pl.id, PLACE_KINDS[pl.kind].label);
