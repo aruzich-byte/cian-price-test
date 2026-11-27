@@ -4122,3 +4122,26 @@
   width: 16px;
   height: 16px;
 }
+
+/* Кнопки на фото сниппета — как у Ани (rc__acts): два отдельных белых круга 32px с тенью,
+   «⋯» слева, сердце справа, отступ 8px; серой плашки нет */
+.card__gallery-actions {
+  gap: 8px;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-radius: 0;
+}
+.card__gallery-actions .card__gallery-btn[aria-label="Ещё"] {
+  order: -1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  color: #14171d;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+.card__gallery-actions .card__gallery-btn[aria-label="Ещё"] svg {
+  width: 16px;
+  height: 16px;
+}
