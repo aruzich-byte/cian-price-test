@@ -3229,3 +3229,7 @@
   right: auto;
   left: calc(var(--arrow-l, 16px) - 6px);
 }
+/* Плюс в пилюле белый: правило подписи «.fw-together span span» красило его в серый */
+.fw-together .fw-av--plus {
+  color: #fff;
+}
