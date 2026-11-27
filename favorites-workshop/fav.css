@@ -4265,3 +4265,15 @@ i.fw-metro,
 .fw-gc__notes {
   color: #14171d;
 }
+
+/* Сердечко в подборке «Список» — 24×24, отступ 4px сверху и справа, иконка 12px (Katya 27.11) */
+.fw-gc__fav {
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+}
+.fw-gc__fav svg {
+  width: 12px;
+  height: 12px;
+}
