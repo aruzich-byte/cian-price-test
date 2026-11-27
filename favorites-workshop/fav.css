@@ -3766,3 +3766,54 @@
 .fw-sheet--settings .fw-dates__note {
   margin-top: 10px;
 }
+
+/* Шапка v2 по макету (Katya 27.11, скрины 14:03): картинка со скруглением снизу лежит поверх голубой плашки с датами,
+   аватары — в белой пилюле, «+» и «⋯» — голубые кружки #4293F5 с белой обводкой */
+.fw-hero {
+  background: #4293f5;
+  border-radius: 0 0 24px 24px;
+}
+.fw-hero__img {
+  border-radius: 0 0 24px 24px;
+  background-color: #1f5ff5;
+  overflow: hidden;
+}
+.fw-hero__img::after {
+  background: linear-gradient(180deg, #1f5ff5 0%, rgba(31, 95, 245, 0.85) 30%, rgba(31, 95, 245, 0.3) 62%, rgba(31, 95, 245, 0) 85%);
+}
+.fw-pb--list:not(.is-list) .fw-hero__img {
+  opacity: 1;
+  background-image: none !important;
+}
+.fw-hero__strip {
+  background: none;
+}
+.fw-hero__members {
+  height: 36px;
+  padding: 3px;
+  border-radius: 18px;
+  background: #fff;
+}
+.fw-hero__avs .fw-av {
+  width: 30px;
+  height: 30px;
+  box-shadow: none;
+}
+.fw-hero__avs .fw-av + .fw-av,
+.fw-hero__plus {
+  margin-left: -6px;
+  box-shadow: 0 0 0 2px #fff;
+}
+.fw-hero__plus {
+  width: 30px;
+  height: 30px;
+  background: #4293f5;
+}
+.fw-hero__plus svg {
+  width: 16px;
+  height: 16px;
+}
+.fw-hero__more {
+  background: #4293f5;
+  box-shadow: inset 0 0 0 2px #fff;
+}
