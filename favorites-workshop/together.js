@@ -510,20 +510,22 @@
       </div>
     </div>`;
   }
-  // Вид «Список»: при скролле шапка уезжает, закреплённой остаётся только строка с названием — на синем фоне (Katya 27.11)
+  // Вид «Список»: при скролле шапка плавно складывается в вид, как на карте — синий верх без картинки + плашка с датами (Katya 27.11)
+  const HERO_FOLD = 66; // на столько опускается плашка под картинкой
   function watchHero(root) {
     const lv = $(".fw-lv", root);
     const hero = $(".fw-hero", root);
-    const bar = hero && $(".fw-hero__bar", hero);
-    if (!lv || !bar) return;
+    const strip = hero && $(".fw-hero__strip", hero);
+    const img = hero && $(".fw-hero__img", hero);
+    if (!lv || !strip) return;
     const pb = $(".fw-pb", root);
     const apply = () => {
       const on = pb.classList.contains("is-list");
-      const max = hero.offsetHeight - (bar.offsetTop + bar.offsetHeight);
-      const y = on ? Math.min(lv.scrollTop, max) : 0;
-      hero.style.transform = y ? `translateY(${-y}px)` : "";
-      bar.style.transform = y ? `translateY(${y}px)` : "";
-      hero.classList.toggle("is-stuck", on && y >= max - 1);
+      const y = on ? Math.max(0, Math.min(lv.scrollTop, HERO_FOLD)) : 0;
+      strip.style.transition = on ? "none" : "";
+      strip.style.marginTop = on ? HERO_FOLD - y + "px" : "";
+      // картинка заливается синим как на карте (а не гаснет до голубой плашки)
+      img.style.boxShadow = on && y ? `inset 0 0 0 999px rgba(31, 95, 245, ${(y / HERO_FOLD).toFixed(3)})` : "";
     };
     lv.addEventListener("scroll", apply, { passive: true });
     new MutationObserver(apply).observe(pb, { attributes: true, attributeFilter: ["class"] });

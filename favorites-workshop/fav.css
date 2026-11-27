@@ -3829,12 +3829,7 @@
 .fw-hero__img {
   background-position: center bottom;
 }
-/* Закреплённая строка шапки при скролле списка — просто синий фон (Katya 27.11) */
+/* Складывание шапки при скролле (Katya 27.11): картинка гаснет, под ней синий как на карте */
 .fw-hero__bar {
   z-index: 2;
-  transition: background-color 0.2s, box-shadow 0.2s;
-}
-.fw-hero.is-stuck .fw-hero__bar {
-  background: #1f5ff5;
-  box-shadow: 0 -48px 0 #1f5ff5;
 }
