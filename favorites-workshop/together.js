@@ -62,10 +62,117 @@
     office: { label: "Офис", img: "place-office.png", hint: "Здесь в офис за документами заеду" },
     museum: { label: "Музей обезьян", img: "place-museum.png", hint: "В воскресенье сходим в музей обезьян" },
   };
+  // Место хранит lat/lon (поставлено на живой карте) или x/y в % картинки (пресеты) — переводим одно в другое
+  const placeGeo = (pl) => (pl.lat ? [pl.lat, pl.lon] : [59.9557 - ((pl.y / 100) * MAP_H - 622) / 9808, 30.3561 + ((pl.x / 100) * MAP_W - 640) / 5316]);
+  const placeXY = (pl) => {
+    if (pl.x !== undefined) return [pl.x, pl.y];
+    const xy = mapXY({ lat: pl.lat, lon: pl.lon });
+    return [+((xy[0] / MAP_W) * 100).toFixed(2), +((xy[1] / MAP_H) * 100).toFixed(2)];
+  };
   function placesHtml(p) {
     return (p.places || [])
-      .map((pl) => `<button class="fw-place fw-place--${pl.kind}" type="button" data-tg="place" data-id="${pl.id}" style="left:${pl.x}%;top:${pl.y}%" aria-label="${PLACE_KINDS[pl.kind].label}"><img src="${ASSETS}together/${PLACE_KINDS[pl.kind].img}" alt="" /></button>`)
+      .map((pl) => {
+        const [x, y] = placeXY(pl);
+        return `<button class="fw-place fw-place--${pl.kind}" type="button" data-tg="place" data-id="${pl.id}" style="left:${x}%;top:${y}%" aria-label="${PLACE_KINDS[pl.kind].label}"><img src="${ASSETS}together/${PLACE_KINDS[pl.kind].img}" alt="" /></button>`;
+      })
       .join("");
+  }
+
+  // ---------- Живая карта подборки (Katya 27.11): Яндекс Карты, как на выдаче с картой ----------
+  // Двигается и зумится. Пины, места, карусель и шторка работают как на картинке.
+  // Если API карт не загрузился (нет сети), остаётся картинка с пинами — прототип не ломается.
+  let live = null;
+  let liveWait = false;
+  function liveTop() {
+    const t = stack[stack.length - 1] || {};
+    return t.type === "podborka" ? t : null;
+  }
+  function mountLiveMap(root, top, p) {
+    const box = $(".fw-pb__map", root);
+    if (!box) return;
+    if (typeof ymaps === "undefined" || !ymaps.ready) {
+      const sc = document.getElementById("ymaps-script");
+      if (sc && !liveWait) {
+        liveWait = true;
+        sc.addEventListener("load", () => liveTop() && FW.tab === "fav" && FW.rerender(), { once: true });
+      }
+      return;
+    }
+    ymaps.ready(() => {
+      if (!box.isConnected) return;
+      if (live) {
+        try {
+          live.map.destroy();
+        } catch (e) {}
+        live = null;
+      }
+      const el = document.createElement("div");
+      el.className = "fw-ymap";
+      box.appendChild(el);
+      box.classList.add("is-live");
+      const items = orderedItems(p).map(byId).filter((l) => l && l.lat && l.lon);
+      const map = new ymaps.Map(el, { center: top.mapC || [59.94, 30.33], zoom: top.mapZ || 12, controls: [] }, { suppressMapOpenBlock: true, yandexMapDisablePoiInteractivity: true });
+      live = { map, top, pid: p.id, placing: null };
+
+      const PinL = ymaps.templateLayoutFactory.createClass('<button class="fw-mpin" type="button" data-id="$[properties.id]">$[properties.label]</button>', {
+        build: function () {
+          PinL.superclass.build.call(this);
+          const b = this.getParentElement().querySelector(".fw-mpin");
+          const t = liveTop();
+          if (b && t && t.view === "card" && b.dataset.id === t.active) b.classList.add("is-active");
+        },
+      });
+      const PlaceL = ymaps.templateLayoutFactory.createClass('<button class="fw-place fw-place--$[properties.kind]" type="button" aria-label="$[properties.title]"><img src="$[properties.img]" alt="" /></button>');
+
+      const pins = new ymaps.GeoObjectCollection();
+      items.forEach((l) => {
+        const pm = new ymaps.Placemark([l.lat, l.lon], { id: l.id, label: pinLabel(l) }, {
+          iconLayout: PinL,
+          iconShape: { type: "Rectangle", coordinates: [[-46, -16], [46, 16]] },
+        });
+        pm.events.add("click", () => tapPin(l.id));
+        pins.add(pm);
+      });
+      map.geoObjects.add(pins);
+      (p.places || []).forEach((pl) => {
+        const k = PLACE_KINDS[pl.kind];
+        const round = pl.kind === "museum";
+        const pm = new ymaps.Placemark(placeGeo(pl), { kind: pl.kind, title: k.label, img: ASSETS + "together/" + k.img }, {
+          iconLayout: PlaceL,
+          iconShape: { type: "Circle", coordinates: round ? [0, 0] : [0, -22], radius: round ? 26 : 30 },
+          zIndex: 700,
+        });
+        pm.events.add("click", () => openNotes(p, pl.id, k.label));
+        map.geoObjects.add(pm);
+      });
+
+      map.events.add("click", (e) => {
+        const t = liveTop();
+        if (live && live.placing) return live.placing(e.get("coords"));
+        if (t && t.view === "card") setView(t.prev || "half");
+      });
+      map.events.add("boundschange", (e) => {
+        top.mapC = e.get("newCenter");
+        top.mapZ = e.get("newZoom");
+      });
+      // Первый показ: все квартиры подборки в видимой части (над полшторкой)
+      if (!top.mapC && items.length) {
+        const b = pins.getBounds();
+        if (b) map.setBounds(b, { checkZoomRange: true, zoomMargin: [150, 40, 400, 40] }).then(() => {
+          if (map.getZoom() > 15) map.setZoom(15);
+        });
+      }
+    });
+  }
+  // пин → карусель с его карточкой, шторка сворачивается
+  function tapPin(id) {
+    const top = liveTop();
+    if (!top) return;
+    const fromHalf = top.view !== "card";
+    if (fromHalf) top.prev = top.view || "half";
+    top.active = id;
+    setView("card");
+    scrollToCard(id, !fromHalf);
   }
 
   function presetPodborka() {
@@ -457,6 +564,7 @@
       if (!p) return;
       watchCarousel(top);
       watchSheet(top);
+      mountLiveMap(root, top, p);
       root.querySelectorAll(".fw-pb__list .card[data-listing-id]").forEach((card) => {
         const id = card.dataset.listingId;
         card.insertAdjacentHTML("beforeend", footHtml(p, id).replace('class="fw-mc__foot"', 'class="fw-mc__foot fw-mc__foot--n4"'));
@@ -752,12 +860,27 @@
     hint.innerHTML = `<img src="${ASSETS}together/${PLACE_KINDS[kind].img}" alt="" /><span>Нажмите на карту, где это место</span><button type="button">Отмена</button>`;
     pb.appendChild(hint);
     const map = $(".fw-pb__map", pb);
+    const isLive = live && live.pid === p.id && map.classList.contains("is-live");
     const done = () => {
       pb.classList.remove("is-placing");
       hint.remove();
       map.removeEventListener("click", onMap, true);
+      if (live) live.placing = null;
     };
-    const onMap = (e) => {
+    const save = (pl) => {
+      p.places.push(pl);
+      if (text) p.notes[pl.id] = [{ who: store.me, text, ts: Date.now() }];
+      p.updated = Date.now();
+      done();
+      FW.rerender();
+      FW.toast(`Место «${PLACE_KINDS[kind].label}» на карте`);
+    };
+    if (isLive) {
+      live.placing = (c) => save({ id: "pl" + Date.now(), kind, who: store.me, lat: +c[0].toFixed(6), lon: +c[1].toFixed(6) });
+      $("button", hint).addEventListener("click", done);
+      return;
+    }
+    function onMap(e) {
       e.preventDefault();
       e.stopPropagation();
       const r = $(".fw-pins", map).getBoundingClientRect();
@@ -768,12 +891,7 @@
         x: +(((e.clientX - r.left) / r.width) * 100).toFixed(2),
         y: +(((e.clientY - r.top) / r.height) * 100).toFixed(2),
       };
-      p.places.push(pl);
-      if (text) p.notes[pl.id] = [{ who: store.me, text, ts: Date.now() }];
-      p.updated = Date.now();
-      done();
-      FW.rerender();
-      FW.toast(`Место «${PLACE_KINDS[kind].label}» на карте`);
+      save(pl);
     };
     $("button", hint).addEventListener("click", done);
     map.addEventListener("click", onMap, true);
@@ -877,6 +995,7 @@
 
   // ---------- События ----------
   function onClick(e) {
+    if (e.target.closest(".fw-ymap")) return;
     const t = e.target.closest("[data-tg]");
     const top = stack[stack.length - 1] || {};
     const p = top.type === "podborka" && store.podborki.find((x) => x.id === top.id);
@@ -902,14 +1021,7 @@
       } else if (a === "map" && p) {
         // тап по пустой карте — назад к стартовому виду
         if (top.view === "card") setView(top.prev || "half");
-      } else if (a === "pin" && p) {
-        // пин → карусель с его карточкой, шторка сворачивается
-        const fromHalf = top.view !== "card";
-        if (fromHalf) top.prev = top.view || "half";
-        top.active = t.dataset.id;
-        setView("card");
-        scrollToCard(t.dataset.id, !fromHalf);
-      } else if (a === "notes" && p) openNotes(p, t.dataset.id);
+      } else if (a === "pin" && p) tapPin(t.dataset.id); else if (a === "notes" && p) openNotes(p, t.dataset.id);
       else if (a === "react" && p) {
         toggleReaction(p, t.dataset.id, t.dataset.emoji);
         refreshFoot(p, t.dataset.id);

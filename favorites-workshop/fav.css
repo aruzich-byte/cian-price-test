@@ -3233,3 +3233,29 @@
 .fw-together .fw-av--plus {
   color: #fff;
 }
+
+/* ---------- Живая карта подборки (Яндекс Карты) ---------- */
+.fw-pb__map.is-live {
+  background: #eef1f4;
+}
+.fw-pb__map.is-live > .fw-pins {
+  display: none;
+}
+.fw-ymap {
+  position: absolute;
+  inset: 0;
+}
+/* картинку сдвигали вверх в полшторке; живую карту не двигаем — пины уже вписаны над шторкой */
+.fw-pb.is-half .fw-pb__map.is-live {
+  transform: none;
+}
+.fw-ymap .fw-mpin {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.fw-ymap .fw-place {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
