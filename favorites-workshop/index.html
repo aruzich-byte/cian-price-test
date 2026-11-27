@@ -16,7 +16,7 @@
     <link rel="manifest" href="../favorites-workshop/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icons/app/apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="../favorites-workshop/fav.css?v=41" />
+    <link rel="stylesheet" href="../favorites-workshop/fav.css?v=42" />
     <!-- Карта грузится параллельно и не блокирует выдачу: если api-maps.yandex.ru
          тормозит или недоступен (бывает на телефоне), список всё равно показывается -->
     <script id="ymaps-script" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" async></script>
@@ -398,6 +398,17 @@
     </div>
 
     <script>const MIX_MODE = 'separate';</script>
+    <!-- Итог Katya 27.11: прототип только про посуточную аренду — стартуем с выдачи посуточно.
+         Длительная и покупка остаются в коде и открываются ссылкой ?deal=rent|buy -->
+    <script>
+      (function () {
+        var u = new URL(location.href);
+        if (!u.searchParams.get("deal")) {
+          u.searchParams.set("deal", "daily");
+          history.replaceState(null, "", u);
+        }
+      })();
+    </script>
     <!--
       Классические <script>-теги (не type="module") — принципиально: прототип
       должен открываться и напрямую двойным кликом по этому файлу (file://),
@@ -440,7 +451,7 @@
     <script src="js/main.js"></script>
     <script src="js/brand-chips.js"></script>
     <script src="js/motion.js"></script>
-    <script src="../favorites-workshop/fav.js?v=41"></script>
-    <script src="../favorites-workshop/together.js?v=41"></script>
+    <script src="../favorites-workshop/fav.js?v=42"></script>
+    <script src="../favorites-workshop/together.js?v=42"></script>
   </body>
 </html>

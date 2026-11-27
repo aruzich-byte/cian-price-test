@@ -219,7 +219,10 @@
 
   function screenHome() {
     const order = SECTIONS.slice().sort((a, b) => isFilled(b) - isFilled(a));
-    const recs = RENT.slice(10, 18);
+    // Итог Katya 27.11: прототип — только посуточная аренда, «Могут подойти» тоже посуточные
+    const daily = App.state && App.state.dealType === "daily";
+    const pool = daily ? App.LISTINGS.filter((l) => l.dealType === "daily" && l.propertyType === "flat" && withPhoto(l)) : RENT;
+    const recs = pool.slice(pool.length > 18 ? 10 : 0, pool.length > 18 ? 18 : 8);
     return `<div class="fw-scroll fw-home">
       <div class="fw-home__top">
         <div class="fw-head fw-head--plain"><span></span><div class="fw-head__title">Избранное</div><span></span></div>
