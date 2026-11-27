@@ -3858,3 +3858,11 @@
   height: 17px;
   color: #282d36;
 }
+/* Цвет плашки с датами, «+» и «⋯» — #0095FF (Katya 27.11) */
+.fw-hero {
+  background: #0095ff;
+}
+.fw-hero__plus,
+.fw-hero__more {
+  background: #0095ff;
+}
