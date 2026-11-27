@@ -4145,3 +4145,29 @@
   width: 16px;
   height: 16px;
 }
+
+/* Статус-бар iPhone в режиме «на экран Домой» (black-translucent): контент заходит под него.
+   На экранах с белым верхом подкладываем синюю полосу #0095FF высотой статус-бара —
+   белые часы и батарея на ней читаются. В шапке подборки (синей, с картинкой) полосы нет —
+   туда заходит сама шапка. */
+@media (display-mode: standalone) {
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top);
+    background: #0095ff;
+    z-index: 2147483000;
+    pointer-events: none;
+  }
+  body:has(.fw-root .fw-pb__head):not(:has(.fw-cd))::before {
+    display: none;
+  }
+}
+@media (display-mode: standalone) {
+  .fw #results-scroll {
+    padding-top: env(safe-area-inset-top);
+  }
+}
