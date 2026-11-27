@@ -236,6 +236,10 @@
   }
   // Сниппет на карте — по макету Katya «Card»: звонок и чат справа, внизу заметки и реакции
   const EMOJI = ["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"]; // вставка в текст заметки
+  // Пасхалка (Katya 27.11): в заметках к первой квартире подборки вместо эмодзи можно отправить стикер
+  // из набора «Цианыч» (t.me/addstickers/cianich). Файлы — img/stickers/, список — ниже.
+  const STICKERS = window.FW_STICKERS || [];
+  const STICKER_IC = '<svg viewBox="0 0 24 24"><path d="M14 21H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v6l-7 7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 21v-3a4 4 0 0 1 4-4h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="10" r="1.3" fill="currentColor"/><circle cx="15" cy="10" r="1.3" fill="currentColor"/></svg>';
   const REACTIONS = ["🔥", "👍", "👎"]; // реакции: огонь/лайк/дизлайк, одна оценка на человека (решения Katya)
   const notesWord = (n) => `${n} ${plural(n, ["заметка", "заметки", "заметок"])}`;
   function footHtml(p, id) {
@@ -332,7 +336,9 @@
   };
   // Шторка заметок — по структуре комментариев Instagram: заголовок, список, эмодзи над полем ввода
   function openNotes(p, id, title = "Заметки") {
-    const noteRow = (n) => `<div class="fw-note"><img class="fw-av" src="${PEOPLE[n.who].img}" alt="" /><div><div class="fw-note__who"><b>${PEOPLE[n.who].name}</b><span>${timeAgo(n.ts)}</span></div><div class="fw-note__text">${esc(n.text)}</div></div></div>`;
+    const noteBody = (n) => (n.sticker ? `<img class="fw-note__sticker" src="${n.sticker}" alt="Стикер" />` : `<div class="fw-note__text">${esc(n.text)}</div>`);
+    const noteRow = (n) => `<div class="fw-note"><img class="fw-av" src="${PEOPLE[n.who].img}" alt="" /><div><div class="fw-note__who"><b>${PEOPLE[n.who].name}</b><span>${timeAgo(n.ts)}</span></div>${noteBody(n)}</div></div>`;
+    const egg = STICKERS.length && byId(id) && orderedItems(p)[0] === id;
     const listHtml = () => {
       const notes = p.notes[id] || [];
       return notes.length
@@ -342,7 +348,8 @@
     const { wrap } = sheet(`
       <div class="fw-notes__title">${esc(title)}</div>
       <div class="fw-notes__list">${listHtml()}</div>
-      <div class="fw-notes__emoji">${EMOJI.map((e) => `<button type="button" data-ins="${e}">${e}</button>`).join("")}</div>
+      <div class="fw-notes__emoji">${EMOJI.map((e) => `<button type="button" data-ins="${e}">${e}</button>`).join("")}${egg ? `<button type="button" class="fw-notes__stk-btn" data-stk-toggle aria-label="Стикеры">${STICKER_IC}</button>` : ""}</div>
+      ${egg ? `<div class="fw-notes__stickers">${STICKERS.map((src) => `<button type="button" data-stk="${src}"><img src="${src}" alt="" loading="lazy" /></button>`).join("")}</div>` : ""}
       <div class="fw-notes__input">
         <img class="fw-av" src="${PEOPLE[store.me].img}" alt="" />
         <span class="fw-notes__field"><input type="text" placeholder="Что вы об этом думаете?" maxlength="200" /><button type="button" data-send aria-label="Отправить">${FW.CI.arrow}</button></span>
@@ -372,6 +379,16 @@
         input.focus();
       }
       if (e.target.closest("[data-send]")) send();
+      if (e.target.closest("[data-stk-toggle]")) wrap.classList.toggle("is-stickers");
+      const stk = e.target.closest("[data-stk]");
+      if (stk) {
+        (p.notes[id] = p.notes[id] || []).push({ who: store.me, sticker: stk.dataset.stk, ts: Date.now() });
+        p.updated = Date.now();
+        wrap.classList.remove("is-stickers");
+        list.innerHTML = listHtml();
+        list.scrollTop = list.scrollHeight;
+        refreshFoot(p, id);
+      }
     });
   }
 

@@ -3259,3 +3259,58 @@
   left: 0;
   top: 0;
 }
+
+/* ---------- Пасхалка: стикеры «Цианыч» в заметках к первой квартире ---------- */
+.fw-notes__emoji .fw-notes__stk-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  color: #0468ff;
+}
+.fw-notes__stk-btn svg {
+  width: 24px;
+  height: 24px;
+}
+.is-stickers .fw-notes__stk-btn {
+  background: #e6f0ff;
+}
+.fw-notes__stickers {
+  display: none;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px 16px 10px;
+}
+.is-stickers .fw-notes__stickers {
+  display: grid;
+  animation: fw-pop 0.18s ease-out;
+}
+.fw-notes__stickers button {
+  aspect-ratio: 1;
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+}
+.fw-notes__stickers button:active {
+  background: #f3f5f8;
+}
+.fw-notes__stickers img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* Стикер в заметке — крупно и без пузыря, как в Telegram */
+.fw-note__sticker {
+  display: block;
+  width: 128px;
+  height: 128px;
+  margin-top: 4px;
+  object-fit: contain;
+  animation: fw-pop 0.22s ease-out;
+}
