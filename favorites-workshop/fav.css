@@ -4259,3 +4259,9 @@ i.fw-metro,
 .fw-empty-tile__icon svg [fill="#E6F0FF"] {
   fill: currentColor;
 }
+
+/* «N заметки» у аватаров — цвет primary, как заголовки (Katya 27.11) */
+.fw-mc__notes,
+.fw-gc__notes {
+  color: #14171d;
+}
