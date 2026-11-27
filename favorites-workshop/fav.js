@@ -18,7 +18,13 @@
   }
   // Иконка метро СПб (Katya 27.11, MetroSpb.svg) — везде вместо «М»; цвет — по линии
   const METRO_IC = '<svg class="fw-metro-ic" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5.91215 2L8 10L10.0878 2C13.0349 2.96324 15 5.73226 15 8.8334C15 10.5062 14.3052 12.7099 13.1797 14H10.5L10 13C14.5 11.5 13.0778 5.45111 11 4L8.5 14L8 13.9987L7.5 14L5 4C2.92221 5.45111 1.5 11.5 6 13L5.5 14H2.8203C1.69477 12.7099 1 10.5062 1 8.8334C1 5.73226 2.9651 2.96324 5.91215 2Z" fill="currentColor"/></svg>';
-  App.ICONS.pin = METRO_IC; // сниппеты выдачи (as is, v1) рисуют метро этой иконкой
+  App.ICONS.pin = METRO_IC;
+  // Залитое сердце перерисовано (Katya 27.11): глубже выемка сверху и острее низ —
+  // форма читается и в 12px. Одна иконка для всех сохранённых сердец.
+  const HEART_ON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22c-.3 0-.6-.1-.85-.28C7.4 18.9 1.5 14.3 1.5 8.5 1.5 5.2 3.95 2.5 7.1 2.5c2.05 0 3.75 1.15 4.9 3.05C13.15 3.65 14.85 2.5 16.9 2.5c3.15 0 5.6 2.7 5.6 6 0 5.8-5.9 10.4-9.65 13.22-.25.18-.55.28-.85.28Z" fill="currentColor"/></svg>';
+  App.ICONS.heartFilled = HEART_ON;
+  App.ICONS.heartFilled20 = HEART_ON;
+ // сниппеты выдачи (as is, v1) рисуют метро этой иконкой
   const metroIc = (c) => `<i class="fw-metro" style="color:#${c || "087DCD"}">${METRO_IC}</i>`;
   // Сердце на сниппете любого варианта
   const HEART_SEL = '.n4__fav, .card__gallery-btn[aria-label="В избранное"]';
@@ -72,7 +78,7 @@
 
   // ---------- Иконки ----------
   const IC = {
-    heart: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 21s-9-5.6-9-11.6C3 6.4 5.3 4 8.2 4c1.6 0 3 .8 3.8 2 .8-1.2 2.2-2 3.8-2C18.7 4 21 6.4 21 9.4 21 15.4 12 21 12 21Z"/></svg>',
+    heart: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 22c-.3 0-.6-.1-.85-.28C7.4 18.9 1.5 14.3 1.5 8.5 1.5 5.2 3.95 2.5 7.1 2.5c2.05 0 3.75 1.15 4.9 3.05C13.15 3.65 14.85 2.5 16.9 2.5c3.15 0 5.6 2.7 5.6 6 0 5.8-5.9 10.4-9.65 13.22-.25.18-.55.28-.85.28Z"/></svg>',
     searchHeart: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path fill="#2EA8FF" d="M6.5 9.6S2.5 7.3 2.5 4.8c0-1.3 1-2.3 2.2-2.3.8 0 1.4.4 1.8 1 .4-.6 1-1 1.8-1 1.2 0 2.2 1 2.2 2.3 0 2.5-4 4.8-4 4.8Z"/></svg>',
     zhk: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 11.5 9 9v12H3.8a.8.8 0 0 1-.8-.8v-8.7ZM10.5 5.2 17 3v18h-3v-4h-3.5v4h0V5.2ZM18.5 8 21 9v11.2a.8.8 0 0 1-.8.8h-1.7V8Z"/></svg>',
     compare: '<svg viewBox="0 0 24 24"><rect x="7.5" y="7.5" width="13" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2.2"/><rect x="3" y="3" width="13" height="13" rx="3" fill="currentColor"/><path d="M9.5 6.5v6M6.5 9.5h6" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>',
@@ -627,7 +633,7 @@
   // «аберрация по гайду, от центра» — две плоские копии формы кнопки позади неё: жёлтый #F1AF12
   // у контента, оранжевый #F5631A снаружи; белое ядро с сердцем подпрыгивает, заряд гаснет. 1250 мс.
   const FAVFX_MS = 1250;
-  const FAVFX_HEART = "M12 21s-7.5-4.6-10-9.3C.3 8.5 2.2 4.5 6 4.5c2.3 0 3.6 1.3 6 3.6 2.4-2.3 3.7-3.6 6-3.6 3.8 0 5.7 4 4 7.2C19.5 16.4 12 21 12 21z";
+  const FAVFX_HEART = "M12 22c-.3 0-.6-.1-.85-.28C7.4 18.9 1.5 14.3 1.5 8.5 1.5 5.2 3.95 2.5 7.1 2.5c2.05 0 3.75 1.15 4.9 3.05C13.15 3.65 14.85 2.5 16.9 2.5c3.15 0 5.6 2.7 5.6 6 0 5.8-5.9 10.4-9.65 13.22-.25.18-.55.28-.85.28Z";
   function favCharge(btn) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     btn.querySelectorAll(".favfx, .n4__fav-aura").forEach((el) => el.remove());
