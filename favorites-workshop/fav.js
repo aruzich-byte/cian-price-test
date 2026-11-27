@@ -10,7 +10,8 @@
   // ---------- Вариант сниппета (Katya 27.11): as is · v1 · v4 ----------
   // Выдача воркшопа всегда new4; здесь берём ?variant= и снимаем классы new4 до первой отрисовки.
   const VARIANTS = [["asis", "as is"], ["new", "v1"], ["new4", "v4"]];
-  const qVariant = new URLSearchParams(location.search).get("variant");
+  // Итог Katya 27.11: в прототипе только v1. as is и v4 остаются в коде и открываются ссылкой ?variant=asis|new4
+  const qVariant = new URLSearchParams(location.search).get("variant") || "new";
   if (VARIANTS.some(([v]) => v === qVariant) && qVariant !== App.session.variant) {
     App.session.variant = qVariant;
     document.documentElement.classList.remove("variant-new4", "n2-photo-dark");

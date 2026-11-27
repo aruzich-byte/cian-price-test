@@ -3349,3 +3349,13 @@
 .card[data-fw-deal="daily"] .n4__actions-group--contact {
   display: none !important;
 }
+/* Итог Katya 27.11: панель «Настройка прототипа» скрыта везде (и кнопка на мобильном), телефон по центру */
+.prototype-panel,
+.prototype-panel-fab {
+  display: none !important;
+}
+@media (min-width: 481px) {
+  .viewport-stage {
+    padding-left: 16px;
+  }
+}
