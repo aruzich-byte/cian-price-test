@@ -3829,9 +3829,6 @@
 .fw-hero__img {
   background-position: center bottom;
 }
-.fw-hero__img::after {
-  background: linear-gradient(180deg, #1f5ff5 0%, rgba(31, 95, 245, 0.85) 30%, rgba(31, 95, 245, 0.45) 62%, rgba(31, 95, 245, 0.22) 85%, rgba(31, 95, 245, 0) 100%);
-}
 /* Закреплённая строка шапки при скролле списка — просто синий фон (Katya 27.11) */
 .fw-hero__bar {
   z-index: 2;
