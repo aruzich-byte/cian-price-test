@@ -448,17 +448,14 @@
     hintEl = document.createElement("div");
     hintEl.className = "fw-hold-hint";
     hintEl.textContent = "Нажмите и удерживайте, чтобы быстро добавить в подборку";
-    hintEl.style.top = (r.bottom - a.top) / k + 8 + "px";
+    // Figma 367:70750: тултип сбоку от сердца, хвостик у верхнего края указывает на сердце
+    const cy = (r.top + r.height / 2 - a.top) / k;
+    hintEl.style.top = Math.max(8, cy - 18) + "px";
     const cx = (r.left + r.width / 2 - a.left) / k;
     if (cx < app.offsetWidth / 2) {
-      const left = Math.max(12, (r.left - a.left) / k - 4);
-      hintEl.style.left = left + "px";
+      hintEl.style.left = (r.right - a.left) / k + 10 + "px";
       hintEl.classList.add("is-left");
-      hintEl.style.setProperty("--arrow-l", Math.max(10, cx - left) + "px");
-    } else {
-      hintEl.style.right = Math.max(12, (a.right - r.right) / k - 4) + "px";
-      hintEl.style.setProperty("--arrow-r", Math.max(12, (r.right - r.left) / 2 / k) + "px");
-    }
+    } else hintEl.style.right = (a.right - r.left) / k + 10 + "px";
     app.appendChild(hintEl);
     setTimeout(hideHint, 4000);
     setTimeout(() => document.addEventListener("pointerdown", hideHint, { once: true, capture: true }), 0);

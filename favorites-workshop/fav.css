@@ -3927,3 +3927,90 @@
 .fw-new__dates {
   text-align: left;
 }
+
+/* Меню по зажатию сердца — Figma 367:70687: 216px, строки 44, превью 32, разделители от текста */
+.fw-quick {
+  width: 216px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(13, 22, 46, 0.12), 0 1px 4px rgba(13, 22, 46, 0.06);
+}
+.fw-quick-wrap.is-open {
+  background: rgba(13, 22, 46, 0.08);
+}
+.fw-quick__row,
+.fw-quick__row--new {
+  position: relative;
+  gap: 12px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  font: 400 15px/20px var(--font-family);
+  color: #14171d;
+}
+.fw-quick__row + .fw-quick__row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 44px;
+  right: 0;
+  height: 1px;
+  background: #e8ebf0;
+}
+.fw-quick__row:active {
+  background: none;
+  opacity: 0.6;
+}
+.fw-quick .fw-mcol {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  gap: 1px;
+}
+.fw-quick .fw-mcol > span {
+  background-color: #e8ebf0;
+}
+.fw-quick .fw-mcol--plus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6f0ff;
+  color: #0468ff;
+}
+.fw-quick .fw-mcol--plus svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Тултип «Нажмите и удерживайте» — Figma 367:70750: 192px, отступ 12, 14/20, хвостик справа сверху */
+.fw-hold-hint {
+  width: 192px;
+  max-width: none;
+  padding: 12px;
+  border-radius: 12px;
+  font: 400 14px/20px var(--font-family);
+  box-shadow: 0 4px 24px rgba(13, 22, 46, 0.12), 0 1px 4px rgba(13, 22, 46, 0.06);
+}
+.fw-hold-hint::before,
+.fw-hold-hint.is-left::before {
+  top: 12px;
+  right: -5px;
+  left: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+.fw-hold-hint.is-left::before {
+  right: auto;
+  left: -5px;
+}
+.fw-hold-hint {
+  box-sizing: border-box;
+  width: 204px;
+  letter-spacing: -0.15px;
+}
+.fw-hold-hint::before {
+  box-shadow: 2px -2px 4px rgba(13, 22, 46, 0.05);
+}

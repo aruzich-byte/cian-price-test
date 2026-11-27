@@ -872,14 +872,13 @@
     const wrap = document.createElement("div");
     wrap.className = "fw-quick-wrap";
     wrap.innerHTML = `<div class="fw-quick">
-        <div class="fw-quick__title">Добавить в подборку</div>
         ${list
           .map((p) => {
             const has = p.items.includes(id);
             return `<button class="fw-quick__row${has ? " is-in" : ""}" type="button" data-q="${p.id}">${miniCollage(p)}<span>${esc(p.name)}</span>${has ? `<i class="fw-quick__ok">${IC.check || "✓"}</i>` : ""}</button>`;
           })
           .join("")}
-        <button class="fw-quick__row fw-quick__row--new" type="button" data-q-new><span class="fw-mcol fw-mcol--plus">${IC.plus}</span><span>Новая подборка</span></button>
+        <button class="fw-quick__row fw-quick__row--new" type="button" data-q-new><span class="fw-mcol fw-mcol--plus"><svg viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span>Новая подборка</span></button>
       </div>`;
     app.appendChild(wrap);
     const box = $(".fw-quick", wrap);
