@@ -3359,3 +3359,11 @@
     padding-left: 16px;
   }
 }
+/* Посуточно: блок продавца скрыт целиком, вместе с ролью (Katya 27.11) — только CSS */
+.card[data-fw-deal="daily"] .card__seller,
+.card[data-fw-deal="daily"] .n4__seller {
+  display: none !important;
+}
+.card[data-fw-deal="daily"] .card__footer:not(:has(> :not(.card__seller):not(.card__btn--call):not(.card__btn--message))) {
+  display: none;
+}
