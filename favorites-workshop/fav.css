@@ -4277,3 +4277,16 @@ i.fw-metro,
   width: 12px;
   height: 12px;
 }
+
+/* Белая обводка у аватаров с «+» и у «⋯» — 2px (Katya 27.11); высота обеих кнопок остаётся 36px */
+.fw-hero__members {
+  padding: 2px;
+}
+.fw-hero__avs .fw-av,
+.fw-hero__plus {
+  width: 32px;
+  height: 32px;
+}
+.fw-hero__more {
+  box-shadow: inset 0 0 0 2px #fff;
+}
