@@ -3333,3 +3333,13 @@
   height: 100%;
   object-fit: contain;
 }
+/* v1: в сниппете только роль продавца, без имени и логотипа (макет Katya 27.11: «имя — только для тех, кто платит») */
+.card:not(.card--asis):not(.card--n4) .card__seller-name,
+.card:not(.card--asis):not(.card--n4) .card__avatar {
+  display: none;
+}
+.card:not(.card--asis):not(.card--n4) .card__seller-role {
+  margin: 0;
+  font: 500 16px/22px var(--font-family);
+  color: #14171d;
+}
