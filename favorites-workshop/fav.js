@@ -342,14 +342,16 @@
   }
 
   let toastTimer;
-  function toast(text, action, timer) {
+  function toast(text, action, timer, opts) {
     let t = $(".fw-toast");
     if (!t) {
       t = document.createElement("div");
-      t.className = "fw-toast";
       $(".app").appendChild(t);
     }
+    const on = t.classList.contains("is-on");
+    t.className = "fw-toast" + (opts && opts.cls ? " " + opts.cls : "") + (on ? " is-on" : "");
     t.textContent = text;
+    if (opts && opts.icon) t.insertAdjacentHTML("afterbegin", `<span class="fw-toast__ico">${opts.icon}</span>`);
     clearInterval(toast.tick);
     if (timer) {
       // обратный отсчёт: кольцо + секунды, пока можно вернуть
@@ -382,8 +384,74 @@
   }
 
   // Сердце сохраняет сразу (принцип 1), подборка — опционально через снек (1A → 2A Ани)
+  // Figma «ВСЕ СХЛОПЫВАЕМ» → «Тюним снекбар» (27.11): светлый снек «В избранном | В подборку»
   function notifySaved(id) {
-    if (window.FWT) toast("Сохранено в избранное", { label: "В подборку", run: () => window.FWT.openPick(id) });
+    if (window.FWT) toast("В избранном", { label: "В подборку", run: () => window.FWT.openPick(id) }, 0, { cls: "fw-toast--saved", icon: App.ICONS.heartFilled });
+  }
+
+  // ---------- Зажатие сердца → быстрый выбор подборки (Figma «Зажатие лайка → шорткаты») ----------
+  const LONG_MS = 450;
+  let lp = null;
+  document.addEventListener(
+    "pointerdown",
+    (e) => {
+      const fav = e.target.closest(HEART_SEL);
+      const card = fav && fav.closest(".card[data-listing-id]");
+      if (!card || !window.FWT) return;
+      const x = e.clientX, y = e.clientY;
+      lp = { fav, x, y, timer: setTimeout(() => {
+        fav._lp = true;
+        hideHint();
+        const id = card.dataset.listingId;
+        if (!store.saved.includes(id)) {
+          paintHeart(fav, true);
+          setSaved(id, true);
+          favCharge(fav);
+        }
+        if (navigator.vibrate) navigator.vibrate(10);
+        window.FWT.openQuick(id, fav);
+      }, LONG_MS) };
+    },
+    true
+  );
+  const lpCancel = (e) => {
+    if (!lp) return;
+    if (e.type === "pointermove" && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) < 8) return;
+    clearTimeout(lp.timer);
+    lp = null;
+  };
+  ["pointerup", "pointercancel", "pointermove", "scroll"].forEach((t) => document.addEventListener(t, lpCancel, true));
+  document.addEventListener("contextmenu", (e) => e.target.closest(HEART_SEL) && e.preventDefault(), true);
+
+  // Подсказка один раз за сессию после первого сердца (как у TikTok)
+  let hintShown = false, hintEl = null;
+  function hideHint() {
+    if (hintEl) hintEl.remove();
+    hintEl = null;
+  }
+  function showHoldHint(fav) {
+    if (hintShown || !window.FWT) return;
+    hintShown = true;
+    const app = $(".app");
+    const a = app.getBoundingClientRect(), r = fav.getBoundingClientRect();
+    const k = a.width / app.offsetWidth || 1;
+    hintEl = document.createElement("div");
+    hintEl.className = "fw-hold-hint";
+    hintEl.textContent = "Нажмите и удерживайте, чтобы быстро добавить в подборку";
+    hintEl.style.top = (r.bottom - a.top) / k + 8 + "px";
+    const cx = (r.left + r.width / 2 - a.left) / k;
+    if (cx < app.offsetWidth / 2) {
+      const left = Math.max(12, (r.left - a.left) / k - 4);
+      hintEl.style.left = left + "px";
+      hintEl.classList.add("is-left");
+      hintEl.style.setProperty("--arrow-l", Math.max(10, cx - left) + "px");
+    } else {
+      hintEl.style.right = Math.max(12, (a.right - r.right) / k - 4) + "px";
+      hintEl.style.setProperty("--arrow-r", Math.max(12, (r.right - r.left) / 2 / k) + "px");
+    }
+    app.appendChild(hintEl);
+    setTimeout(hideHint, 4000);
+    setTimeout(() => document.addEventListener("pointerdown", hideHint, { once: true, capture: true }), 0);
   }
 
   // ---------- Сердце на сниппетах new4 ↔ «Объявления» ----------
@@ -403,16 +471,28 @@
       if (!fav) return;
       const card = fav.closest(".card[data-listing-id]");
       if (!card) return;
-      // В as is и v1 у сердца нет своего обработчика — переключаем сами
+      // Отпустили после зажатия — шорткат уже открыт, тап не считаем
+      if (fav._lp) {
+        fav._lp = false;
+        e.stopPropagation();
+        e.preventDefault();
+        return;
+      }
+      // В as is и v1 у сердца нет своего обработчика — переключаем сами, с тем же «зарядом»
       if (!isN4Heart(fav)) {
         e.stopPropagation();
-        paintHeart(fav, !store.saved.includes(card.dataset.listingId));
+        const willOn = !store.saved.includes(card.dataset.listingId);
+        paintHeart(fav, willOn);
+        if (willOn) favCharge(fav);
       }
       setTimeout(() => {
         const id = card.dataset.listingId;
         const on = fav.classList.contains("is-active");
         setSaved(id, on);
-        if (on) notifySaved(id);
+        if (on) {
+          notifySaved(id);
+          showHoldHint(fav);
+        }
       }, 0);
     },
     true

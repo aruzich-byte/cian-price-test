@@ -2866,3 +2866,366 @@
 .prototype-panel__chips {
   flex-wrap: wrap;
 }
+
+/* ============ 27.11 · Механики из Figma «ВСЕ СХЛОПЫВАЕМ» (Аня) ============ */
+
+/* «Заряд» сердца на сниппетах as is и v1 — тот же, что у v4 */
+.card__gallery-btn[aria-label="В избранное"] {
+  position: relative;
+  overflow: visible;
+  --fav-color: #e85810;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.card__gallery-btn[aria-label="В избранное"] > svg {
+  position: relative;
+  z-index: 1;
+}
+.card__gallery-btn[aria-label="В избранное"].is-charging > svg,
+.card__gallery-btn[aria-label="В избранное"].is-charging .n4__fav-aura {
+  animation: n4-fav-pop 720ms var(--spring, cubic-bezier(0.3, 0, 0.2, 1));
+}
+.card__gallery-btn[aria-label="В избранное"] .n4__fav-aura {
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+}
+.card__gallery-btn[aria-label="В избранное"] .n4__fav-aura svg {
+  width: 48px;
+  height: 48px;
+}
+.n4__fav {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Снек «В избранном | В подборку» — светлый, по «Тюним снекбар» */
+.fw-toast--saved {
+  padding: 8px 8px 8px 8px;
+  gap: 10px;
+  background: rgba(236, 243, 255, 0.92);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  color: #14171d;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(13, 22, 46, 0.12);
+}
+.fw-toast__ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  color: #e85810;
+}
+.fw-toast__ico svg {
+  width: 16px;
+  height: 16px;
+}
+.fw-toast--saved .fw-toast__act {
+  position: relative;
+  padding: 6px 10px 6px 14px;
+  color: #0468ff;
+}
+.fw-toast--saved .fw-toast__act::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: rgba(20, 23, 29, 0.12);
+}
+
+/* Подсказка «Нажмите и удерживайте…» */
+.fw-hold-hint {
+  position: absolute;
+  z-index: 65;
+  max-width: 220px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff;
+  color: #14171d;
+  font: 500 14px/18px var(--font-family);
+  box-shadow: 0 8px 24px rgba(13, 22, 46, 0.18);
+  animation: fw-pop-in 0.2s ease-out;
+  pointer-events: none;
+}
+.fw-hold-hint::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: calc(var(--arrow-r, 16px) - 6px);
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
+@keyframes fw-pop-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Шорткат по зажатию сердца */
+.fw-quick-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 75;
+  background: rgba(13, 22, 46, 0);
+  transition: background 0.18s;
+}
+.fw-quick-wrap.is-open {
+  background: rgba(13, 22, 46, 0.12);
+}
+.fw-quick {
+  position: absolute;
+  width: 240px;
+  padding: 6px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(13, 22, 46, 0.22);
+  font-family: var(--font-family);
+  color: #14171d;
+  opacity: 0;
+  transform: scale(0.92);
+  transform-origin: top right;
+  transition: opacity 0.18s, transform 0.18s;
+}
+.fw-quick-wrap.is-open .fw-quick {
+  opacity: 1;
+  transform: none;
+}
+.fw-quick__title {
+  padding: 8px 10px 6px;
+  font-size: 13px;
+  color: #6f7888;
+}
+.fw-quick__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 10px 6px 6px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font: 500 15px/20px var(--font-family);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fw-quick__row:active {
+  background: #f3f5f8;
+}
+.fw-quick__row > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.fw-quick__row--new {
+  color: #0468ff;
+  border-top: 1px solid #f3f5f8;
+  border-radius: 0 0 10px 10px;
+  margin-top: 2px;
+  padding-top: 8px;
+}
+.fw-quick__ok {
+  flex: none;
+  color: #0468ff;
+  font-style: normal;
+  font-weight: 700;
+}
+.fw-quick__ok svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Мини-коллаж: большое фото слева, два справа */
+.fw-mcol {
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.fw-mcol > span {
+  background: #e3e8ef center / cover no-repeat;
+}
+.fw-mcol > span:first-child {
+  grid-row: 1 / 3;
+}
+.fw-mcol--plus {
+  display: grid;
+  grid-template: none;
+  place-items: center;
+  background: #e6f0ff;
+  color: #0468ff;
+}
+.fw-mcol--plus svg {
+  width: 18px;
+  height: 18px;
+}
+.fw-pick__thumb--col {
+  background: none;
+}
+.fw-pick__thumb--col .fw-mcol {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+}
+.fw-pick__thumb--plus {
+  background: #e6f0ff;
+}
+
+/* Новая подборка — по Figma «Создание нового вишлиста» */
+.fw-sheet--new {
+  text-align: center;
+}
+.fw-new__cover {
+  position: relative;
+  display: block;
+  margin: 4px auto 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.fw-new__col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  width: 104px;
+  height: 104px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.fw-new__col > span {
+  background: #e3e8ef center / cover no-repeat;
+}
+.fw-new__col > span:first-child {
+  grid-row: 1 / 3;
+}
+.fw-new__swap {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  color: #0468ff;
+  box-shadow: 0 2px 8px rgba(13, 22, 46, 0.16);
+}
+.fw-new__swap svg {
+  width: 16px;
+  height: 16px;
+}
+.fw-new__title {
+  font: 700 22px/28px var(--font-family);
+  margin-bottom: 16px;
+}
+.fw-new__field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 12px 0 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: #f3f5f8;
+  box-shadow: inset 0 0 0 1.5px #0468ff;
+}
+.fw-new__field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  outline: none;
+  font: 17px/22px var(--font-family);
+  color: #14171d;
+}
+.fw-new__clear {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #8e96a3;
+  color: #fff;
+  cursor: pointer;
+}
+.fw-new__clear svg {
+  width: 12px;
+  height: 12px;
+}
+.fw-sheet--new .fw-sugg {
+  margin-top: 0;
+}
+.fw-sheet--new .fw-together {
+  text-align: left;
+}
+.fw-new__btns {
+  display: flex;
+  gap: 8px;
+}
+.fw-new__btns .fw-btn {
+  flex: 1;
+  width: auto;
+  margin: 0;
+}
+.fw-btn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Бренд-пилюля «аватар + плюс» в кольцах #E85810 и жёлтом — по «для моушена» */
+.fw-brand-pill {
+  position: relative;
+  align-items: center;
+  padding: 3px 4px 3px 3px;
+  border-radius: 28px;
+  background: #e85810;
+  box-shadow: 10px 0 0 #f2a516;
+  margin-right: 10px;
+}
+.fw-brand-pill .fw-av {
+  width: 36px;
+  height: 36px;
+  border: 2px solid #e85810;
+}
+.fw-brand-pill .fw-av--plus {
+  margin-left: -10px;
+  border-color: #e85810;
+}
+
+/* Имя приглашённого (4B Ани) */
+.fw-inv__name {
+  margin: 0 0 6px;
+  text-align: left;
+}
+.fw-inv__hint {
+  margin: 0 0 16px 2px;
+  font-size: 13px;
+  line-height: 16px;
+  color: #6f7888;
+  text-align: left;
+}
+.fw-hold-hint.is-left::before {
+  right: auto;
+  left: calc(var(--arrow-l, 16px) - 6px);
+}

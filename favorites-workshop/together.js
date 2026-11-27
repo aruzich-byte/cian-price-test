@@ -25,6 +25,7 @@
   const CITY = "Санкт-Петербург";
   const variants = (n) => `${n} ${plural(n, ["вариант", "варианта", "вариантов"])}`;
 
+  const CI_SWAP = '<svg viewBox="0 0 24 24"><path d="M4 9h13l-3.5-3.5M20 15H7l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const TI = {
     sort: '<svg viewBox="0 0 24 24"><path d="M7 20V4m0 0L3 8m4-4 4 4M17 4v16m0 0-4-4m4 4 4-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     close: '<svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
@@ -483,36 +484,57 @@
     const daily = dailyHint !== undefined ? dailyHint : dealNow() === "daily";
     const names = daily ? ["Выходные в СПб", "Поездка с друзьями", "Отпуск"] : ["Квартира для нас", "Двушки у метро", "Рядом с работой"];
     const pool = (store.saved.length ? store.saved : (daily ? DAILY : FW.RENT).slice(0, 6).map((l) => l.id)).slice(0, 6);
+    // Обложка — большой коллаж сверху; тап меняет главное фото (решение Katya: название + обложка)
+    const covers = listingId ? [listingId].concat(pool.filter((x) => x !== listingId)) : pool;
+    let ci = 0;
     let cover = null;
+    const colHtml = () => {
+      const first = covers[ci];
+      const rest = listingId ? [] : covers.filter((x) => x !== first).slice(0, 2);
+      return [first, rest[0], rest[1]].map((x) => `<span${x ? ` style="background-image:url('${photo(x)}')"` : ""}></span>`).join("");
+    };
     const { wrap, close } = sheet(`
-      <div class="fw-sheet__title">Новая подборка</div>
-      <label class="fw-field"><span>Название</span><input type="text" value="${esc(names[0])}" maxlength="40" /></label>
+      <button class="fw-new__cover" type="button" data-cover-next aria-label="Сменить обложку">
+        <span class="fw-new__col">${colHtml()}</span>
+        ${covers.length > 1 ? `<span class="fw-new__swap">${CI_SWAP}</span>` : ""}
+      </button>
+      <div class="fw-new__title">Новая подборка</div>
+      <label class="fw-new__field"><input type="text" value="${esc(names[0])}" maxlength="40" placeholder="Название" aria-label="Название" /><button type="button" class="fw-new__clear" data-clear aria-label="Очистить">${TI.close}</button></label>
       <div class="fw-sugg">${names.map((n, i) => `<button class="fw-sugg__chip${i === 0 ? " is-on" : ""}" type="button" data-name="${esc(n)}">${esc(n)}</button>`).join("")}</div>
-      <div class="fw-cover">
-        <div class="fw-cover__label">Обложка</div>
-        <div class="fw-cover__row">
-          <button class="fw-cover__opt fw-cover__opt--auto is-on" type="button" data-cover="">Авто</button>
-          ${pool.map((id) => `<button class="fw-cover__opt" type="button" data-cover="${id}" style="background-image:url('${photo(id)}')"></button>`).join("")}
-        </div>
-      </div>
       <div class="fw-together">
-        <span class="fw-together__pair"><img class="fw-av" src="${PEOPLE[store.me].img}" alt="" /><span class="fw-av fw-av--plus">${IC.plus}</span></span>
-        <span><b>Выбирать вместе</b><span>Позовите близкого и выбирайте варианты вдвоём, без чата</span></span>
+        <span class="fw-together__pair fw-brand-pill"><img class="fw-av" src="${PEOPLE[store.me].img}" alt="" /><span class="fw-av fw-av--plus">${IC.plus}</span></span>
+        <span><b>Выбирать вместе</b><span>Позовите близкого — оценивайте варианты вдвоём, без чата</span></span>
       </div>
-      <button class="fw-btn fw-btn--primary" type="button" data-create="together">Создать и позвать</button>
-      <button class="fw-btn fw-btn--secondary" type="button" data-create="solo">Просто создать</button>`);
+      <div class="fw-new__btns">
+        <button class="fw-btn fw-btn--primary" type="button" data-create="solo">Создать</button>
+        <button class="fw-btn fw-btn--secondary" type="button" data-create="together">Поделиться</button>
+      </div>`, "fw-sheet--new");
     const input = $("input", wrap);
+    const syncBtns = () => wrap.querySelectorAll("[data-create]").forEach((b) => (b.disabled = !input.value.trim()));
+    input.addEventListener("input", () => {
+      wrap.querySelectorAll("[data-name]").forEach((b) => b.classList.toggle("is-on", b.dataset.name === input.value));
+      syncBtns();
+    });
     wrap.addEventListener("click", (e) => {
       const s = e.target.closest("[data-name]");
       if (s) {
         input.value = s.dataset.name;
         wrap.querySelectorAll("[data-name]").forEach((b) => b.classList.toggle("is-on", b === s));
+        syncBtns();
         return;
       }
-      const c = e.target.closest("[data-cover]");
-      if (c) {
-        cover = c.dataset.cover || null;
-        wrap.querySelectorAll("[data-cover]").forEach((b) => b.classList.toggle("is-on", b === c));
+      if (e.target.closest("[data-clear]")) {
+        input.value = "";
+        wrap.querySelectorAll("[data-name]").forEach((b) => b.classList.remove("is-on"));
+        syncBtns();
+        input.focus();
+        return;
+      }
+      if (e.target.closest("[data-cover-next]")) {
+        if (covers.length < 2) return;
+        ci = (ci + 1) % covers.length;
+        cover = covers[ci];
+        $(".fw-new__col", wrap).innerHTML = colHtml();
         return;
       }
       const go = e.target.closest("[data-create]");
@@ -536,7 +558,70 @@
     });
   }
 
-  // 2A Ани: «Сохранить в подборку» — список подборок, отметки, «Новая подборка»
+  // Коллаж-миниатюра: большое фото слева, два справа (Figma «куда сохранить»)
+  function miniCollage(p) {
+    const ids = [p.cover || p.items[0]].concat(p.items.filter((x) => x !== (p.cover || p.items[0]))).filter(Boolean).slice(0, 3);
+    return `<span class="fw-mcol">${[0, 1, 2].map((i) => `<span${ids[i] ? ` style="background-image:url('${photo(ids[i])}')"` : ""}></span>`).join("")}</span>`;
+  }
+
+  // Figma «Зажатие лайка → шорткаты»: меню у сердца — подборки и «Новая подборка»
+  function openQuick(id, anchor) {
+    const app = $(".app");
+    const a = app.getBoundingClientRect(), r = anchor.getBoundingClientRect();
+    const k = a.width / app.offsetWidth || 1;
+    const list = store.podborki.slice(0, 4).map(ensure);
+    const wrap = document.createElement("div");
+    wrap.className = "fw-quick-wrap";
+    wrap.innerHTML = `<div class="fw-quick">
+        <div class="fw-quick__title">Добавить в подборку</div>
+        ${list
+          .map((p) => {
+            const has = p.items.includes(id);
+            return `<button class="fw-quick__row${has ? " is-in" : ""}" type="button" data-q="${p.id}">${miniCollage(p)}<span>${esc(p.name)}</span>${has ? `<i class="fw-quick__ok">${IC.check || "✓"}</i>` : ""}</button>`;
+          })
+          .join("")}
+        <button class="fw-quick__row fw-quick__row--new" type="button" data-q-new><span class="fw-mcol fw-mcol--plus">${IC.plus}</span><span>Новая подборка</span></button>
+      </div>`;
+    app.appendChild(wrap);
+    const box = $(".fw-quick", wrap);
+    const H = app.offsetHeight, top = (r.bottom - a.top) / k + 6;
+    // Сердце слева (v4) — меню растёт вправо, справа (as is, v1) — влево
+    const W = app.offsetWidth, cx = (r.left + r.width / 2 - a.left) / k;
+    if (cx < W / 2) {
+      box.style.left = Math.max(12, (r.left - a.left) / k - 6) + "px";
+      box.style.transformOrigin = "top left";
+    } else box.style.right = Math.max(12, (a.right - r.right) / k - 6) + "px";
+    if (top + box.offsetHeight > H - 96) box.style.bottom = Math.max(12, H - (r.top - a.top) / k + 6) + "px";
+    else box.style.top = top + "px";
+    requestAnimationFrame(() => wrap.classList.add("is-open"));
+    const close = () => {
+      wrap.classList.remove("is-open");
+      setTimeout(() => wrap.remove(), 180);
+    };
+    wrap.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const row = e.target.closest("[data-q]");
+      if (row) {
+        const p = store.podborki.find((x) => x.id === row.dataset.q);
+        close();
+        if (!p.items.includes(id)) {
+          p.items.unshift(id);
+          p.updated = Date.now();
+          FW.toast(`Добавлено в «${p.name}»`);
+          if (FW.tab === "fav") FW.rerender();
+        } else FW.toast(`Уже в «${p.name}»`);
+        return;
+      }
+      if (e.target.closest("[data-q-new]")) {
+        close();
+        setTimeout(() => openCreate(id, byId(id) && byId(id).dealType === "daily"), 180);
+        return;
+      }
+      if (!e.target.closest(".fw-quick")) close();
+    });
+  }
+
+  // 2A Ани + Figma «куда сохранить» (27.11): «Новая подборка» первой строкой, коллажи, «Готово»
   function openPick(id) {
     const l = byId(id);
     const daily = l && l.dealType === "daily";
@@ -548,7 +633,7 @@
         const cov = p.cover || p.items[0];
         const n = p.items.length;
         return `<button class="fw-pick__row" type="button" data-pick="${p.id}"${has ? " disabled" : ""}>
-          <span class="fw-pick__thumb"${cov ? ` style="background-image:url('${photo(cov)}')"` : ""}></span>
+          <span class="fw-pick__thumb fw-pick__thumb--col">${miniCollage(p)}</span>
           <span class="fw-pick__body"><b>${esc(p.name)}</b><span>${n} ${plural(n, ["объявление", "объявления", "объявлений"])}</span></span>
           ${p.members.length > 1 ? `<span class="fw-pick__avs">${avatars(p)}</span>` : ""}
           <span class="fw-pick__check${has ? " is-on" : ""}"></span>
@@ -558,11 +643,11 @@
     const { wrap, close } = sheet(`
       <div class="fw-sheet__title">Сохранить в подборку</div>
       <div class="fw-pick">
-        ${rows}
         <button class="fw-pick__row" type="button" data-pick-new>
           <span class="fw-pick__thumb fw-pick__thumb--plus">${IC.plus}</span>
           <span class="fw-pick__body"><b>Новая подборка</b><span>Можно позвать близкого</span></span>
         </button>
+        ${rows}
       </div>
       <button class="fw-btn fw-btn--primary" type="button" data-pick-done>Готово</button>`);
     wrap.addEventListener("click", (e) => {
@@ -751,10 +836,14 @@
         <button class="fw-inv__close" type="button" data-inv="later" aria-label="Закрыть">${TI.close}</button>
         <div class="fw-inv__title">${PEOPLE[p.creator].name} зовёт выбирать квартиру вместе</div>
         <div class="fw-inv__sub">${sub}</div>
-        <button class="fw-btn fw-btn--primary" type="button" data-inv="join">Присоединиться</button>
+        <label class="fw-field fw-inv__name"><span>Как вас зовут?</span><input type="text" placeholder="Имя" autocomplete="given-name" maxlength="24" /></label>
+        <div class="fw-inv__hint">Под этим именем вас увидит ${PEOPLE[p.creator].name}</div>
+        <button class="fw-btn fw-btn--primary" type="button" data-inv="join" disabled>Присоединиться</button>
         <button class="fw-btn fw-btn--secondary" type="button" data-inv="later">Не сейчас</button>
         <div class="fw-inv__consent">Нажимая «Присоединиться», вы соглашаетесь, что участники подборки увидят ваше имя и оценки</div>
       </div>`;
+    const nameIn = $(".fw-inv__name input", inv);
+    nameIn.addEventListener("input", () => ($('[data-inv="join"]', inv).disabled = !nameIn.value.trim()));
     document.body.classList.add("fw-inv-open");
     inv.classList.remove("is-in");
     void inv.offsetWidth;
@@ -765,10 +854,13 @@
   }
   function onInviteClick(e) {
     const b = e.target.closest("[data-inv]");
-    if (!b) return;
+    if (!b || b.disabled) return;
     const p = store.podborki.find((x) => x.id === inv.dataset.pid);
     closeInvite();
     if (b.dataset.inv === "join") {
+      // Имя приглашённого расходится по всем экранам (у Ани — setMyName)
+      const n = $(".fw-inv__name input", inv).value.trim();
+      PEOPLE.dima.name = n ? n[0].toUpperCase() + n.slice(1) : "Дима";
       store.me = "dima";
       if (!p.members.includes("dima")) p.members.push("dima");
       p.updated = Date.now();
@@ -882,6 +974,7 @@
     sorter,
     openCreate,
     openPick,
+    openQuick,
   };
 
   document.addEventListener("DOMContentLoaded", () => {
