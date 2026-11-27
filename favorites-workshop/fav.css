@@ -2819,15 +2819,7 @@
   display: none;
 }
 
-/* На десктопе панель «Настройка прототипа» скрыта (Katya 26.11), на мобильном остаётся кнопкой */
-@media (min-width: 481px) {
-  .prototype-panel {
-    display: none !important;
-  }
-  .viewport-stage {
-    padding-left: 16px;
-  }
-}
+/* Панель «Настройка прототипа» на десктопе снова видна (Katya 27.11), вариант сниппета — в ней */
 
 /* ---------- Переключатель варианта сниппета (десктоп; на мобильном — в панели) ---------- */
 .fw-variants {
@@ -2861,10 +2853,8 @@
   background: #e6f0ff;
   color: #0468ff;
 }
-@media (max-width: 480px) {
-  .fw-variants {
-    display: none;
-  }
+.fw-variants {
+  display: none;
 }
 /* Сердце в as is и v1: залитое — цвета бренд-кода */
 .card__gallery-btn[aria-label="В избранное"].is-active {
@@ -2872,4 +2862,7 @@
 }
 .fw-root .card {
   padding-bottom: 16px;
+}
+.prototype-panel__chips {
+  flex-wrap: wrap;
 }
