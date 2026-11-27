@@ -1027,7 +1027,8 @@
     if (p.items.includes(id)) return p;
     p.items.unshift(id);
     p.updated = Date.now();
-    if (FW.tab === "fav") FW.rerender();
+    // перерисовку откладываем до конца анимации сердечка (1250 мс), иначе она обрывается
+    if (FW.tab === "fav") setTimeout(() => FW.tab === "fav" && FW.rerender(), 1300);
     return p;
   }
   // 3. Удалить подборку может только создатель (принцип 7 Ани), участник — выйти

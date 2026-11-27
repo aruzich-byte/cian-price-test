@@ -519,7 +519,7 @@
       setSaved(id, on);
       mini.classList.toggle("is-active", on);
       mini.innerHTML = on ? IC.heart : IC.heartLine;
-      if (on && App.playFavCharge) App.playFavCharge(mini);
+      if (on) favCharge(mini);
       if (on) notifySaved(id);
       clearTimeout(onRootClick.t);
       onRootClick.t = setTimeout(() => {
@@ -628,7 +628,7 @@
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     btn.querySelectorAll(".favfx, .n4__fav-aura").forEach((el) => el.remove());
     btn.classList.remove("is-charging");
-    const size = btn.offsetWidth || 32;
+    const size = 32; // одинаковый заряд на всех сердцах, по центру кнопки
     const l = Math.max(4, Math.round(size / 8));
     const sc = (k) => String((size + 2 * k * l) / size);
     const fx = document.createElement("span");
