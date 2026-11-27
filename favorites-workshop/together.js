@@ -917,7 +917,14 @@
         setTimeout(() => openCreate(id, byId(id) && byId(id).dealType === "daily"), 180);
         return;
       }
-      if (!e.target.closest(".fw-quick")) close();
+      if (!e.target.closest(".fw-quick")) {
+        close();
+        // закрыли меню, ничего не выбрав, — сердце уже горит, кладём как обычный тап
+        if (store.saved.includes(id) && !store.podborki.some((p) => p.items.includes(id))) {
+          const p = autoSave(id);
+          FW.toast(`Сохранено в «${p.name}»`, { label: "Изменить", run: () => openPick(id) }, 0, { cls: "fw-toast--saved", icon: App.ICONS.heartFilled });
+        }
+      }
     });
   }
 
@@ -981,8 +988,14 @@
         if (list.length) remember(list[list.length - 1], id);
         else if (gone.length && store.lastPick && gone.some((p) => p.id === store.lastPick.pid)) store.lastPick = null;
         if (list.length && !store.saved.includes(id)) FW.setSaved(id, true);
+        const orphan = !store.podborki.some((p) => p.items.includes(id));
+        if (orphan && store.saved.includes(id)) {
+          // ни в одной подборке — значит, не сохранено
+          FW.setSaved(id, false);
+          document.querySelectorAll(`.fw-root .card[data-listing-id="${id}"], #results-list .card[data-listing-id="${id}"]`).forEach(FW.syncCardHeart);
+        }
         if (list.length) FW.toast(`Сохранено в ${list.map((p) => `«${p.name}»`).join(", ")}`);
-        else if (gone.length) FW.toast(`Убрано из ${gone.map((p) => `«${p.name}»`).join(", ")}`);
+        else if (gone.length) FW.toast(orphan ? "Убрано из Избранного" : `Убрано из ${gone.map((p) => `«${p.name}»`).join(", ")}`);
         if (FW.tab === "fav") FW.rerender();
       }
     });
@@ -994,10 +1007,25 @@
   function remember(p, id) {
     store.lastPick = { pid: p.id, deal: dealOf(id) };
   }
+  // Без «Все сохранённые» (Katya 27.11) у сохранения всегда есть подборка: последняя из этого поиска,
+  // а если её нет — подборка по умолчанию для типа сделки (создаётся сама, переименовать можно в «⋯»)
+  const DEFAULT_NAME = { daily: "Посуточно в СПб", long: "Аренда в СПб" };
+  function defaultPodborka(deal) {
+    let p = store.podborki.find((x) => x.auto === deal && x.members.includes(store.me));
+    if (!p) {
+      p = ensure({ id: "p" + Date.now(), auto: deal, name: DEFAULT_NAME[deal], items: [], type: deal, dates: SEARCH.dates, guests: SEARCH.guests, members: [store.me], creator: store.me });
+      store.podborki.unshift(p);
+    }
+    return p;
+  }
   function autoSave(id) {
     const lp = store.lastPick;
-    const p = lp && store.podborki.find((x) => x.id === lp.pid);
-    if (!p || lp.deal !== dealOf(id) || p.items.includes(id) || !p.members.includes(store.me)) return null;
+    const top = stack[stack.length - 1] || {};
+    let p = FW.tab === "fav" && top.type === "podborka" && store.podborki.find((x) => x.id === top.id); // сердце внутри подборки — в неё же
+    if (!p) p = lp && lp.deal === dealOf(id) && store.podborki.find((x) => x.id === lp.pid && x.members.includes(store.me));
+    if (!p) p = defaultPodborka(dealOf(id));
+    remember(p, id);
+    if (p.items.includes(id)) return p;
     p.items.unshift(id);
     p.updated = Date.now();
     if (FW.tab === "fav") FW.rerender();
@@ -1018,6 +1046,8 @@
       // в прототипе одно хранилище на обоих — вышедший участник просто перестаёт видеть подборку
       // (сценарий «Аня» из панели соберёт её заново)
       store.podborki = store.podborki.filter((x) => x !== p);
+      // объявления, которых больше нет ни в одной подборке, перестают быть сохранёнными
+      if (mine) p.items.filter((id) => !store.podborki.some((x) => x.items.includes(id))).forEach((id) => (store.saved = store.saved.filter((x) => x !== id)));
       if (store.lastPick && store.lastPick.pid === p.id) store.lastPick = null;
       while (stack.length && stack[stack.length - 1].type === "podborka") stack.pop();
       if (!stack.length) stack.push({ type: "section", key: "podborki" });

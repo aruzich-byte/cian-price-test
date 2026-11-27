@@ -173,7 +173,9 @@
   }
   function gridHtml() {
     const pods = store.podborki.slice().sort((a, b) => (b.updated || 0) - (a.updated || 0));
-    const secs = SECTIONS.filter((s) => s.key !== "podborki" || !pods.length).sort((a, b) => isFilled(b) - isFilled(a));
+    // Плитки «Объявления» (все сохранённые) нет — всё лежит только в подборках, как вишлисты Airbnb.
+    // Осознанное расхождение с CLAUDE.md Ани («блок «Все сохранённые» и папки плитками»), решение Katya 27.11
+    const secs = SECTIONS.filter((s) => s.key !== "saved" && (s.key !== "podborki" || !pods.length)).sort((a, b) => isFilled(b) - isFilled(a));
     return pods.map(podborkaTileHtml).join("") + secs.map(tileHtml).join("");
   }
   // Обложка плитки «Подборки»: по первому объекту каждой подборки
@@ -393,9 +395,8 @@
     if (!window.FWT) return;
     // Как вишлисты Airbnb (Katya 27.11): после того как из этого поиска уже клали в подборку,
     // сердечко сохраняет туда же, а снек даёт «Изменить». Сохранение по-прежнему за 1 тап (принцип 1 Ани).
-    const p = window.FWT.autoSave && window.FWT.autoSave(id);
+    const p = window.FWT.autoSave(id);
     if (p) toast(`Сохранено в «${p.name}»`, { label: "Изменить", run: () => window.FWT.openPick(id) }, 0, { cls: "fw-toast--saved", icon: App.ICONS.heartFilled });
-    else toast("В избранном", { label: "В подборку", run: () => window.FWT.openPick(id) }, 0, { cls: "fw-toast--saved", icon: App.ICONS.heartFilled });
   }
 
   // ---------- Зажатие сердца → быстрый выбор подборки (Figma «Зажатие лайка → шорткаты») ----------
