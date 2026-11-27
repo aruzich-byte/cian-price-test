@@ -3825,3 +3825,10 @@
   height: 17px;
   color: #282d36;
 }
+/* кадрирование фона как в макете — низ картинки у плашки с датами */
+.fw-hero__img {
+  background-position: center bottom;
+}
+.fw-hero__img::after {
+  background: linear-gradient(180deg, #1f5ff5 0%, rgba(31, 95, 245, 0.85) 30%, rgba(31, 95, 245, 0.45) 62%, rgba(31, 95, 245, 0.22) 85%, rgba(31, 95, 245, 0) 100%);
+}
