@@ -510,6 +510,25 @@
       </div>
     </div>`;
   }
+  // Вид «Список»: при скролле шапка уезжает, закреплённой остаётся только строка с названием — на синем фоне (Katya 27.11)
+  function watchHero(root) {
+    const lv = $(".fw-lv", root);
+    const hero = $(".fw-hero", root);
+    const bar = hero && $(".fw-hero__bar", hero);
+    if (!lv || !bar) return;
+    const pb = $(".fw-pb", root);
+    const apply = () => {
+      const on = pb.classList.contains("is-list");
+      const max = hero.offsetHeight - (bar.offsetTop + bar.offsetHeight);
+      const y = on ? Math.min(lv.scrollTop, max) : 0;
+      hero.style.transform = y ? `translateY(${-y}px)` : "";
+      bar.style.transform = y ? `translateY(${y}px)` : "";
+      hero.classList.toggle("is-stuck", on && y >= max - 1);
+    };
+    lv.addEventListener("scroll", apply, { passive: true });
+    new MutationObserver(apply).observe(pb, { attributes: true, attributeFilter: ["class"] });
+    apply();
+  }
   function openSettings(p) {
     let bg = p.bg || BG_DEFAULT;
     const own = () => (BGS.some((x) => x.k === bg) ? (p.bgOwn || null) : bg);
@@ -721,6 +740,7 @@
       if (!p) return;
       watchCarousel(top);
       watchSheet(top);
+      watchHero(root);
       mountLiveMap(root, top, p);
       root.querySelectorAll(".fw-pb__list .card[data-listing-id]").forEach((card) => {
         const id = card.dataset.listingId;
