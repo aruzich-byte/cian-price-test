@@ -1368,6 +1368,19 @@
       if (close && window.matchMedia("(max-width: 480px)").matches) close.click();
     });
     sec.after(vs);
+    // Анимация Избранного — как у Ани: аберрация по гайду + цвет сохранённого сердечка
+    const hs = document.createElement("div");
+    hs.className = "prototype-panel__section";
+    const hchips = () => FW.HEART_TONES.map(([v, l]) => `<button class="proto-chip${v === FW.getHeartTone() ? " is-active" : ""}" type="button" data-tone="${v}">${l}</button>`).join("");
+    hs.innerHTML = `<div class="prototype-panel__section-title">Анимация Избранного</div><div class="fw-pp-desc">Аберрация по гайду, от центра: две плоские копии формы кнопки позади неё — жёлтый #F1AF12 у контента, оранжевый #F5631A снаружи. Заряд гаснет — «тихая громкость».</div><div class="fw-pp-label">Сохранённое сердечко</div><div class="prototype-panel__chips">${hchips()}</div><div class="fw-pp-desc">Тапните сердечко на выдаче.</div>`;
+    hs.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-tone]");
+      if (!b) return;
+      e.stopPropagation();
+      FW.setHeartTone(b.dataset.tone);
+      $(".prototype-panel__chips", hs).innerHTML = hchips();
+    });
+    vs.after(hs);
   }
   function runScene(s) {
     closeInvite();

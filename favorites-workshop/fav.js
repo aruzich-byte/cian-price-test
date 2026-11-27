@@ -619,22 +619,42 @@
   // «Могут подойти» и по «Похожим». Открытие = объект в «Вы смотрели».
   // Сердце — то же, что на сниппете new4: иконка и «заряд аберрации» #E85810.
   const HEART_PATH = "M8 14.86S0 10.6 0 5.86C0 3.17 2.21 1 4.93 1c1.16 0 2.23.4 3.07 1.06A4.95 4.95 0 0 1 11.07 1C13.79 1 16 3.17 16 5.86 16 10.6 8 14.86 8 14.86Z";
+  // Анимация добавления в Избранное — как у Ани (sovmestnye-poiski-prototype, «Анимация Избранного»):
+  // «аберрация по гайду, от центра» — две плоские копии формы кнопки позади неё: жёлтый #F1AF12
+  // у контента, оранжевый #F5631A снаружи; белое ядро с сердцем подпрыгивает, заряд гаснет. 1250 мс.
+  const FAVFX_MS = 1250;
+  const FAVFX_HEART = "M12 21s-7.5-4.6-10-9.3C.3 8.5 2.2 4.5 6 4.5c2.3 0 3.6 1.3 6 3.6 2.4-2.3 3.7-3.6 6-3.6 3.8 0 5.7 4 4 7.2C19.5 16.4 12 21 12 21z";
   function favCharge(btn) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    btn.querySelectorAll(".favfx, .n4__fav-aura").forEach((el) => el.remove());
     btn.classList.remove("is-charging");
-    btn.querySelectorAll(".n4__fav-aura").forEach((el) => el.remove());
-    void btn.offsetWidth;
-    const aura = document.createElement("span");
-    aura.className = "n4__fav-aura";
-    aura.setAttribute("aria-hidden", "true");
-    aura.innerHTML = `<svg viewBox="-8 -8 32 32"><path class="n4__fav-aura-outer" d="${HEART_PATH}"/><path class="n4__fav-aura-inner" d="${HEART_PATH}"/></svg>`;
-    btn.prepend(aura);
-    btn.classList.add("is-charging");
+    const size = btn.offsetWidth || 32;
+    const l = Math.max(4, Math.round(size / 8));
+    const sc = (k) => String((size + 2 * k * l) / size);
+    const fx = document.createElement("span");
+    fx.className = "favfx favfx--aberr";
+    fx.setAttribute("aria-hidden", "true");
+    fx.style.setProperty("--dur", FAVFX_MS + "ms");
+    fx.innerHTML = `<span class="favfx__copy favfx__copy--outer" style="--sc:${sc(2)}"></span><span class="favfx__copy favfx__copy--inner" style="--sc:${sc(1)}"></span><span class="favfx__core"><svg viewBox="0 0 24 24"><path d="${FAVFX_HEART}"/></svg></span>`;
+    btn.appendChild(fx);
     clearTimeout(btn._chargeTimer);
-    btn._chargeTimer = setTimeout(() => {
-      btn.classList.remove("is-charging");
-      aura.remove();
-    }, 800);
+    btn._chargeTimer = setTimeout(() => fx.remove(), FAVFX_MS + 50);
+  }
+
+  // Цвет сохранённого сердечка — переключатель «Оранжевое / Как в ДС», как в панели Ани
+  const HEART_TONES = [["orange", "Оранжевое"], ["ds", "Как в ДС"]];
+  let heartTone = "orange";
+  try {
+    const t = localStorage.getItem("fwHeartTone");
+    if (HEART_TONES.some(([v]) => v === t)) heartTone = t;
+  } catch (e) {}
+  document.documentElement.dataset.heartTone = heartTone;
+  function setHeartTone(t) {
+    heartTone = t;
+    document.documentElement.dataset.heartTone = t;
+    try {
+      localStorage.setItem("fwHeartTone", t);
+    } catch (e) {}
   }
 
   function setSaved(id, on) {
@@ -1019,7 +1039,7 @@
   // API для модуля совместных подборок (together.js)
   window.FW = {
     App, store, stack, IC, ASSETS, $, esc, plural, priceStr, byId, photo, withPhoto, collageHtml, emptyStateHtml, EMPTY, RENT,
-    push, rerender, toast, setTab, notifySaved, closeCards, openCard, favCharge, setSaved, syncCardHeart, CI,
+    push, rerender, toast, setTab, notifySaved, closeCards, openCard, favCharge, setSaved, syncCardHeart, CI, HEART_TONES, getHeartTone: () => heartTone, setHeartTone,
     get tab() { return tab; },
     get root() { return root; },
   };

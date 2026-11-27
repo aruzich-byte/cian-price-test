@@ -4014,3 +4014,111 @@
 .fw-hold-hint::before {
   box-shadow: 2px -2px 4px rgba(13, 22, 46, 0.05);
 }
+
+/* ============ 27.11 · Сердечко и анимация Избранного — как у Ани ============
+   Источник: aruppel-netizen/sovmestnye-poiski-prototype, панель «Анимация Избранного».
+   Кнопка — белый круг 32px с тенью, сердце 16px. Сохранённое: оранжевое #F5631A или как в ДС #DB1F36. */
+:root {
+  --fw-heart: #f5631a;
+}
+:root[data-heart-tone="ds"] {
+  --fw-heart: #db1f36;
+}
+.card__gallery-btn[aria-label="В избранное"] {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  color: #14171d;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+.card__gallery-btn[aria-label="В избранное"] svg {
+  width: 16px;
+  height: 16px;
+}
+.card__gallery-btn[aria-label="В избранное"].is-active,
+.fw-gc__fav.is-active,
+.fw-toast__ico {
+  color: var(--fw-heart);
+}
+.n4__fav {
+  --fav-color: var(--fw-heart);
+}
+.favfx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  z-index: 2;
+}
+.favfx--aberr .favfx__copy {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform: translate(0) scale(1);
+}
+.favfx--aberr .favfx__copy--inner {
+  background: #f1af12;
+  animation: favfx-copy var(--dur) cubic-bezier(0.2, 0.9, 0.3, 1.2) 60ms both;
+}
+.favfx--aberr .favfx__copy--outer {
+  background: #f5631a;
+  animation: favfx-copy var(--dur) cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.12s both;
+}
+.favfx--aberr .favfx__core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  animation: favfx-core var(--dur) cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.favfx--aberr .favfx__core svg {
+  width: 56% !important;
+  height: 56% !important;
+  fill: var(--fw-heart);
+  animation: favfx-heart var(--dur) cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes favfx-core {
+  0% { transform: scale(0.7); opacity: 1; }
+  16% { transform: scale(1.1); }
+  28%, 78% { transform: scale(1); opacity: 1; }
+  to { transform: scale(1); opacity: 0; }
+}
+@keyframes favfx-heart {
+  0%, 6% { transform: scale(0); }
+  22% { transform: scale(1.25); }
+  34%, to { transform: scale(1); }
+}
+@keyframes favfx-copy {
+  0% { transform: scale(1); opacity: 1; }
+  26%, 66% { transform: scale(var(--sc)); opacity: 1; }
+  92% { transform: scale(1); opacity: 1; }
+  to { transform: scale(1); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .favfx { display: none; }
+}
+.fw-pp-desc {
+  margin: 4px 0 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #6f7888;
+}
+.fw-pp-label {
+  margin: 4px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #14171d;
+}
+.fw-gc__fav {
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+.fw-gc__fav svg {
+  width: 16px;
+  height: 16px;
+}
