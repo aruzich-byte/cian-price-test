@@ -231,19 +231,12 @@
 
   function screenHome() {
     const order = SECTIONS.slice().sort((a, b) => isFilled(b) - isFilled(a));
-    // Итог Katya 27.11: прототип — только посуточная аренда, «Могут подойти» тоже посуточные
-    const daily = App.state && App.state.dealType === "daily";
-    const pool = daily ? App.LISTINGS.filter((l) => l.dealType === "daily" && l.propertyType === "flat" && withPhoto(l)) : RENT;
-    const recs = pool.slice(pool.length > 18 ? 10 : 0, pool.length > 18 ? 18 : 8);
     return `<div class="fw-scroll fw-home">
       <div class="fw-home__top">
         <div class="fw-head fw-head--plain"><span></span><div class="fw-head__title">Избранное</div><span></span></div>
         <div class="fw-grid">${gridHtml()}</div>
       </div>
-      <div class="fw-home__recs">
-        <div class="fw-h2">Могут подойти</div>
-        <div class="fw-recs">${recs.map(miniCardHtml).join("")}</div>
-      </div>
+      <!-- блок «Могут подойти» убран из прототипа (Katya 27.11) -->
     </div>`;
   }
   const isFilled = (sec) => (sec.key === "podborki" ? store.podborki.length : store[sec.key].length) > 0;

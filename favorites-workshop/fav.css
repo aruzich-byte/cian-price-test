@@ -4290,3 +4290,16 @@ i.fw-metro,
 .fw-hero__more {
   box-shadow: inset 0 0 0 2px #fff;
 }
+
+/* Плитки Избранного на iPhone схлопывались в одну подпись: квадрат превью держим
+   через padding-bottom 100% (работает везде), а не только через aspect-ratio (Katya 27.11) */
+.fw-tile {
+  width: 100%;
+  min-width: 0;
+}
+.fw-tile__preview {
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
+  aspect-ratio: auto;
+}
