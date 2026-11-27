@@ -238,7 +238,7 @@
   const EMOJI = ["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"]; // вставка в текст заметки
   // Пасхалка (Katya 27.11): в заметках к первой квартире подборки вместо эмодзи можно отправить стикер
   // из набора «Цианыч» (t.me/addstickers/cianich). Файлы — img/stickers/, список — ниже.
-  const STICKERS = window.FW_STICKERS || [];
+  const STICKERS = window.FW_STICKERS || [1, 2, 3, 4, 5, 6, 7, 8].map((n) => `${ASSETS}stickers/cianich-${n}.webp`);
   const STICKER_IC = '<svg viewBox="0 0 24 24"><path d="M14 21H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v6l-7 7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M14 21v-3a4 4 0 0 1 4-4h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="9" cy="10" r="1.3" fill="currentColor"/><circle cx="15" cy="10" r="1.3" fill="currentColor"/></svg>';
   const REACTIONS = ["🔥", "👍", "👎"]; // реакции: огонь/лайк/дизлайк, одна оценка на человека (решения Katya)
   const notesWord = (n) => `${n} ${plural(n, ["заметка", "заметки", "заметок"])}`;
