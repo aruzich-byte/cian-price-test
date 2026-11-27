@@ -456,7 +456,7 @@
       if (!p) return;
       watchCarousel(top);
       watchSheet(top);
-      root.querySelectorAll(".fw-pb__list .card--n4[data-listing-id]").forEach((card) => {
+      root.querySelectorAll(".fw-pb__list .card[data-listing-id]").forEach((card) => {
         const id = card.dataset.listingId;
         card.insertAdjacentHTML("beforeend", footHtml(p, id).replace('class="fw-mc__foot"', 'class="fw-mc__foot fw-mc__foot--n4"'));
       });
@@ -799,7 +799,7 @@
         t.innerHTML = on ? App.ICONS.heartFilled20 : App.ICONS.heart20;
         if (on) FW.favCharge(t);
         if (on) FW.notifySaved(id);
-        document.querySelectorAll(`.fw-root .card--n4[data-listing-id="${id}"]`).forEach(FW.syncCardHeart);
+        document.querySelectorAll(`.fw-root .card[data-listing-id="${id}"]`).forEach(FW.syncCardHeart);
       } else if (a === "sort" && p) {
         p.sort = p.sort === "price" ? "added" : "price";
         FW.rerender();

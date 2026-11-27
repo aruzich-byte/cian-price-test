@@ -6,6 +6,22 @@
 (function () {
   const App = window.App;
   const ASSETS = "../favorites-workshop/img/";
+
+  // ---------- Вариант сниппета (Katya 27.11): as is · v1 · v4 ----------
+  // Выдача воркшопа всегда new4; здесь берём ?variant= и снимаем классы new4 до первой отрисовки.
+  const VARIANTS = [["asis", "as is"], ["new", "v1"], ["new4", "v4"]];
+  const qVariant = new URLSearchParams(location.search).get("variant");
+  if (VARIANTS.some(([v]) => v === qVariant) && qVariant !== App.session.variant) {
+    App.session.variant = qVariant;
+    document.documentElement.classList.remove("variant-new4", "n2-photo-dark");
+  }
+  // Сердце на сниппете любого варианта
+  const HEART_SEL = '.n4__fav, .card__gallery-btn[aria-label="В избранное"]';
+  const isN4Heart = (b) => b.classList.contains("n4__fav");
+  function paintHeart(b, on) {
+    b.classList.toggle("is-active", on);
+    b.innerHTML = isN4Heart(b) ? (on ? App.ICONS.heartFilled20 : App.ICONS.heart20) : on ? App.ICONS.heartFilled : App.ICONS.heart;
+  }
   const $ = (sel, root = document) => root.querySelector(sel);
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const plural = (n, f) => {
@@ -372,23 +388,26 @@
 
   // ---------- Сердце на сниппетах new4 ↔ «Объявления» ----------
   function syncCardHeart(card) {
-    const fav = card.querySelector(".n4__fav");
+    const fav = card.querySelector(HEART_SEL);
     if (!fav) return;
-    const on = store.saved.includes(card.dataset.listingId);
-    fav.classList.toggle("is-active", on);
-    fav.innerHTML = on ? App.ICONS.heartFilled20 : App.ICONS.heart20;
+    paintHeart(fav, store.saved.includes(card.dataset.listingId));
   }
   function syncResultHearts() {
-    document.querySelectorAll("#results-list .card--n4").forEach(syncCardHeart);
+    document.querySelectorAll("#results-list .card[data-listing-id]").forEach(syncCardHeart);
   }
   // Обработчик в cards.js переключает класс; мы читаем результат после него
   document.addEventListener(
     "click",
     (e) => {
-      const fav = e.target.closest(".n4__fav");
+      const fav = e.target.closest(HEART_SEL);
       if (!fav) return;
-      const card = fav.closest("[data-listing-id]");
+      const card = fav.closest(".card[data-listing-id]");
       if (!card) return;
+      // В as is и v1 у сердца нет своего обработчика — переключаем сами
+      if (!isN4Heart(fav)) {
+        e.stopPropagation();
+        paintHeart(fav, !store.saved.includes(card.dataset.listingId));
+      }
       setTimeout(() => {
         const id = card.dataset.listingId;
         const on = fav.classList.contains("is-active");
@@ -854,7 +873,7 @@
     if (cardEl) cardEl.innerHTML = "";
     // Сердца и плитки — по свежему состоянию
     syncResultHearts();
-    document.querySelectorAll(".fw-root .card--n4").forEach(syncCardHeart);
+    document.querySelectorAll(".fw-root .card[data-listing-id]").forEach(syncCardHeart);
     if (tab === "fav") rerender();
   }
   function onCardClick(e) {
@@ -893,7 +912,7 @@
   document.addEventListener(
     "click",
     (e) => {
-      const card = e.target.closest(".card--n4[data-listing-id]");
+      const card = e.target.closest(".card[data-listing-id]");
       if (card && !e.target.closest(CARD_CONTROLS)) {
         const trackEl = card.querySelector('[data-role="track"]');
         if (trackEl && trackEl.dataset.justDragged) return;
@@ -918,8 +937,24 @@
     get root() { return root; },
   };
 
+  function buildVariantSwitch() {
+    const cur = App.session.variant;
+    const bar = document.createElement("div");
+    bar.className = "fw-variants";
+    bar.innerHTML = `<span>Сниппет</span>${VARIANTS.map(([v, l]) => `<button type="button" data-v="${v}" class="${v === cur ? "is-on" : ""}">${l}</button>`).join("")}`;
+    bar.addEventListener("click", (e) => {
+      const b = e.target.closest("[data-v]");
+      if (!b || b.dataset.v === App.session.variant) return;
+      const url = new URL(location.href);
+      url.searchParams.set("variant", b.dataset.v);
+      location.href = url.toString();
+    });
+    document.body.appendChild(bar);
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("fw");
+    buildVariantSwitch();
     root = document.createElement("div");
     root.className = "fw-root";
     root.addEventListener("click", onRootClick);

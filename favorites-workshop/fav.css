@@ -2828,3 +2828,48 @@
     padding-left: 16px;
   }
 }
+
+/* ---------- Переключатель варианта сниппета (десктоп; на мобильном — в панели) ---------- */
+.fw-variants {
+  position: fixed;
+  z-index: 20;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 4px 4px 14px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  font: 500 14px/20px var(--font-family);
+  color: #6f7888;
+}
+.fw-variants span {
+  margin-right: 6px;
+}
+.fw-variants button {
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 12px;
+  background: none;
+  font: inherit;
+  color: #14171d;
+  cursor: pointer;
+}
+.fw-variants button.is-on {
+  background: #e6f0ff;
+  color: #0468ff;
+}
+@media (max-width: 480px) {
+  .fw-variants {
+    display: none;
+  }
+}
+/* Сердце в as is и v1: залитое — цвета бренд-кода */
+.card__gallery-btn[aria-label="В избранное"].is-active {
+  color: #e85810;
+}
+.fw-root .card {
+  padding-bottom: 16px;
+}

@@ -16,7 +16,7 @@
     <link rel="manifest" href="../favorites-workshop/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icons/app/apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="../favorites-workshop/fav.css?v=30" />
+    <link rel="stylesheet" href="../favorites-workshop/fav.css?v=31" />
     <!-- Карта грузится параллельно и не блокирует выдачу: если api-maps.yandex.ru
          тормозит или недоступен (бывает на телефоне), список всё равно показывается -->
     <script id="ymaps-script" src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" async></script>
@@ -34,6 +34,14 @@
           <button class="prototype-panel__close" id="prototype-panel-close" type="button" aria-label="Закрыть">
             <svg viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           </button>
+        </div>
+        <div class="prototype-panel__section">
+          <div class="prototype-panel__section-title">Вариант сниппета</div>
+          <div class="prototype-panel__chips" data-proto-param="variant">
+            <button class="proto-chip" type="button" data-value="asis">as is</button>
+            <button class="proto-chip" type="button" data-value="new">v1</button>
+            <button class="proto-chip" type="button" data-value="new4">v4</button>
+          </div>
         </div>
         <div class="prototype-panel__section">
           <div class="prototype-panel__section-title">Тип сделки</div>
@@ -432,7 +440,7 @@
     <script src="js/main.js"></script>
     <script src="js/brand-chips.js"></script>
     <script src="js/motion.js"></script>
-    <script src="../favorites-workshop/fav.js?v=30"></script>
-    <script src="../favorites-workshop/together.js?v=30"></script>
+    <script src="../favorites-workshop/fav.js?v=31"></script>
+    <script src="../favorites-workshop/together.js?v=31"></script>
   </body>
 </html>
