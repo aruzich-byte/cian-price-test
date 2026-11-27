@@ -4209,3 +4209,53 @@ i.fw-metro,
   height: 16px;
   display: block;
 }
+
+/* Раздел Избранного — вёрстка Ани (sovmestnye-poiski-prototype, экран 2K «Избранное блоками»):
+   пустая плитка — ровный серый квадрат #F3F5F8 со скруглением 12, по центру иконка в сером
+   квадратике 36px #E3E6ED, иконка #616979; подписи 16/20 semibold, счётчик серым (Katya 27.11) */
+.fw-tile__preview,
+.fw-empty-tile {
+  border-radius: 12px;
+}
+.fw-empty-tile {
+  background: #f3f5f8;
+  display: grid;
+  place-items: center;
+}
+.fw-empty-tile__folder {
+  display: none;
+}
+.fw-empty-tile__icon {
+  position: static;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 10.3px;
+  background: #e3e6ed;
+  color: #616979;
+}
+.fw-empty-tile__icon svg {
+  width: 20px;
+  height: 20px;
+}
+/* белые детали иконок — в цвет квадратика, как вырезы у Ани */
+.fw-empty-tile__icon svg [fill="#fff"] {
+  fill: #e3e6ed;
+}
+.fw-empty-tile__icon svg [stroke="#fff"] {
+  stroke: #e3e6ed;
+}
+.fw-tile__label {
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: -0.3px;
+}
+.fw-tile__count {
+  font-weight: 600;
+}
+.fw-empty-tile__icon svg [fill="#1A73FF"],
+.fw-empty-tile__icon svg [fill="#E6F0FF"] {
+  fill: currentColor;
+}
