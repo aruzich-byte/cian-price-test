@@ -3314,3 +3314,22 @@
   object-fit: contain;
   animation: fw-pop 0.22s ease-out;
 }
+/* Пасхалка: в заметках к первой квартире вместо эмодзи — миниатюры стикеров (Katya 27.11) */
+.fw-notes__emoji--stk {
+  gap: 4px;
+}
+.fw-notes__emoji--stk button {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px;
+}
+.fw-notes__emoji--stk button:active {
+  background: #f3f5f8;
+}
+.fw-notes__emoji--stk img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
