@@ -274,7 +274,7 @@
           <div class="fw-mc__params">${params}</div>
           ${l.rating ? `<div class="fw-mc__rate"><span>★ ${esc(l.rating)}</span> · ${esc(l.reviews || "")}</div>` : ""}
           ${addr ? `<div class="fw-mc__addr">${esc(addr)}</div>` : ""}
-          ${l.metro ? `<div class="fw-mc__metro"><i style="color:#${l.metroColor || "0468FF"}">M</i>${esc(l.metro)}<span>${l.metroMin ? l.metroMin + " мин." : ""}</span></div>` : ""}
+          ${l.metro ? `<div class="fw-mc__metro">${FW.metroIc(l.metroColor)}${esc(l.metro)}<span>${l.metroMin ? l.metroMin + " мин." : ""}</span></div>` : ""}
         </div>
         ${l.dealType === "daily" ? "" : `<div class="fw-mc__acts">
           <button class="fw-mc__call" type="button" data-tg="call" aria-label="Позвонить">${FW.CI.phone}</button>
@@ -483,7 +483,7 @@
       </div>
       <div class="fw-gc__price">${priceStr(l)}</div>
       <div class="fw-gc__params">${params}</div>
-      ${l.metro ? `<div class="fw-gc__metro"><i style="color:#${l.metroColor || "0468FF"}">M</i>${esc(l.metro)}</div>` : ""}
+      ${l.metro ? `<div class="fw-gc__metro">${FW.metroIc(l.metroColor)}${esc(l.metro)}</div>` : ""}
       ${gridFootHtml(p, l.id)}
     </div>`;
   }

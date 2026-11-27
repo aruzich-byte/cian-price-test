@@ -16,6 +16,10 @@
     App.session.variant = qVariant;
     document.documentElement.classList.remove("variant-new4", "n2-photo-dark");
   }
+  // Иконка метро СПб (Katya 27.11, MetroSpb.svg) — везде вместо «М»; цвет — по линии
+  const METRO_IC = '<svg class="fw-metro-ic" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5.91215 2L8 10L10.0878 2C13.0349 2.96324 15 5.73226 15 8.8334C15 10.5062 14.3052 12.7099 13.1797 14H10.5L10 13C14.5 11.5 13.0778 5.45111 11 4L8.5 14L8 13.9987L7.5 14L5 4C2.92221 5.45111 1.5 11.5 6 13L5.5 14H2.8203C1.69477 12.7099 1 10.5062 1 8.8334C1 5.73226 2.9651 2.96324 5.91215 2Z" fill="currentColor"/></svg>';
+  App.ICONS.pin = METRO_IC; // сниппеты выдачи (as is, v1) рисуют метро этой иконкой
+  const metroIc = (c) => `<i class="fw-metro" style="color:#${c || "087DCD"}">${METRO_IC}</i>`;
   // Сердце на сниппете любого варианта
   const HEART_SEL = '.n4__fav, .card__gallery-btn[aria-label="В избранное"]';
   const isN4Heart = (b) => b.classList.contains("n4__fav");
@@ -187,7 +191,7 @@
   function miniCardHtml(l) {
     const saved = store.saved.includes(l.id);
     const params = [l.rooms ? `${l.rooms}-к. кв.` : "Студия", `${String(l.area).replace(".", ",")} м²`, `${l.floor}/${l.floorsTotal} эт.`].join(" · ");
-    const metro = l.metro ? `<span class="fw-mini__metro"><i style="background:#${l.metroColor || "0468FF"}"></i>${esc(l.metro)}</span>` : "";
+    const metro = l.metro ? `<span class="fw-mini__metro">${metroIc(l.metroColor)}${esc(l.metro)}</span>` : "";
     return `<div class="fw-mini" data-id="${l.id}">
       <div class="fw-mini__photo" style="background-image:url('${photo(l.id)}')">
         <button class="fw-mini__heart${saved ? " is-active" : ""}" type="button" aria-label="В избранное">${saved ? IC.heart : IC.heartLine}</button>
@@ -763,7 +767,7 @@
       <span class="fw-cd__sim-photo" style="background-image:url('${photo(x.id)}')"></span>
       <span class="fw-cd__sim-price">${priceStr(x)}</span>
       <span class="fw-cd__sim-params">${params}</span>
-      ${x.metro ? `<span class="fw-cd__metro"><i style="color:#${x.metroColor || "0468FF"}">M</i>${esc(x.metro)}</span>` : ""}
+      ${x.metro ? `<span class="fw-cd__metro">${metroIc(x.metroColor)}${esc(x.metro)}</span>` : ""}
       ${x.metroMin ? `<span class="fw-cd__sim-min">${walk ? CI.walk : CI.bus}${x.metroMin} мин</span>` : ""}
     </button>`;
   }
@@ -844,7 +848,7 @@
         <div class="fw-cd__addr">
           ${l.jk ? `<button class="fw-cd__jk" type="button" data-cd="soon">${esc(l.jk)}</button>` : ""}
           <div>${esc(address)}, Санкт-Петербург <span class="fw-cd__copy">${CI.copy}</span></div>
-          ${l.metro ? `<div class="fw-cd__metro"><i style="color:#${l.metroColor || "0468FF"}">M</i>${esc(l.metro)} <span class="fw-cd__min">${walk ? CI.walk : CI.bus}${l.metroMin} мин</span></div>` : ""}
+          ${l.metro ? `<div class="fw-cd__metro">${metroIc(l.metroColor)}${esc(l.metro)} <span class="fw-cd__min">${walk ? CI.walk : CI.bus}${l.metroMin} мин</span></div>` : ""}
           <button class="fw-cd__link" type="button" data-cd="soon">Смотреть на карте</button>
         </div>
 
@@ -1038,7 +1042,7 @@
 
   // API для модуля совместных подборок (together.js)
   window.FW = {
-    App, store, stack, IC, ASSETS, $, esc, plural, priceStr, byId, photo, withPhoto, collageHtml, emptyStateHtml, EMPTY, RENT,
+    App, store, stack, IC, ASSETS, $, esc, plural, priceStr, byId, photo, withPhoto, collageHtml, emptyStateHtml, EMPTY, metroIc, RENT,
     push, rerender, toast, setTab, notifySaved, closeCards, openCard, favCharge, setSaved, syncCardHeart, CI, HEART_TONES, getHeartTone: () => heartTone, setHeartTone,
     get tab() { return tab; },
     get root() { return root; },

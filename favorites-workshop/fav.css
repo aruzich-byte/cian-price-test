@@ -4188,3 +4188,24 @@
 .fw-mc__fav {
   color: #14171d;
 }
+
+/* Иконка метро СПб (MetroSpb.svg) — везде вместо «М» и точки линии (Katya 27.11) */
+i.fw-metro,
+.fw-mini__metro i.fw-metro,
+.fw-cd__metro i.fw-metro,
+.fw-mc__metro i.fw-metro,
+.fw-gc__metro i.fw-metro {
+  display: inline-flex;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  border-radius: 0;
+  background: none;
+  vertical-align: -3px;
+}
+.fw-metro-ic {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
