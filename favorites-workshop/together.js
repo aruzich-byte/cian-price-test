@@ -274,10 +274,10 @@
           ${addr ? `<div class="fw-mc__addr">${esc(addr)}</div>` : ""}
           ${l.metro ? `<div class="fw-mc__metro"><i style="color:#${l.metroColor || "0468FF"}">M</i>${esc(l.metro)}<span>${l.metroMin ? l.metroMin + " мин." : ""}</span></div>` : ""}
         </div>
-        <div class="fw-mc__acts">
+        ${l.dealType === "daily" ? "" : `<div class="fw-mc__acts">
           <button class="fw-mc__call" type="button" data-tg="call" aria-label="Позвонить">${FW.CI.phone}</button>
           <button class="fw-mc__chat" type="button" data-tg="chat" aria-label="Написать"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 3.5c-5 0-9 3.4-9 7.6 0 2.3 1.2 4.3 3 5.7l-.5 3.4c-.1.5.5.9.9.6l3.4-2c.7.1 1.4.2 2.2.2 5 0 9-3.4 9-7.6S17 3.5 12 3.5Z"/><circle cx="8" cy="11" r="1.3" fill="#fff"/><circle cx="12" cy="11" r="1.3" fill="#fff"/><circle cx="16" cy="11" r="1.3" fill="#fff"/></svg></button>
-        </div>
+        </div>`}
       </div>
       ${p ? footHtml(p, l.id) : ""}
     </div>`;

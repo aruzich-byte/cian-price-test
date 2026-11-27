@@ -1032,6 +1032,15 @@
     document.body.appendChild(bar);
   }
 
+  // У посуточной аренды нет кнопок «Позвонить» и «Написать» (Katya 27.11) — помечаем такие сниппеты в любом варианте
+  function markDaily() {
+    document.querySelectorAll(".card[data-listing-id]:not([data-fw-deal])").forEach((c) => {
+      const l = byId(c.dataset.listingId);
+      c.dataset.fwDeal = (l && l.dealType) || "x";
+    });
+  }
+  new MutationObserver(markDaily).observe(document.documentElement, { childList: true, subtree: true });
+
   document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("fw");
     buildVariantSwitch();

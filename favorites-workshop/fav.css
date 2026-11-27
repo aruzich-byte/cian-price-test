@@ -3343,3 +3343,9 @@
   font: 500 16px/22px var(--font-family);
   color: #14171d;
 }
+/* Посуточно: без «Позвонить» и «Написать» во всех вариантах сниппета (Katya 27.11) */
+.card[data-fw-deal="daily"] .card__btn--call,
+.card[data-fw-deal="daily"] .card__btn--message,
+.card[data-fw-deal="daily"] .n4__actions-group--contact {
+  display: none !important;
+}
