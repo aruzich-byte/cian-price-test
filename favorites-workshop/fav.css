@@ -3866,3 +3866,64 @@
 .fw-hero__more {
   background: #0095ff;
 }
+
+/* Вишлисты как в Airbnb (Katya 27.11): даты из поиска при создании, «Удалить»/«Выйти» */
+.fw-new__dates {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f3f5f8;
+  color: #14171d;
+  font: 14px/18px var(--font-family);
+}
+.fw-new__dates svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: #0468ff;
+}
+.fw-new__dates span {
+  display: flex;
+  flex-direction: column;
+}
+.fw-new__dates b {
+  font-weight: 600;
+  font-size: 15px;
+}
+.fw-new__dates span span {
+  color: #6f7888;
+  font-size: 13px;
+}
+.fw-menu__ic--red {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffeceb;
+  color: #e3242b;
+}
+.fw-menu__ic--red svg {
+  width: 22px;
+  height: 22px;
+}
+.fw-menu__row--danger b {
+  color: #e3242b;
+}
+.fw-btn--danger {
+  background: #e3242b;
+  color: #fff;
+}
+.fw-sheet--drop .fw-btn {
+  width: 100%;
+  margin-top: 12px;
+}
+.fw-sheet--drop .fw-dates__note {
+  margin: 4px 0 8px;
+  font-size: 15px;
+  line-height: 20px;
+}
+.fw-new__dates {
+  text-align: left;
+}

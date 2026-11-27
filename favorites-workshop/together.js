@@ -23,6 +23,8 @@
     { short: "6 — 8 дек.", long: "6 — 8 декабря" },
   ];
   const CITY = "Санкт-Петербург";
+  // 2. Даты и гости посуточного поиска (как в Airbnb: вишлист запоминает даты поиска). В прототипе поиск без календаря — даты сценария
+  const SEARCH = { dates: 0, guests: 2 };
   const variants = (n) => `${n} ${plural(n, ["вариант", "варианта", "вариантов"])}`;
 
   const CI_SWAP = '<svg viewBox="0 0 24 24"><path d="M4 9h13l-3.5-3.5M20 15H7l3.5 3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -451,6 +453,9 @@
     edit: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M11.97 1.28a.97.97 0 0 0-1.37 0L9.23 2.66l4.11 4.11 1.37-1.37a.97.97 0 0 0 0-1.37l-2.74-2.75ZM11.97 8.14 7.86 4.03 1 10.89V15h4.11l6.86-6.86Z"/></svg>',
     note: '<svg viewBox="0 0 17 17" fill="none"><path d="M14.0828 1.4172C13.5265 0.860927 12.6246 0.860933 12.0684 1.41722L11.0612 2.42443L13.0756 4.43896L14.0828 3.43159C14.6391 2.87531 14.639 1.97346 14.0828 1.4172Z" fill="currentColor"/><path d="M11.5648 6.95678L12.572 7.96398L10.054 10.482L11.0612 11.4892L13.162 9.38838C13.9486 8.60171 13.9486 7.32626 13.162 6.53959L9.55038 2.92798L2.5 9.70927V13H5.52159L11.5648 6.95678Z" fill="currentColor"/></svg>',
     react: '<svg viewBox="0 0 17 18" fill="none"><circle cx="9.87" cy="6.37" r="1.2" fill="currentColor"/><circle cx="6.28" cy="6.37" r="1.2" fill="currentColor"/><path d="M5.06 9.25h5.99c-.2.8-1.08 2.39-2.99 2.39S5.26 10.05 5.06 9.25Z" fill="currentColor"/><path d="M14.5254 0V1.99219H16.5176V3.99219H14.5254V5.98438H12.5234V3.99219H10.5312V1.99219H12.5234V0H14.5254Z" fill="currentColor"/><path d="M0.492188 8.38867C0.492334 4.20076 3.88728 0.805811 8.0752 0.805664V2.80566C4.99185 2.80581 2.49233 5.30533 2.49219 8.38867C2.49219 11.4721 4.99176 13.9725 8.0752 13.9727C11.1588 13.9727 13.6592 11.4722 13.6592 8.38867H15.6592C15.6592 12.5768 12.2633 15.9727 8.0752 15.9727C3.88719 15.9725 0.492188 12.5767 0.492188 8.38867Z" fill="currentColor"/></svg>',
+    cal: '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    trash: '<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+    exit: '<svg viewBox="0 0 24 24"><path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     plus: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M0 7h16v2H0z"/><path fill="currentColor" d="M7 0h2v16H7z"/></svg>',
     more: '<svg viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></g></svg>',
   };
@@ -793,6 +798,7 @@
       <div class="fw-new__title">Новая подборка</div>
       <label class="fw-new__field"><input type="text" value="${esc(names[0])}" maxlength="40" placeholder="Название" aria-label="Название" /><button type="button" class="fw-new__clear" data-clear aria-label="Очистить">${TI.close}</button></label>
       <div class="fw-sugg">${names.map((n, i) => `<button class="fw-sugg__chip${i === 0 ? " is-on" : ""}" type="button" data-name="${esc(n)}">${esc(n)}</button>`).join("")}</div>
+      ${daily ? `<div class="fw-new__dates">${LI.cal}<span><b>${DATES[SEARCH.dates].short} · ${SEARCH.guests} ${plural(SEARCH.guests, ["гость", "гостя", "гостей"])}</b><span>Даты и гости из поиска, поменять можно в подборке</span></span></div>` : ""}
       <div class="fw-together">
         <span class="fw-together__pair fw-brand-pill"><img class="fw-av" src="${PEOPLE[store.me].img}" alt="" /><span class="fw-av fw-av--plus">${IC.plus}</span></span>
         <span><b>Выбирать вместе</b><span>Позовите близкого — оценивайте варианты вдвоём, без чата</span></span>
@@ -831,8 +837,9 @@
       }
       const go = e.target.closest("[data-create]");
       if (!go) return;
-      const p = ensure({ id: "p" + Date.now(), name: input.value.trim() || names[0], items: listingId ? [listingId] : [], cover, type: daily ? "daily" : "long", dates: 0, guests: 2, members: [store.me], creator: store.me });
+      const p = ensure({ id: "p" + Date.now(), name: input.value.trim() || names[0], items: listingId ? [listingId] : [], cover, type: daily ? "daily" : "long", dates: SEARCH.dates, guests: SEARCH.guests, members: [store.me], creator: store.me });
       store.podborki.unshift(p);
+      if (listingId) remember(p, listingId);
       if (listingId && !store.saved.includes(listingId)) FW.setSaved(listingId, true);
       close();
       if (listingId && go.dataset.create === "solo") {
@@ -896,6 +903,7 @@
       if (row) {
         const p = store.podborki.find((x) => x.id === row.dataset.q);
         close();
+        remember(p, id);
         if (!p.items.includes(id)) {
           p.items.unshift(id);
           p.updated = Date.now();
@@ -917,14 +925,16 @@
   function openPick(id) {
     const l = byId(id);
     const daily = l && l.dealType === "daily";
-    const picked = new Set();
+    // «Изменить» из снека: видно, где объявление уже лежит, галочку можно снять (как «Change» в Airbnb)
+    const picked = new Set(store.podborki.filter((p) => p.items.includes(id)).map((p) => p.id));
+    const before = new Set(picked);
     const rows = store.podborki
       .map((p) => {
         ensure(p);
         const has = p.items.includes(id);
         const cov = p.cover || p.items[0];
         const n = p.items.length;
-        return `<button class="fw-pick__row" type="button" data-pick="${p.id}"${has ? " disabled" : ""}>
+        return `<button class="fw-pick__row" type="button" data-pick="${p.id}">
           <span class="fw-pick__thumb fw-pick__thumb--col">${miniCollage(p)}</span>
           <span class="fw-pick__body"><b>${esc(p.name)}</b><span>${n} ${plural(n, ["объявление", "объявления", "объявлений"])}</span></span>
           ${p.members.length > 1 ? `<span class="fw-pick__avs">${avatars(p)}</span>` : ""}
@@ -958,15 +968,61 @@
       }
       if (e.target.closest("[data-pick-done]")) {
         close();
-        const list = store.podborki.filter((p) => picked.has(p.id));
+        const list = store.podborki.filter((p) => picked.has(p.id) && !before.has(p.id));
+        const gone = store.podborki.filter((p) => before.has(p.id) && !picked.has(p.id));
         list.forEach((p) => {
           p.items.unshift(id);
           p.updated = Date.now();
         });
+        gone.forEach((p) => {
+          p.items = p.items.filter((x) => x !== id);
+          p.updated = Date.now();
+        });
+        if (list.length) remember(list[list.length - 1], id);
+        else if (gone.length && store.lastPick && gone.some((p) => p.id === store.lastPick.pid)) store.lastPick = null;
         if (list.length && !store.saved.includes(id)) FW.setSaved(id, true);
-        if (list.length) FW.toast(`Добавлено в ${list.map((p) => `«${p.name}»`).join(", ")}`);
+        if (list.length) FW.toast(`Сохранено в ${list.map((p) => `«${p.name}»`).join(", ")}`);
+        else if (gone.length) FW.toast(`Убрано из ${gone.map((p) => `«${p.name}»`).join(", ")}`);
         if (FW.tab === "fav") FW.rerender();
       }
+    });
+  }
+
+  // ---------- Логика вишлистов Airbnb (Katya 27.11, пункты 1–3) ----------
+  // 1. Сохранения из того же поиска попадают в ту же подборку: запоминаем последнюю подборку, куда клали вручную
+  const dealOf = (id) => (byId(id) && byId(id).dealType === "daily" ? "daily" : "long");
+  function remember(p, id) {
+    store.lastPick = { pid: p.id, deal: dealOf(id) };
+  }
+  function autoSave(id) {
+    const lp = store.lastPick;
+    const p = lp && store.podborki.find((x) => x.id === lp.pid);
+    if (!p || lp.deal !== dealOf(id) || p.items.includes(id) || !p.members.includes(store.me)) return null;
+    p.items.unshift(id);
+    p.updated = Date.now();
+    if (FW.tab === "fav") FW.rerender();
+    return p;
+  }
+  // 3. Удалить подборку может только создатель (принцип 7 Ани), участник — выйти
+  function confirmDrop(p) {
+    const mine = p.creator === store.me;
+    const { wrap, close } = sheet(`
+      <div class="fw-sheet__title">${mine ? "Удалить подборку?" : "Выйти из подборки?"}</div>
+      <div class="fw-dates__note">${mine ? `«${esc(p.name)}» пропадёт у всех участников. Объявления останутся в Избранном.` : `«${esc(p.name)}» пропадёт у вас. ${PEOPLE[p.creator].name} и остальные продолжат выбирать.`}</div>
+      <button class="fw-btn fw-btn--danger" type="button" data-drop>${mine ? "Удалить" : "Выйти"}</button>
+      <button class="fw-btn fw-btn--secondary" type="button" data-cancel>Отмена</button>`, "fw-sheet--drop");
+    wrap.addEventListener("click", (e) => {
+      if (e.target.closest("[data-cancel]")) return close();
+      if (!e.target.closest("[data-drop]")) return;
+      close();
+      // в прототипе одно хранилище на обоих — вышедший участник просто перестаёт видеть подборку
+      // (сценарий «Аня» из панели соберёт её заново)
+      store.podborki = store.podborki.filter((x) => x !== p);
+      if (store.lastPick && store.lastPick.pid === p.id) store.lastPick = null;
+      while (stack.length && stack[stack.length - 1].type === "podborka") stack.pop();
+      if (!stack.length) stack.push({ type: "section", key: "podborki" });
+      FW.rerender();
+      FW.toast(mine ? `Подборка «${p.name}» удалена` : `Вы вышли из «${p.name}»`);
     });
   }
 
@@ -1002,12 +1058,14 @@
         <button class="fw-menu__row" type="button" data-m="place"><span class="fw-menu__ic"><img src="${ASSETS}together/place-pool.png" alt="" /></span><span><b>Добавить моё место</b><span>Работа, бассейн, родители — увидите, что рядом</span></span></button>
         ${PB_LIST ? `<button class="fw-menu__row" type="button" data-m="look"><span class="fw-menu__ic fw-menu__ic--bg" style="background-image:url('${bgSrc(p)}')"></span><span><b>Название и фон</b><span>Переименовать подборку, сменить картинку в шапке</span></span></button>` : ""}
         <button class="fw-menu__row" type="button" data-m="share"><span class="fw-menu__ic fw-menu__ic--blue">${IC.plus}</span><span><b>Позвать в подборку</b></span></button>
+        <button class="fw-menu__row fw-menu__row--danger" type="button" data-m="drop"><span class="fw-menu__ic fw-menu__ic--red">${p.creator === store.me ? LI.trash : LI.exit}</span><span><b>${p.creator === store.me ? "Удалить подборку" : "Выйти из подборки"}</b></span></button>
       </div>`);
     wrap.addEventListener("click", (e) => {
       const m = e.target.closest("[data-m]");
       if (!m) return;
       close();
-      setTimeout(() => (m.dataset.m === "place" ? openAddPlace(p) : m.dataset.m === "look" ? openSettings(p) : openShare(p)), 260);
+      const go = { place: openAddPlace, look: openSettings, drop: confirmDrop, share: openShare }[m.dataset.m];
+      setTimeout(() => go(p), 260);
     });
   }
   function openAddPlace(p) {
@@ -1296,6 +1354,7 @@
   }
 
   window.FWT = {
+    autoSave,
     screen: screenPodborka,
     screens: { main: screenMain },
     after,

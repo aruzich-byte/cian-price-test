@@ -390,7 +390,12 @@
   // Сердце сохраняет сразу (принцип 1), подборка — опционально через снек (1A → 2A Ани)
   // Figma «ВСЕ СХЛОПЫВАЕМ» → «Тюним снекбар» (27.11): светлый снек «В избранном | В подборку»
   function notifySaved(id) {
-    if (window.FWT) toast("В избранном", { label: "В подборку", run: () => window.FWT.openPick(id) }, 0, { cls: "fw-toast--saved", icon: App.ICONS.heartFilled });
+    if (!window.FWT) return;
+    // Как вишлисты Airbnb (Katya 27.11): после того как из этого поиска уже клали в подборку,
+    // сердечко сохраняет туда же, а снек даёт «Изменить». Сохранение по-прежнему за 1 тап (принцип 1 Ани).
+    const p = window.FWT.autoSave && window.FWT.autoSave(id);
+    if (p) toast(`Сохранено в «${p.name}»`, { label: "Изменить", run: () => window.FWT.openPick(id) }, 0, { cls: "fw-toast--saved", icon: App.ICONS.heartFilled });
+    else toast("В избранном", { label: "В подборку", run: () => window.FWT.openPick(id) }, 0, { cls: "fw-toast--saved", icon: App.ICONS.heartFilled });
   }
 
   // ---------- Зажатие сердца → быстрый выбор подборки (Figma «Зажатие лайка → шорткаты») ----------
