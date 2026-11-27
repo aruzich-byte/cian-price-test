@@ -3817,3 +3817,11 @@
   background: #4293f5;
   box-shadow: inset 0 0 0 2px #fff;
 }
+.fw-lv__chip svg {
+  color: #7b8394;
+}
+.fw-gc__write svg {
+  width: 17px;
+  height: 17px;
+  color: #282d36;
+}

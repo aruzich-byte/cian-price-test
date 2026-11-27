@@ -439,11 +439,14 @@
     const pre = BGS.find((x) => x.k === b);
     return pre ? pre.src : b; // своё фото хранится как data:/blob: URL
   };
+  // Иконки — SVG из макета Katya (27.11), цвет через currentColor
   const LI = {
-    pin: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M8 1a5.5 5.5 0 0 0-5.5 5.5C2.5 10.6 8 15 8 15s5.5-4.4 5.5-8.5A5.5 5.5 0 0 0 8 1Zm0 7.5a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"/></svg>',
+    pin: '<svg viewBox="0 0 16 16"><path fill="currentColor" fill-rule="evenodd" d="M8 16s7-4 7-9.33C15 2.98 11.87 0 8 0S1 2.98 1 6.67C1 12 8 16 8 16Zm0-7.43a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>',
     list: '<svg viewBox="0 0 16 16"><path d="M5.5 3.5h9M5.5 8h9M5.5 12.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="2" cy="3.5" r="1.1" fill="currentColor"/><circle cx="2" cy="8" r="1.1" fill="currentColor"/><circle cx="2" cy="12.5" r="1.1" fill="currentColor"/></svg>',
-    edit: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M10.9 1.9a1.5 1.5 0 0 1 2.1 0l1.1 1.1a1.5 1.5 0 0 1 0 2.1l-1.3 1.3-3.2-3.2 1.3-1.3ZM8.6 4.2l3.2 3.2-6.6 6.6-3.7.5.5-3.7 6.6-6.6Z"/></svg>',
-    note: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M10.9 1.9a1.5 1.5 0 0 1 2.1 0l1.1 1.1a1.5 1.5 0 0 1 0 2.1l-1.3 1.3-3.2-3.2 1.3-1.3ZM8.6 4.2l3.2 3.2-6.6 6.6-3.7.5.5-3.7 6.6-6.6Z"/></svg>',
+    edit: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M11.97 1.28a.97.97 0 0 0-1.37 0L9.23 2.66l4.11 4.11 1.37-1.37a.97.97 0 0 0 0-1.37l-2.74-2.75ZM11.97 8.14 7.86 4.03 1 10.89V15h4.11l6.86-6.86Z"/></svg>',
+    note: '<svg viewBox="0 0 17 17"><path fill="currentColor" d="M14.08 1.42a1.43 1.43 0 0 0-2.01 0l-1.01 1 2.01 2.02 1.01-1a1.43 1.43 0 0 0 0-2.02Z"/><path fill="currentColor" d="m11.56 6.96 1.01 1-2.52 2.52 1.01 1.01 2.1-2.1a2 2 0 0 0 0-2.85L9.55 2.93 2.5 9.71V13h3.02l6.04-6.04Z"/></svg>',
+    plus: '<svg viewBox="0 0 16 16"><path fill="currentColor" d="M0 7h16v2H0z"/><path fill="currentColor" d="M7 0h2v16H7z"/></svg>',
+    more: '<svg viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></g></svg>',
   };
   // «Новое» — то, что я ещё не оценил и не обсуждал
   const isFresh = (p, id) => !Object.values(p.reactions[id] || {}).some((l) => l.includes(store.me)) && !(p.notes[id] || []).some((n) => n.who === store.me);
@@ -487,8 +490,8 @@
         <div class="fw-pb__bar fw-hero__bar">
           <button class="fw-pb__icon" type="button" data-act="back" aria-label="Назад">${IC.back}</button>
           <div class="fw-pb__title">${esc(p.name)}</div>
-          <button class="fw-hero__members" type="button" data-tg="share" aria-label="Позвать в подборку"><span class="fw-hero__avs">${avatars(p)}</span><span class="fw-hero__plus">${IC.plus}</span></button>
-          <button class="fw-hero__more" type="button" data-tg="more" aria-label="Ещё">${IC.more}</button>
+          <button class="fw-hero__members" type="button" data-tg="share" aria-label="Позвать в подборку"><span class="fw-hero__avs">${avatars(p)}</span><span class="fw-hero__plus">${LI.plus}</span></button>
+          <button class="fw-hero__more" type="button" data-tg="more" aria-label="Ещё">${LI.more}</button>
         </div>
         <div class="fw-hero__strip">
           <button class="fw-hero__dates" type="button" data-tg="${p.type === "daily" ? "dates" : "settings"}">${strip}</button>
